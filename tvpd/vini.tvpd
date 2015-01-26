@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<vpd>
+  <record name="VINI">
+    <desc>The VINI record</desc>
+    <keyword name="RT">
+      <desc>The Record Type keyword</desc>
+      <datatype>ascii</datatype>
+      <datavalue>VINI</datavalue>
+    </keyword>
+  </record>
+</vpd>
