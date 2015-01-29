@@ -48,16 +48,39 @@ if (cmdline.parseOption("-h","--help")):
     help()
     exit(0)
 
-tree = ET.parse('tvpd/vini.tvpd')
-root = tree.getroot()
-root.tag
-root.attrib
-for child in root:
-    print child.tag, child.attrib
+# Look for input files - the option can be repeated multiple times
+clInputFiles = list()
+while True:
+    clInputFile = cmdline.parseOptionWithArg("-i")
+    if (clInputFile == None):
+        break
+    else:
+      clInputFiles.append(clInputFile)
 
-xml_files = glob.glob("tvpd/*.tvpd")
+# Error check we got input files
+if (len(clInputFiles) == 0):
+    print("ERROR: At least 1 -i arg is required")
+    clError+=1
 
-m = merge(xml_files)
+# Error check the command line
+if (clError):
+    print("ERROR: Missing required cmdline args!  Please review the output above to determine which ones!")
+    exit(clError)
+
+# All cmdline args should be processed, so if any left throw an error
+if (len(sys.argv) != 1):
+    print("ERROR: Extra cmdline args detected - %s" % (sys.argv[1:])) # [1:] don't inclue script name in the list
+    exit(len(sys.argv))
+
+files = list()
+for file in clInputFiles:
+    files.extend(glob.glob(file))
+
+#xml_files = glob.glob("tvpd/opfr.tvpd")
+
+print(files)
+
+m = merge(files)
 
 print "++++++++++++++++"
 print m
