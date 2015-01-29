@@ -30,7 +30,7 @@ def merge(files):
         else:
             first.extend(data)
     if first is not None:
-        return ET.tostring(first)
+        return first
 
 ############################################################
 # Main - Main - Main - Main - Main - Main - Main - Main
@@ -67,51 +67,41 @@ if (clError):
     print("ERROR: Missing required cmdline args!  Please review the output above to determine which ones!")
     exit(clError)
 
+# Look for output files
+clOutputFile = cmdline.parseOptionWithArg("-o")
+if (clOutputFile == None):
+    print("ERROR: The -o arg is required")
+    clError+=1
+
 # All cmdline args should be processed, so if any left throw an error
 if (len(sys.argv) != 1):
     print("ERROR: Extra cmdline args detected - %s" % (sys.argv[1:])) # [1:] don't inclue script name in the list
     exit(len(sys.argv))
 
+# Do wildcard/pattern expansion on file names passed in
+# This will create a list of discrete filenames for use thru out
 files = list()
 for file in clInputFiles:
     files.extend(glob.glob(file))
-
-#xml_files = glob.glob("tvpd/opfr.tvpd")
 
 print(files)
 
 m = merge(files)
 
 print "++++++++++++++++"
-print m
+print ET.tostring(m)
 print "++++++++++++++++"
 
-root = ET.fromstring(m)
-root.tag
-root.attrib
-for child in root:
+m.tag
+m.attrib
+for child in m:
     print child.tag, child.attrib
 
 print "|||||||||||||||||||||||||||"
 
-for desc in root.iter('kwdesc'):
+for desc in m.iter('kwdesc'):
     print(desc.tag, desc.attrib, desc.text)
 
-exit(0)
-
-xml_element_tree = None
-for xml_file in xml_files:
-    print xml_file
-    data = ET.parse(xml_file).getroot()
-    print ET.tostring(data)
-    for result in data.iter('recordname'):
-        print "here"
-        if xml_element_tree is None:
-            xml_element_tree = data 
-            insertion_point = xml_element_tree.findall("./results")[0]
-        else:
-            insertion_point.extend(result) 
-
-print("########################")
-if xml_element_tree is not None:
-    print ET.tostring(xml_element_tree)
+if (clOutputFile != None):
+    tree = ET.ElementTree(m)
+    tree.write("output.tvpd", encoding="utf-8", xml_declaration=True)
