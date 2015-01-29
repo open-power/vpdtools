@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <vpd>
   <record name="VINI">
-    <desc>The VINI record</desc>
+    <rdesc>The VINI record</rdesc>
     <keyword name="RT">
-      <desc>The Record Type keyword</desc>
+      <kdesc>The Record Type keyword</kdesc>
       <datatype>ascii</datatype>
       <datavalue>VINI</datavalue>
     </keyword>
