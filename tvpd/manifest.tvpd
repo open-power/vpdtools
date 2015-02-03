@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<vpd>
+  <name>birch</name>
+  <size>16kb</size>
+  <record name="VINI">
+    <src></src>
+  </record>
+  <record name="VINI">
+    <rdesc>The VINI record</rdesc>
+    <keyword name="RT">
+      <kdesc>The Record Type keyword</kdesc>
+      <datatype>ascii</datatype>
+      <datavalue>VINI</datavalue>
+    </keyword>
+  </record>
+</vpd>
