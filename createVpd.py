@@ -48,24 +48,23 @@ if (cmdline.parseOption("-h","--help")):
     help()
     exit(0)
 
-# Look for input files - the option can be repeated multiple times
-clInputFiles = list()
-while True:
-    clInputFile = cmdline.parseOptionWithArg("-i")
-    if (clInputFile == None):
-        break
-    else:
-      clInputFiles.append(clInputFile)
+# We can run in two different modes
+# 1) manifest mode - you pass in one xml file that gives all the required input args
+# 2) cmdline mode - you pass in multiple command line args that recreate what would be in the manifest
+# Forr now let's get manifest mode working since that will be the easiest
 
-# Error check we got input files
-if (len(clInputFiles) == 0):
-    print("ERROR: At least 1 -i arg is required")
+
+
+# Get the manifest file and get this party started
+clManifestFile = cmdline.parseOptionWithArg("-m", "--manifest")
+if (clManifestFile == None):
+    print("ERROR: The -m arg is required!")
     clError+=1
-
-# Error check the command line
-if (clError):
-    print("ERROR: Missing required cmdline args!  Please review the output above to determine which ones!")
-    exit(clError)
+else:
+    # Make sure the file exists
+    if (os.path.exists(clManifestFile) != True):
+        print("ERROR: The manifest file given does not exist")
+        clError+=1
 
 # Look for output files
 clOutputFile = cmdline.parseOptionWithArg("-o")
@@ -73,35 +72,48 @@ if (clOutputFile == None):
     print("ERROR: The -o arg is required")
     clError+=1
 
+# Error check the command line
+if (clError):
+    print("ERROR: Missing/incorrect cmdline args!  Please review the output above to determine which ones!")
+    exit(clError)
+
 # All cmdline args should be processed, so if any left throw an error
 if (len(sys.argv) != 1):
     print("ERROR: Extra cmdline args detected - %s" % (sys.argv[1:])) # [1:] don't inclue script name in the list
     exit(len(sys.argv))
 
-# Do wildcard/pattern expansion on file names passed in
-# This will create a list of discrete filenames for use thru out
-files = list()
-for file in clInputFiles:
-    files.extend(glob.glob(file))
 
-print(files)
+################################################
+# Work with the manifest
 
-m = merge(files)
+# Read in the manifest        
+manifest = ET.parse(clManifestFile).getroot()
 
-print "++++++++++++++++"
-print ET.tostring(m)
-print "++++++++++++++++"
+# Do some basic error checking of what we've read in
 
-m.tag
-m.attrib
-for child in m:
-    print child.tag, child.attrib
+# Make sure the root starts with the vpd tag
+if (manifest.tag != "vpd"):
+    print("ERROR: The manifest file does not start with a <vpd> tag")
+    exit(1)
 
-print "|||||||||||||||||||||||||||"
+# Print the top level tags from the parsing
+print("Top level tag/attrib found")
+for child in manifest:
+    print("  ", child.tag, child.attrib)
 
-for desc in m.iter('kwdesc'):
+
+
+#print("++++++++++++++++")
+#print(ET.tostring(manifest))
+#print("++++++++++++++++")
+
+print("|||||||||||||||||||||||||||")
+
+for desc in manifest.iter('kwdesc'):
     print(desc.tag, desc.attrib, desc.text)
 
 if (clOutputFile != None):
-    tree = ET.ElementTree(m)
+    tree = ET.ElementTree(manifest)
     tree.write("output.tvpd", encoding="utf-8", xml_declaration=True)
+
+
