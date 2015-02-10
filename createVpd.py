@@ -67,8 +67,8 @@ else:
         clError+=1
 
 # Look for output files
-clOutputFile = cmdline.parseOptionWithArg("-o")
-if (clOutputFile == None):
+clOutputPath = cmdline.parseOptionWithArg("-o")
+if (clOutputPath == None):
     print("ERROR: The -o arg is required")
     clError+=1
 
@@ -101,6 +101,28 @@ print("Top level tag/attrib found")
 for child in manifest:
     print("  ", child.tag, child.attrib)
 
+# Let's make sure the required fields are found
+# The <name></name> tag is required
+if (manifest.find("name") == None):
+    print("ERROR: top level tag <name></name> not found")
+    exit(1)
+else:
+    # Stash away the name for easy access
+    name = manifest.find("name").text
+
+# The <size></size> tag is required
+if (manifest.find("size") == None):
+    print("ERROR: top level tag <size></size> not found")
+    exit(1)
+
+# At least one <record></record> tag is required
+if (manifest.find("record") == None):
+    print("ERROR: At least one top level tag <record></record> not found")
+    exit(1)
+
+# Read thru the record tags now and look for 1 of two cases
+# A pointer to another file containing the record info to read in
+# The actual record info in the file
 
 
 #print("++++++++++++++++")
@@ -112,8 +134,8 @@ print("|||||||||||||||||||||||||||")
 for desc in manifest.iter('kwdesc'):
     print(desc.tag, desc.attrib, desc.text)
 
-if (clOutputFile != None):
+if (clOutputPath != None):
     tree = ET.ElementTree(manifest)
-    tree.write("output.tvpd", encoding="utf-8", xml_declaration=True)
+    tree.write(clOutputPath + "/" + name + ".tvpd", encoding="utf-8", xml_declaration=True)
 
 
