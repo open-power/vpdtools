@@ -22,6 +22,12 @@ def help():
     print("Optional Args")
     print("-h|--help              This help text")
 
+def error(msg):
+    print("ERROR: %s" % msg)
+
+def debug(msg):
+    print("DEBUG: %s" % msg)
+
 def merge(files):
     first = None
     for filename in files:
@@ -32,6 +38,44 @@ def merge(files):
             first.extend(data)
     if first is not None:
         return first
+
+def parseTvpd(tvpdFile, topLevel):
+    tvpdRoot = ET.parse(tvpdFile).getroot()
+
+    # Do some basic error checking of what we've read in
+
+    # Make sure the root starts with the vpd tag
+    if (tvpdRoot.tag != "vpd"):
+        print("ERROR: %s does not start with a <vpd> tag" % tvpdFile)
+        return(1, None)
+
+    # Print the top level tags from the parsing
+    print("Top level tag/attrib found")
+    for child in tvpdRoot:
+        print("  ", child.tag, child.attrib)
+
+    # Let's make sure the required fields are found
+    # Some are only required in a top level file, not when it's just an individual record file
+    # The <name></name> tag is required
+    if (topLevel == True):
+        if (tvpdRoot.find("name") == None):
+            print("ERROR: top level tag <name></name> not found")
+            return(1, None)
+
+        # The <size></size> tag is required
+        if (tvpdRoot.find("size") == None):
+            print("ERROR: top level tag <size></size> not found")
+            return(1, None)
+
+    # At least one <record></record> tag is required
+    if (tvpdRoot.find("record") == None):
+        print("ERROR: At least one top level tag <record></record> not found")
+        return(1, None)
+
+    # The file is good
+    return(0, tvpdRoot)
+
+    
 
 ############################################################
 # Main - Main - Main - Main - Main - Main - Main - Main
@@ -87,39 +131,28 @@ if (len(sys.argv) != 1):
 ################################################
 # Work with the manifest
 
-# Read in the manifest        
-manifest = ET.parse(clManifestFile).getroot()
+# Read in the manifest 
+(rc, manifest) = parseTvpd(clManifestFile, True)
+if (rc):
+    error("Error occurred reading in the manifest!")
+    exit(rc)
 
-# Do some basic error checking of what we've read in
+# Stash away some variables for use later
+name = manifest.find("name").text
 
-# Make sure the root starts with the vpd tag
-if (manifest.tag != "vpd"):
-    print("ERROR: The manifest file does not start with a <vpd> tag")
-    exit(1)
-
-# Print the top level tags from the parsing
-print("Top level tag/attrib found")
-for child in manifest:
-    print("  ", child.tag, child.attrib)
-
-# Let's make sure the required fields are found
-# The <name></name> tag is required
-if (manifest.find("name") == None):
-    print("ERROR: top level tag <name></name> not found")
-    exit(1)
-else:
-    # Stash away the name for easy access
-    name = manifest.find("name").text
-
-# The <size></size> tag is required
-if (manifest.find("size") == None):
-    print("ERROR: top level tag <size></size> not found")
-    exit(1)
-
-# At least one <record></record> tag is required
-if (manifest.find("record") == None):
-    print("ERROR: At least one top level tag <record></record> not found")
-    exit(1)
+# Look for reference files
+for record in manifest.iter("record"):
+    src = record.find("src")
+    if (src != None):
+        # We have a reference to a different file, read that in
+        (rc, recordTvpd) = parseTvpd(src.text, False)
+        if (rc):
+            error("Error occurred reading in %s" % src.text)
+            exit(rc)
+        # Now merge the main manifest with the new record
+        manifest.extend(recordTvpd)
+        manifest.remove(record)
+        #manifest = merge(manifest, recordTvpd)
 
 # Read thru the record tags now and look for 1 of two cases
 # A pointer to another file containing the record info to read in
