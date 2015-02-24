@@ -11,6 +11,7 @@ import cmdline
 import os
 import xml.etree.ElementTree as ET
 import glob
+import struct
 
 ############################################################
 # Function - Functions - Functions - Functions - Functions
@@ -124,6 +125,12 @@ if (manifest.find("record") == None):
 # A pointer to another file containing the record info to read in
 # The actual record info in the file
 
+# We need to read in/create all the records
+# Then we need to parse thru them all and make sure they are correct
+# Then loop thru again and write out the data
+# Doing this as two stages of looping so all errors can be surfaced at once instead of iteratively
+# The first pass will also allow for calculation of total record sizes to help in the creation of the VTOC during write phase.
+
 
 #print("++++++++++++++++")
 #print(ET.tostring(manifest))
@@ -134,8 +141,31 @@ print("|||||||||||||||||||||||||||")
 for desc in manifest.iter('kwdesc'):
     print(desc.tag, desc.attrib, desc.text)
 
+# Write out the full template vpd representing the data contained in our image
 if (clOutputPath != None):
     tree = ET.ElementTree(manifest)
     tree.write(clOutputPath + "/" + name + ".tvpd", encoding="utf-8", xml_declaration=True)
 
+# Write out the binary file
+if (clOutputPath != None):
+    # Open up our file to write
+    vpdFile = open(clOutputPath + "/" + name + ".vpd", "wb")
+    for record in manifest.iter("record"):
+        print("record:", record.tag, record.attrib, record.text)
+        for keyword in record.iter("keyword"):
+            print("  keyword:", keyword.tag, keyword.attrib, keyword.text)
+            print("  keyword:", keyword.find("kwdesc"))
+            
+            # Write the keyword
+            print("keyword attrib is %s" % keyword.attrib.get("name"))
+            vpdFile.write(keyword.attrib.get("name").encode())
+            # Write the length of the data
+            datavalue = keyword.find("datavalue").text
+            print("keyword length is %d" % len(datavalue))
+            datalen = len(datavalue)
+            vpdFile.write(struct.pack('B', datalen))
+            # Write the data
+            vpdFile.write(datavalue.encode())
 
+    # Done with the file
+    vpdFile.close()
