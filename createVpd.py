@@ -10,7 +10,6 @@ sys.path.insert(0,"pymod");
 import cmdline
 import os
 import xml.etree.ElementTree as ET
-import glob
 import struct
 
 ############################################################
@@ -22,11 +21,18 @@ def help():
     print("Optional Args")
     print("-h|--help              This help text")
 
+# Common function for error printing
 def error(msg):
     print("ERROR: %s" % msg)
 
+# Common function for debug printing
 def debug(msg):
     print("DEBUG: %s" % msg)
+
+# Write out the resultant tvpd xml file
+def writeTvpd(manifest, outputFile):
+    tree = ET.ElementTree(manifest)
+    tree.write(outputFile, encoding="utf-8", xml_declaration=True)
 
 def parseTvpd(tvpdFile, topLevel):
     tvpdRoot = ET.parse(tvpdFile).getroot()
@@ -39,9 +45,10 @@ def parseTvpd(tvpdFile, topLevel):
         return(1, None)
 
     # Print the top level tags from the parsing
-    print("Top level tag/attrib found")
-    for child in tvpdRoot:
-        print("  ", child.tag, child.attrib)
+    if (clDebug):
+        debug("Top level tag/attrib found")
+        for child in tvpdRoot:
+            debug("  %s %s" % (child.tag, child.attrib))
 
     # Let's make sure the required fields are found
     # Some are only required in a top level file, not when it's just an individual record file
@@ -82,6 +89,8 @@ if (cmdline.parseOption("-h","--help")):
     help()
     exit(0)
 
+clDebug = cmdline.parseOption("-d", "--debug")
+
 # We can run in two different modes
 # 1) manifest mode - you pass in one xml file that gives all the required input args
 # 2) cmdline mode - you pass in multiple command line args that recreate what would be in the manifest
@@ -120,6 +129,7 @@ if (len(sys.argv) != 1):
 ################################################
 # Work with the manifest
 
+print("==== Stage 1: Loading manifest file")
 # Read in the manifest 
 (rc, manifest) = parseTvpd(clManifestFile, True)
 if (rc):
@@ -145,18 +155,31 @@ for record in manifest.iter("record"):
             error("Error occurred reading in %s" % src.text)
             exit(rc)
         # Now merge the main manifest with the new record
-        #manifest.extend(recordTvpd)
-        #manifest.remove(record)
+        # ET doesn't have a replace function.  You can do an extend/remove, but that changes the order of the file
+        # The goal is to preserve record & keyword order, so this method doesn't work
+        # The below code will insert the refrenced record from the file in the list above the current record location
+        # Then remove the original record, preserving order
+        # Since the referenced file also starts with <vpd> tag, you need to get one level down and find the start of the record element, hence the find
         subRecord = recordTvpd.find("record");
         manifest.insert(list(manifest).index(record), subRecord)
         manifest.remove(record)
 
+print("==== Stage 2: Verifying manifest syntax")
 # Now read thru our expanded tvpd and verify/error check syntax
 errorsFound = 0
+# Keep a dictionary of the record names we come across, will let us find duplicates
+recordNames = dict()
 # Loop thru our records and then thru the keywords in each record
 for record in manifest.iter("record"):
     # Pull the record name out for use throughout
     recordName = record.attrib.get("name")
+    
+    if (recordName in recordNames):
+        error("The record \"%s\" has previously been defined in the tvpd" % recordName)
+        errorsFound+=1
+    else:
+        recordNames[recordName] = 1
+
     # Make sure the name is 4 charaters long
     if (len(recordName) != 4):
         error("The record name entry \"%s\" is not 4 characters long" % record.attrib.get("name"))
@@ -196,30 +219,33 @@ for record in manifest.iter("record"):
                 error("Required tag \"<%s>\" was not found in keyword %s in record %s" % (kw, keywordName, recordName))
                 errorsFound+=1
 
-
+        # Now we know the basics of the template are correct, now do more indepth checking of length, etc..
+        # A check to make sure the RT keyword kwvalue matches the name of the record we are in
+        if ((keywordName == "RT") and (recordName != kwvalue)):
+            error("The value of the RT keyword \"%s\" does not match the record name \"%s\"" % (kwvalue, recordName))
+            errorsFound+=1
 
 if (errorsFound):
     error("%d error%s found in the tvpd description.  Please review the above errors and correct them." % (errorsFound, "s" if (errorsFound > 1) else ""))
+    tvpdFileName = clOutputPath + "/" + name + "-err.tvpd"
+    writeTvpd(manifest, tvpdFileName)
+    print("Wrote tvpd file: %s" % tvpdFileName)
     exit(errorsFound)
 
-#print("++++++++++++++++")
-#print(ET.tostring(manifest))
-#print("++++++++++++++++")
-
-print("|||||||||||||||||||||||||||")
-
+print("==== Stage 3: Writing files")
+tvpdFileName = clOutputPath + "/" + name + ".tvpd"
+vpdFileName = clOutputPath + "/" + name + ".vpd"
 for desc in manifest.iter('kwdesc'):
     print(desc.tag, desc.attrib, desc.text)
 
 # Write out the full template vpd representing the data contained in our image
-if (clOutputPath != None):
-    tree = ET.ElementTree(manifest)
-    tree.write(clOutputPath + "/" + name + ".tvpd", encoding="utf-8", xml_declaration=True)
+writeTvpd(manifest, tvpdFileName)
+print("  Wrote tvpd file: %s" % tvpdFileName)
 
 # Write out the binary file
 if (clOutputPath != None):
     # Open up our file to write
-    vpdFile = open(clOutputPath + "/" + name + ".vpd", "wb")
+    vpdFile = open(vpdFileName, "wb")
     for record in manifest.iter("record"):
         print("record:", record.tag, record.attrib, record.text)
         for keyword in record.iter("keyword"):
@@ -239,3 +265,5 @@ if (clOutputPath != None):
 
     # Done with the file
     vpdFile.close()
+print("  Wrote vpd file: %s" % vpdFileName)
+
