@@ -28,17 +28,6 @@ def error(msg):
 def debug(msg):
     print("DEBUG: %s" % msg)
 
-def merge(files):
-    first = None
-    for filename in files:
-        data = ET.parse(filename).getroot()
-        if first is None:
-            first = data
-        else:
-            first.extend(data)
-    if first is not None:
-        return first
-
 def parseTvpd(tvpdFile, topLevel):
     tvpdRoot = ET.parse(tvpdFile).getroot()
 
@@ -162,6 +151,57 @@ for record in manifest.iter("record"):
         manifest.insert(list(manifest).index(record), subRecord)
         manifest.remove(record)
 
+# Now read thru our expanded tvpd and verify/error check syntax
+errorsFound = 0
+# Loop thru our records and then thru the keywords in each record
+for record in manifest.iter("record"):
+    # Pull the record name out for use throughout
+    recordName = record.attrib.get("name")
+    # Make sure the name is 4 charaters long
+    if (len(recordName) != 4):
+        error("The record name entry \"%s\" is not 4 characters long" % record.attrib.get("name"))
+        errorsFound+=1
+
+    # Loop through the keywords and verify them
+    for keyword in record.iter("keyword"):
+        # Pull the keyword name out for use throughout
+        keywordName = keyword.attrib.get("name")
+
+        # Setup a dictionary of the supported tags
+        # We'll then loop through all the tags found in this keyword and check for both required and extra ones
+        kwTags = {"keyword" : False, "kwdesc" : False, "kwtype" : False, "kwlen" : False, "kwvalue" : False}
+
+        for kw in keyword.iter():
+            if kw.tag in kwTags:
+                # Mark that we found a required tag
+                kwTags[kw.tag] = True
+                # Save the values we'll need into variables for ease of use
+                if (kw.tag == "kwtype"):
+                    kwtype = kw.text
+
+                if (kw.tag == "kwlen"):
+                    kwlen = kw.text
+
+                if (kw.tag == "kwvalue"):
+                    kwvalue = kw.text
+
+            else:
+                # Flag that we found an unsupported tag.  This may help catch typos, etc..
+                error("The unsupported tag \"<%s>\" was found in keyword %s in record %s" % (kw.tag, keywordName, recordName))
+                errorsFound+=1
+                
+        # Make sure all the required kwTags were found
+        for kw in kwTags:
+            if (kwTags[kw] == False):
+                error("Required tag \"<%s>\" was not found in keyword %s in record %s" % (kw, keywordName, recordName))
+                errorsFound+=1
+
+
+
+if (errorsFound):
+    error("%d error%s found in the tvpd description.  Please review the above errors and correct them." % (errorsFound, "s" if (errorsFound > 1) else ""))
+    exit(errorsFound)
+
 #print("++++++++++++++++")
 #print(ET.tostring(manifest))
 #print("++++++++++++++++")
@@ -184,13 +224,13 @@ if (clOutputPath != None):
         print("record:", record.tag, record.attrib, record.text)
         for keyword in record.iter("keyword"):
             print("  keyword:", keyword.tag, keyword.attrib, keyword.text)
-            print("  keyword:", keyword.find("kwdesc"))
+            print("  keyword:", keyword.find("kwdesc").text)
             
             # Write the keyword
             print("keyword attrib is %s" % keyword.attrib.get("name"))
             vpdFile.write(keyword.attrib.get("name").encode())
             # Write the length of the data
-            datavalue = keyword.find("datavalue").text
+            datavalue = keyword.find("kwvalue").text
             print("keyword length is %d" % len(datavalue))
             datalen = len(datavalue)
             vpdFile.write(struct.pack('B', datalen))
