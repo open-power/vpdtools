@@ -46,7 +46,7 @@ def parseTvpd(tvpdFile, topLevel):
 
     # Make sure the root starts with the vpd tag
     if (tvpdRoot.tag != "vpd"):
-        print("ERROR: %s does not start with a <vpd> tag" % tvpdFile)
+        error("%s does not start with a <vpd> tag" % tvpdFile)
         return(1, None)
 
     # Print the top level tags from the parsing
@@ -59,17 +59,17 @@ def parseTvpd(tvpdFile, topLevel):
     # The <name></name> tag is required
     if (topLevel == True):
         if (tvpdRoot.find("name") == None):
-            print("ERROR: top level tag <name></name> not found")
+            error("top level tag <name></name> not found")
             return(1, None)
 
         # The <size></size> tag is required
         if (tvpdRoot.find("size") == None):
-            print("ERROR: top level tag <size></size> not found")
+            error("top level tag <size></size> not found")
             return(1, None)
 
     # At least one <record></record> tag is required
     if (tvpdRoot.find("record") == None):
-        print("ERROR: At least one top level tag <record></record> not found")
+        error("At least one top level tag <record></record> not found")
         return(1, None)
 
     # The file is good
@@ -103,28 +103,28 @@ if (cmdline.parseOption("-h","--help")):
 # Get the manifest file and get this party started
 clManifestFile = cmdline.parseOptionWithArg("-m", "--manifest")
 if (clManifestFile == None):
-    print("ERROR: The -m arg is required!")
+    error("The -m arg is required!")
     clError+=1
 else:
     # Make sure the file exists
     if (os.path.exists(clManifestFile) != True):
-        print("ERROR: The manifest file given does not exist")
+        error("The manifest file given does not exist")
         clError+=1
 
 # Look for output files
 clOutputPath = cmdline.parseOptionWithArg("-o")
 if (clOutputPath == None):
-    print("ERROR: The -o arg is required")
+    error("The -o arg is required")
     clError+=1
 
 # Error check the command line
 if (clError):
-    print("ERROR: Missing/incorrect cmdline args!  Please review the output above to determine which ones!")
+    error("Missing/incorrect cmdline args!  Please review the output above to determine which ones!")
     exit(clError)
 
 # All cmdline args should be processed, so if any left throw an error
 if (len(sys.argv) != 1):
-    print("ERROR: Extra cmdline args detected - %s" % (sys.argv[1:])) # [1:] don't inclue script name in the list
+    error("Extra cmdline args detected - %s" % (sys.argv[1:])) # [1:] don't inclue script name in the list
     exit(len(sys.argv))
 
 
@@ -140,6 +140,12 @@ if (rc):
 # Stash away some variables for use later
 name = manifest.find("name").text
 
+# We need to read in/create all the records
+# Then we need to parse thru them all and make sure they are correct
+# Then loop thru again and write out the data
+# Doing this as two stages of looping so all errors can be surfaced at once instead of iteratively
+# The first pass will also allow for calculation of total record sizes to help in the creation of the VTOC during write phase.
+
 # Look for reference files
 for record in manifest.iter("record"):
     src = record.find("src")
@@ -150,20 +156,11 @@ for record in manifest.iter("record"):
             error("Error occurred reading in %s" % src.text)
             exit(rc)
         # Now merge the main manifest with the new record
-        manifest.extend(recordTvpd)
+        #manifest.extend(recordTvpd)
+        #manifest.remove(record)
+        subRecord = recordTvpd.find("record");
+        manifest.insert(list(manifest).index(record), subRecord)
         manifest.remove(record)
-        #manifest = merge(manifest, recordTvpd)
-
-# Read thru the record tags now and look for 1 of two cases
-# A pointer to another file containing the record info to read in
-# The actual record info in the file
-
-# We need to read in/create all the records
-# Then we need to parse thru them all and make sure they are correct
-# Then loop thru again and write out the data
-# Doing this as two stages of looping so all errors can be surfaced at once instead of iteratively
-# The first pass will also allow for calculation of total record sizes to help in the creation of the VTOC during write phase.
-
 
 #print("++++++++++++++++")
 #print(ET.tostring(manifest))
