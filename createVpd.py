@@ -34,11 +34,12 @@ def writeTvpd(manifest, outputFile):
     tree = ET.ElementTree(manifest)
     tree.write(outputFile, encoding="utf-8", xml_declaration=True)
 
+# Parses a tvpd file using ET and then checks to ensure some basic required fields are present
 def parseTvpd(tvpdFile, topLevel):
+    # Read in the file
     tvpdRoot = ET.parse(tvpdFile).getroot()
 
     # Do some basic error checking of what we've read in
-
     # Make sure the root starts with the vpd tag
     if (tvpdRoot.tag != "vpd"):
         error("%s does not start with a <vpd> tag" % tvpdFile)
@@ -93,10 +94,8 @@ clDebug = cmdline.parseOption("-d", "--debug")
 
 # We can run in two different modes
 # 1) manifest mode - you pass in one xml file that gives all the required input args
-# 2) cmdline mode - you pass in multiple command line args that recreate what would be in the manifest
-# Forr now let's get manifest mode working since that will be the easiest
-
-
+# 2) cmdline mode - you pass in multiple command line args that recreate what would be in the manifest - might not be needed
+# For now let's get manifest mode working since that will be the easiest
 
 # Get the manifest file and get this party started
 clManifestFile = cmdline.parseOptionWithArg("-m", "--manifest")
@@ -253,27 +252,26 @@ writeTvpd(manifest, tvpdFileName)
 print("  Wrote tvpd file: %s" % tvpdFileName)
 
 # Write out the binary file
-if (clOutputPath != None):
-    # Open up our file to write
-    vpdFile = open(vpdFileName, "wb")
-    for record in manifest.iter("record"):
-        print("record:", record.tag, record.attrib, record.text)
-        for keyword in record.iter("keyword"):
-            print("  keyword:", keyword.tag, keyword.attrib, keyword.text)
-            print("  keyword:", keyword.find("kwdesc").text)
+# Open up our file to write
+vpdFile = open(vpdFileName, "wb")
+for record in manifest.iter("record"):
+    print("record:", record.tag, record.attrib, record.text)
+    for keyword in record.iter("keyword"):
+        print("  keyword:", keyword.tag, keyword.attrib, keyword.text)
+        print("  keyword:", keyword.find("kwdesc").text)
             
-            # Write the keyword
-            print("keyword attrib is %s" % keyword.attrib.get("name"))
-            vpdFile.write(keyword.attrib.get("name").encode())
-            # Write the length of the data
-            datavalue = keyword.find("kwvalue").text
-            print("keyword length is %d" % len(datavalue))
-            datalen = len(datavalue)
-            vpdFile.write(struct.pack('B', datalen))
-            # Write the data
-            vpdFile.write(datavalue.encode())
+        # Write the keyword
+        print("keyword attrib is %s" % keyword.attrib.get("name"))
+        vpdFile.write(keyword.attrib.get("name").encode())
+        # Write the length of the data
+        datavalue = keyword.find("kwvalue").text
+        print("keyword length is %d" % len(datavalue))
+        datalen = len(datavalue)
+        vpdFile.write(struct.pack('B', datalen))
+        # Write the data
+        vpdFile.write(datavalue.encode())
 
-    # Done with the file
-    vpdFile.close()
+# Done with the file
+vpdFile.close()
 print("  Wrote vpd file: %s" % vpdFileName)
 
