@@ -3,14 +3,27 @@
   <name>birch</name>
   <size>16kb</size>
   <record name="VINI">
-    <src></src>
-  </record>
-  <record name="VINI">
     <rdesc>The VINI record</rdesc>
     <keyword name="RT">
-      <kdesc>The Record Type keyword</kdesc>
-      <datatype>ascii</datatype>
-      <datavalue>VINI</datavalue>
+      <kwdesc>The Record Type keyword</kwdesc>
+      <kwtype>ascii</kwtype>
+      <kwlen>4</kwlen>
+      <kwvalue>VINI</kwvalue>
+    </keyword>
+    <keyword name="BS">
+      <kwdesc>The Bull Shit keyword</kwdesc>
+      <kwtype>ascii</kwtype>
+      <kwlen>40</kwlen>
+      <kwvalue>This data is BS</kwvalue>
+    </keyword>
+  </record>
+  <record name="VSMC">
+    <rdesc>The VSMC record</rdesc>
+    <keyword name="RT">
+      <kwdesc>The Record Type keyword</kwdesc>
+      <kwtype>ascii</kwtype>
+      <kwlen>4</kwlen>
+      <kwvalue>VSMC</kwvalue>
     </keyword>
   </record>
 </vpd>
