@@ -225,6 +225,16 @@ for record in manifest.iter("record"):
             error("The value of the RT keyword \"%s\" does not match the record name \"%s\"" % (kwvalue, recordName))
             errorsFound+=1
 
+        # Verify that the data isn't longer than the length given
+        # Future checks could include making sure hex data is hex
+        if (kwtype.lower() == "ascii"):
+            if (len(kwvalue) > int(kwlen)):
+                error("The length of the value is longer than the given <kwlen> for keyword %s in record %s" % (keywordName, recordName))
+                errorsFound+=1
+        else:
+            error("Unknown keyword type \"%s\" given for keyword %s in record %s" % (kwtype, keywordName, recordName))
+            errorsFound+=1
+
 if (errorsFound):
     error("%d error%s found in the tvpd description.  Please review the above errors and correct them." % (errorsFound, "s" if (errorsFound > 1) else ""))
     tvpdFileName = clOutputPath + "/" + name + "-err.tvpd"
