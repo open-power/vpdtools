@@ -202,7 +202,7 @@ for record in manifest.iter("record"):
                     kwtype = kw.text
 
                 if (kw.tag == "kwlen"):
-                    kwlen = kw.text
+                    kwlen = int(kw.text)
 
                 if (kw.tag == "kwvalue"):
                     kwvalue = kw.text
@@ -223,6 +223,17 @@ for record in manifest.iter("record"):
         if ((keywordName == "RT") and (recordName != kwvalue)):
             error("The value of the RT keyword \"%s\" does not match the record name \"%s\"" % (kwvalue, recordName))
             errorsFound+=1
+
+        # Check that the length specified isn't longer than the keyword supports
+        # Keywords that start with # are 2 bytes, others are 1 byte
+        if (keywordName[0] == "#"):
+            if (kwlen >= 65535):
+                error("The specified length %d is bigger than the max length 65535 for keyword %s in record %s" % (kwlen, keywordName, recordName))
+                errorsFound+=1
+        else:
+            if (kwlen >= 255):
+                error("The specified length %d is bigger than the max length 255 for keyword %s in record %s" % (kwlen, keywordName, recordName))
+                errorsFound+=1
 
         # Verify that the data isn't longer than the length given
         # Future checks could include making sure hex data is hex
