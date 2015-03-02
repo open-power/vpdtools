@@ -237,12 +237,11 @@ for record in manifest.iter("record"):
         # Check that the length specified isn't longer than the keyword supports
         # Keywords that start with # are 2 bytes, others are 1 byte
         if (keywordName[0] == "#"):
-            if (kwlen >= 65535):
-                error("The specified length %d is bigger than the max length 65535 for keyword %s in record %s" % (kwlen, keywordName, recordName))
-                errorsFound+=1
+            maxlen = 65535
         else:
-            if (kwlen >= 255):
-                error("The specified length %d is bigger than the max length 255 for keyword %s in record %s" % (kwlen, keywordName, recordName))
+            maxlen = 255
+        if (kwlen >= maxlen):
+                error("The specified length %d is bigger than the max length %d for keyword %s in record %s" % (kwlen, maxlen, keywordName, recordName))
                 errorsFound+=1
 
         # --------
