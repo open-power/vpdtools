@@ -11,6 +11,7 @@ import cmdline
 import os
 import xml.etree.ElementTree as ET
 import struct
+import re
 
 ############################################################
 # Function - Functions - Functions - Functions - Functions
@@ -173,26 +174,31 @@ for record in manifest.iter("record"):
     # Pull the record name out for use throughout
     recordName = record.attrib.get("name")
     
+    # --------
+    # Make sure we aren't finding a record we haven't already seen
     if (recordName in recordNames):
         error("The record \"%s\" has previously been defined in the tvpd" % recordName)
         errorsFound+=1
     else:
         recordNames[recordName] = 1
 
-    # Make sure the name is 4 charaters long
+    # --------
+    # Make sure the record name is 4 charaters long
     if (len(recordName) != 4):
         error("The record name entry \"%s\" is not 4 characters long" % record.attrib.get("name"))
         errorsFound+=1
 
+    # --------
     # Loop through the keywords and verify them
     for keyword in record.iter("keyword"):
         # Pull the keyword name out for use throughout
         keywordName = keyword.attrib.get("name")
 
         # Setup a dictionary of the supported tags
-        # We'll then loop through all the tags found in this keyword and check for both required and extra ones
         kwTags = {"keyword" : False, "kwdesc" : False, "kwtype" : False, "kwlen" : False, "kwvalue" : False}
 
+        # --------
+        # We'll loop through all the tags found in this keyword and check for both required and extra ones
         for kw in keyword.iter():
             if kw.tag in kwTags:
                 # Mark that we found a required tag
@@ -200,6 +206,7 @@ for record in manifest.iter("record"):
                 # Save the values we'll need into variables for ease of use
                 if (kw.tag == "kwtype"):
                     kwtype = kw.text
+                    kwtype = kwtype.lower()
 
                 if (kw.tag == "kwlen"):
                     kwlen = int(kw.text)
@@ -212,18 +219,21 @@ for record in manifest.iter("record"):
                 error("The unsupported tag \"<%s>\" was found in keyword %s in record %s" % (kw.tag, keywordName, recordName))
                 errorsFound+=1
                 
+        # --------
         # Make sure all the required kwTags were found
         for kw in kwTags:
             if (kwTags[kw] == False):
                 error("Required tag \"<%s>\" was not found in keyword %s in record %s" % (kw, keywordName, recordName))
                 errorsFound+=1
 
+        # --------
         # Now we know the basics of the template are correct, now do more indepth checking of length, etc..
         # A check to make sure the RT keyword kwvalue matches the name of the record we are in
         if ((keywordName == "RT") and (recordName != kwvalue)):
             error("The value of the RT keyword \"%s\" does not match the record name \"%s\"" % (kwvalue, recordName))
             errorsFound+=1
 
+        # --------
         # Check that the length specified isn't longer than the keyword supports
         # Keywords that start with # are 2 bytes, others are 1 byte
         if (keywordName[0] == "#"):
@@ -235,10 +245,28 @@ for record in manifest.iter("record"):
                 error("The specified length %d is bigger than the max length 255 for keyword %s in record %s" % (kwlen, keywordName, recordName))
                 errorsFound+=1
 
+        # --------
+        # If the input type is hex, make sure the input data is hex only
+        if (kwtype == "hex"):
+            # Remove white space from the kwvalue for now and future checks
+            kwvalue = kwvalue.replace(" ","")
+            kwvalue = kwvalue.replace("\n","")
+            # Now look to see if there are any characters other than 0-9 & a-f
+            match = re.search("([g-zG-Z]+)", kwvalue)
+            if (match):
+                error("A non hex character \"%s\" was found at %s in the kwvalue for keyword %s in record %s" % (match.group(), match.span(), keywordName, recordName))
+                errorsFound+=1
+
+        # --------
         # Verify that the data isn't longer than the length given
         # Future checks could include making sure hex data is hex
-        if (kwtype.lower() == "ascii"):
-            if (len(kwvalue) > int(kwlen)):
+        if (kwtype == "ascii"):
+            if (len(kwvalue) > kwlen):
+                error("The length of the value is longer than the given <kwlen> for keyword %s in record %s" % (keywordName, recordName))
+                errorsFound+=1
+        elif (kwtype == "hex"):
+            # Convert hex nibbles to bytes for len compare
+            if ((len(kwvalue)/2) > kwlen):
                 error("The length of the value is longer than the given <kwlen> for keyword %s in record %s" % (keywordName, recordName))
                 errorsFound+=1
         else:
