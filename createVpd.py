@@ -12,6 +12,7 @@ import os
 import xml.etree.ElementTree as ET
 import struct
 import re
+import binascii
 
 ############################################################
 # Function - Functions - Functions - Functions - Functions
@@ -73,7 +74,50 @@ def parseTvpd(tvpdFile, topLevel):
     # The file is good
     return(0, tvpdRoot)
 
-    
+def writeDataToVPD(vpdFile, data, offset = None):
+    rc = 0
+
+    # If the user gave an offset, save the current offset and seek to the new one
+    entryOffset = None
+    if (offset != None):
+        entryOffset = vpdFile.tellg()
+        vpdFile.seekg(offset)
+
+    # Write the data
+    vpdFile.write(data)
+
+    # Restore the offset to original location if given
+    if (offset != None):
+        vpdFile.seekg(entryOffset)
+
+    return rc
+
+def writeKeywordToVPD(vpdFile, keyword, length, data, format):
+    rc = 0
+
+    # Write the keyword
+    vpdFile.write(keyword.encode())
+    # Write the length
+    if (keyword[0] == "#"):
+        vpdFile.write(struct.pack("<H", length))
+    else:
+        vpdFile.write(struct.pack("<B", length))
+    # Write the data
+    if (format == "ascii"):
+        # Pad if necessary
+        data = data.ljust(length, '\0')
+        # Write it
+        vpdFile.write(data.encode())
+    elif (format == "hex"):
+        # Pad if necessary (* 2 to convert nibble data to byte length)
+        data = data.ljust((length * 2), '0')
+        # Write it
+        vpdFile.write(binascii.a2b_hex(data))
+    else:
+        error("Unknown format type %s passed into writeKeywordToVPD" % format)
+        return 1
+
+    return 0
 
 ############################################################
 # Main - Main - Main - Main - Main - Main - Main - Main
@@ -195,7 +239,7 @@ for record in manifest.iter("record"):
         keywordName = keyword.attrib.get("name")
 
         # Setup a dictionary of the supported tags
-        kwTags = {"keyword" : False, "kwdesc" : False, "kwtype" : False, "kwlen" : False, "kwvalue" : False}
+        kwTags = {"keyword" : False, "kwdesc" : False, "kwformat" : False, "kwlen" : False, "kwvalue" : False}
 
         # --------
         # We'll loop through all the tags found in this keyword and check for both required and extra ones
@@ -204,9 +248,9 @@ for record in manifest.iter("record"):
                 # Mark that we found a required tag
                 kwTags[kw.tag] = True
                 # Save the values we'll need into variables for ease of use
-                if (kw.tag == "kwtype"):
-                    kwtype = kw.text
-                    kwtype = kwtype.lower()
+                if (kw.tag == "kwformat"):
+                    kwformat = kw.text
+                    kwformat = kwformat.lower()
 
                 if (kw.tag == "kwlen"):
                     kwlen = int(kw.text)
@@ -245,8 +289,8 @@ for record in manifest.iter("record"):
                 errorsFound+=1
 
         # --------
-        # If the input type is hex, make sure the input data is hex only
-        if (kwtype == "hex"):
+        # If the input format is hex, make sure the input data is hex only
+        if (kwformat == "hex"):
             # Remove white space from the kwvalue for now and future checks
             kwvalue = kwvalue.replace(" ","")
             kwvalue = kwvalue.replace("\n","")
@@ -259,17 +303,17 @@ for record in manifest.iter("record"):
         # --------
         # Verify that the data isn't longer than the length given
         # Future checks could include making sure hex data is hex
-        if (kwtype == "ascii"):
+        if (kwformat == "ascii"):
             if (len(kwvalue) > kwlen):
                 error("The length of the value is longer than the given <kwlen> for keyword %s in record %s" % (keywordName, recordName))
                 errorsFound+=1
-        elif (kwtype == "hex"):
+        elif (kwformat == "hex"):
             # Convert hex nibbles to bytes for len compare
             if ((len(kwvalue)/2) > kwlen):
                 error("The length of the value is longer than the given <kwlen> for keyword %s in record %s" % (keywordName, recordName))
                 errorsFound+=1
         else:
-            error("Unknown keyword type \"%s\" given for keyword %s in record %s" % (kwtype, keywordName, recordName))
+            error("Unknown keyword format \"%s\" given for keyword %s in record %s" % (kwformat, keywordName, recordName))
             errorsFound+=1
 
 if (errorsFound):
@@ -292,6 +336,43 @@ print("  Wrote tvpd file: %s" % tvpdFileName)
 # Write out the binary file
 # Open up our file to write
 vpdFile = open(vpdFileName, "wb")
+
+# Now to create the VPD image
+# This could be done by starting at offset 0 and just writing all the needed data to the file in order
+# However, The VTOC record depends upon knowing the offsets of all the other records - which haven't been created
+# We could write the VTOC with place holder data, then come back and update those fields later
+# That would involve 1) creating a tracking variables for all 5 required offsets for each record and then circling back to update the VTOC
+#
+# Instead, I purpose creating the images for each record first and storing them in memory
+# Then we can go through and create the full VPD image in sequence and be able to write the VTOC properly the first time
+
+# Write the ECC block
+writeDataToVPD(vpdFile, binascii.a2b_hex("0000000000000000000000"))
+# Write the Large Resource Tag
+writeDataToVPD(vpdFile, struct.pack('>B', 0x84))
+# Write the Record Length
+writeDataToVPD(vpdFile, struct.pack('<H', 40))
+# Write the RT keyword
+writeKeywordToVPD(vpdFile, "RT", 4, "VHDR", "ascii")
+# Write the VD keyword
+writeKeywordToVPD(vpdFile, "VD", 2, "01", "hex")
+# Write the PT keyword
+writeKeywordToVPD(vpdFile, "PT", 14, "VHDR", "ascii")
+
+record = bytearray("hi".encode()) + bytearray(" bye".encode())
+record += bytearray("this might word".encode())
+record += binascii.a2b_hex("0123")
+
+print(record)
+
+
+exit(0)
+#writeVPDData(vpdFile, data, offset = None)
+
+# Write the keyword
+#writeKeyword(vpdFile, keyword, length, data, format)
+
+# Now write out all the records
 for record in manifest.iter("record"):
     print("record:", record.tag, record.attrib, record.text)
     for keyword in record.iter("keyword"):
