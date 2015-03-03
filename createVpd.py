@@ -119,6 +119,39 @@ def writeKeywordToVPD(vpdFile, keyword, length, data, format):
 
     return 0
 
+def packKeyword(keyword, length, data, format):
+    print("keyword: ", keyword)
+    # We'll return a bytearray of the packed data
+    keywordPack = bytearray()
+
+    # Fill in the keyword
+    keywordPack += bytearray(keyword.encode())
+    
+    # Write the length
+    if (keyword[0] == "#"):
+        keywordPack += struct.pack("<H", length)
+    else:
+        keywordPack += struct.pack("<B", length)
+
+    # Write the data
+    if (format == "ascii"):
+        # Pad if necessary
+        data = data.ljust(length, '\0')
+        # Write it
+        keywordPack += bytearray(data.encode())
+    elif (format == "hex"):
+        # Remove any carriage returns
+        data = data.replace("\n","")
+        # Pad if necessary (* 2 to convert nibble data to byte length)
+        data = data.ljust((length * 2), '0')
+        # Write it
+        keywordPack += bytearray.fromhex(data)
+    else:
+        error("Unknown format type %s passed into writeKeywordToVPD" % format)
+        return NULL
+
+    return keywordPack
+
 ############################################################
 # Main - Main - Main - Main - Main - Main - Main - Main
 ############################################################
@@ -345,6 +378,40 @@ vpdFile = open(vpdFileName, "wb")
 #
 # Instead, I purpose creating the images for each record first and storing them in memory
 # Then we can go through and create the full VPD image in sequence and be able to write the VTOC properly the first time
+recordImages = dict()
+
+for record in manifest.iter("record"):
+    recordName = record.attrib.get("name")
+    recordImages[recordName] = bytearray()
+
+    # The large resource tag
+    recordImages[recordName] += bytearray(bytearray.fromhex("84"))
+
+    # The record length, we will come back and update this at the end
+    recordImages[recordName] += bytearray(bytearray.fromhex("0000"))
+
+    # The keywords
+    for keyword in record.iter("keyword"):
+        keywordPack = packKeyword(keyword.attrib.get("name"), int(keyword.find("kwlen").text), keyword.find("kwvalue").text, keyword.find("kwformat").text)
+        recordImages[recordName] += keywordPack
+
+    # The small resource tag
+    recordImages[recordName] += bytearray(bytearray.fromhex("78"))
+
+    # Update the record length
+    # Total length minus 4, LR(1), SR(1), Length (2)
+    recordLength = len(recordImages[recordName]) - 4
+    recordImages[recordName][1:3] = struct.pack('<H', recordLength)
+
+    print("record: ", recordName)
+    print("len: ", len(recordImages[recordName]))
+    print(recordImages[recordName])
+
+
+exit(0)
+
+record = bytearray(bytearray.fromhex("84"))
+print(record)
 
 # Write the ECC block
 writeDataToVPD(vpdFile, binascii.a2b_hex("0000000000000000000000"))
@@ -366,7 +433,6 @@ record += binascii.a2b_hex("0123")
 print(record)
 
 
-exit(0)
 #writeVPDData(vpdFile, data, offset = None)
 
 # Write the keyword
