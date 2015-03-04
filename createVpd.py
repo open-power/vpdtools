@@ -15,6 +15,27 @@ import re
 import binascii
 
 ############################################################
+# Classes - Classes - Classes - Classes - Classes - Classes
+############################################################
+class RecordInfo:
+    """Stores info about each record"""
+    def __init__(self):
+        # The packed record in memory
+        self.record = bytearray()
+        # The packed ecc in memory
+        self.ecc = bytearray()
+        # The name of the record where the toc entry is located
+        self.tocName = None
+        # The location of the Record Offset in toc record
+        self.tocRecordOffset = None
+        # The location of the Record Length in toc record
+        self.tocRecordLength = None
+        # The location of the ECC Offset in toc record
+        self.tocEccOffset = None
+        # The location of the ECC Length in toc record
+        self.tocEccLength = None
+
+############################################################
 # Function - Functions - Functions - Functions - Functions
 ############################################################
 def help():
@@ -80,7 +101,10 @@ def writeDataToVPD(vpdFile, data, offset = None):
     # If the user gave an offset, save the current offset and seek to the new one
     entryOffset = None
     if (offset != None):
-        entryOffset = vpdFile.tellg()
+        if (vpdFile.eof()):
+            entryOffset = os.SEEK_END
+        else:
+            entryOffset = vpdFile.tell()
         vpdFile.seekg(offset)
 
     # Write the data
@@ -363,107 +387,155 @@ vpdFile = open(vpdFileName, "wb")
 # Instead, I purpose creating the images for each record first and storing them in memory
 # Then we can go through and create the full VPD image in sequence and be able to write the VTOC properly the first time
 recordImages = dict()
+tocOffset = dict()
+imageLength = 0
+
+recordName = "VHDR"
+recordImages[recordName] = RecordInfo()
+
+# Create the ECC block
+recordImages[recordName].record += bytearray(bytearray.fromhex("0000000000000000000000"))
+# Create the Large Resource Tag
+recordImages[recordName].record += bytearray(bytearray.fromhex("84"))
+# Create the Record Length
+recordImages[recordName].record += struct.pack('<H', 40)
+# Create the RT keyword
+recordImages[recordName].record += packKeyword("RT", 4, "VHDR", "ascii")
+# Create the VD keyword
+recordImages[recordName].record += packKeyword("VD", 2, "01", "hex")
+# Create the PT keyword
+# We need to create the VTOC entry in the dictionary, and then update it with where the offset fields are
+recordImages["VTOC"] = RecordInfo()
+recordImages["VTOC"].tocName = "VHDR"
+tocOffset = imageLength + len(recordImages[recordName].record) + 3 # PT (2) + Length (1)
+tocOffset += 6 # Record Name (4) + Record Type (2)
+recordImages["VTOC"].tocRecordOffset = tocOffset
+tocOffset += 2
+recordImages["VTOC"].tocRecordLength = tocOffset
+tocOffset += 2
+recordImages["VTOC"].tocEccOffset = tocOffset
+tocOffset += 2
+recordImages["VTOC"].tocEccLength = tocOffset
+tocOffset += 2
+
+recordImages[recordName].record += packKeyword("PT", 14, "VTOC", "ascii")
+# Create the PF keyword
+recordImages[recordName].record += packKeyword("PF", 8, "0", "hex")
+# Create the Small Resource Tag
+recordImages[recordName].record += bytearray(bytearray.fromhex("78"))
+
+# Track our total image length
+imageLength += len(recordImages[recordName].record)
+
+
+recordName = "VTOC"
+# We are starting the next record, update the offset back in the TOC record
+tocName = recordImages[recordName].tocName
+recordImages[tocName].record[recordImages[recordName].tocRecordOffset:(recordImages[recordName].tocRecordOffset+2)] = struct.pack('>H', imageLength)
+
+# Create the Large Resource Tag
+recordImages[recordName].record += bytearray(bytearray.fromhex("84"))
+# Create the Record Length
+recordImages[recordName].record += struct.pack('<H', 40) # FIX THIS
+# Create the RT keyword
+recordImages[recordName].record += packKeyword("RT", 4, "VHDR", "ascii")
+
+# We need to create all the data that will go into the PT keyword.  We'll create a big ascii string by looping over all the records
+# We'll also calculate our offsets
+tocOffset = imageLength + len(recordImages[recordName].record) + 3 # PT (2) + Length (1)
+PTData = ""
+
+for record in manifest.iter("record"):
+    loopRecordName = record.attrib.get("name")
+    PTData += loopRecordName + "0000000000"
+
+    # We need to create the VTOC entry in the dictionary, and then update it with where the offset fields are
+    recordImages[loopRecordName] = RecordInfo()
+    recordImages[loopRecordName].tocName = "VTOC"
+    tocOffset += 6 # Record Name (4) + Record Type (2)
+    recordImages[loopRecordName].tocRecordOffset = tocOffset
+    tocOffset += 2
+    recordImages[loopRecordName].tocRecordLength = tocOffset
+    tocOffset += 2
+    recordImages[loopRecordName].tocEccOffset = tocOffset
+    tocOffset += 2
+    recordImages[loopRecordName].tocEccLength = tocOffset
+    tocOffset += 2
+
+# Create the PT keyword
+recordImages[recordName].record += packKeyword("PT", len(PTData), PTData, "ascii")
+# Create the PF keyword
+recordImages[recordName].record += packKeyword("PF", 8, "0", "hex") # FIX
+# Create the Small Resource Tag
+recordImages[recordName].record += bytearray(bytearray.fromhex("78"))
+
+# We are done with the record, update the length back in the toc
+tocName = recordImages[recordName].tocName
+recordImages[tocName].record[recordImages[recordName].tocRecordLength:(recordImages[recordName].tocRecordLength+2)] = struct.pack('>H', len(recordImages[recordName].record))
+
+# Track our total image length
+imageLength += len(recordImages[recordName].record)
 
 for record in manifest.iter("record"):
     recordName = record.attrib.get("name")
-    recordImages[recordName] = bytearray()
+
+    # We are starting the next record, update the offset back in the TOC record
+    tocName = recordImages[recordName].tocName
+    print("tocName: ", tocName)
+    print("tocRecordOffset: ", recordImages[recordName].tocRecordOffset)
+    print("imageLength: ", imageLength)
+    recordImages[tocName].record[recordImages[recordName].tocRecordOffset:(recordImages[recordName].tocRecordOffset+2)] = struct.pack('>H', imageLength)
 
     # The large resource tag
-    recordImages[recordName] += bytearray(bytearray.fromhex("84"))
+    recordImages[recordName].record += bytearray(bytearray.fromhex("84"))
 
     # The record length, we will come back and update this at the end
-    recordImages[recordName] += bytearray(bytearray.fromhex("0000"))
+    recordImages[recordName].record += bytearray(bytearray.fromhex("0000"))
 
     # The keywords
     keywordsLength = 0
     for keyword in record.iter("keyword"):
         keywordPack = packKeyword(keyword.attrib.get("name"), int(keyword.find("kwlen").text), keyword.find("kwvalue").text, keyword.find("kwformat").text)
-        recordImages[recordName] += keywordPack
+        recordImages[recordName].record += keywordPack
         keywordsLength += len(keywordPack)
 
     # Add the pad fill keyword at the end
     # It will be a minimum of 1, or fill out the size to 40 if necessary
+    # TODO - has to be divisible by 4?
     padfillSize = 40 - (keywordsLength + 3) # 3 is PF + 1 byte length
     if (padfillSize < 1):
         padfillSize = 1
 
     # Write the PF keyword
     keywordPack = packKeyword("PF", padfillSize, "0", "hex")
-    recordImages[recordName] += keywordPack
+    recordImages[recordName].record += keywordPack
 
     # The small resource tag
-    recordImages[recordName] += bytearray(bytearray.fromhex("78"))
+    recordImages[recordName].record += bytearray(bytearray.fromhex("78"))
 
     # Update the record length
     # Total length minus 4, LR(1), SR(1), Length (2)
-    recordLength = len(recordImages[recordName]) - 4
-    recordImages[recordName][1:3] = struct.pack('<H', recordLength)
+    recordLength = len(recordImages[recordName].record) - 4
+    recordImages[recordName].record[1:3] = struct.pack('<H', recordLength)
+
+    # We are done with the record, update the length back in the toc
+    tocName = recordImages[recordName].tocName
+    recordImages[tocName].record[recordImages[recordName].tocRecordLength:(recordImages[recordName].tocRecordLength+2)] = struct.pack('>H', len(recordImages[recordName].record))
+
+    # Track our total image length
+    imageLength += len(recordImages[recordName].record)
 
     print("record: ", recordName)
-    print("len: ", len(recordImages[recordName]))
-    print(recordImages[recordName])
+    print("len: ", len(recordImages[recordName].record))
+    print(recordImages[recordName].record)
 
 
-# Write the ECC block
-writeDataToVPD(vpdFile, binascii.a2b_hex("0000000000000000000000"))
-# Write the Large Resource Tag
-writeDataToVPD(vpdFile, struct.pack('>B', 0x84))
-# Write the Record Length
-writeDataToVPD(vpdFile, struct.pack('<H', 40))
-# Write the RT keyword
-writeKeywordToVPD(vpdFile, "RT", 4, "VHDR", "ascii")
-# Write the VD keyword
-writeKeywordToVPD(vpdFile, "VD", 2, "01", "hex")
-# Write the PT keyword
-writeKeywordToVPD(vpdFile, "PT", 14, "VHDR", "ascii")
-# Write the PF keyword
-writeKeywordToVPD(vpdFile, "PF", 8, "0", "hex")
-# Write the Small Resource Tag
-writeDataToVPD(vpdFile, struct.pack('>B', 0x78))
-
-# Write the Large Resource Tag
-writeDataToVPD(vpdFile, struct.pack('>B', 0x84))
-# Write the Record Length
-writeDataToVPD(vpdFile, struct.pack('<H', 40))  # FIX THIS
-# Write the RT keyword
-writeKeywordToVPD(vpdFile, "RT", 4, "VTOC", "ascii")
-# Write the PT keyword
-writeKeywordToVPD(vpdFile, "PT", 14, "VHDR", "ascii")
-# Write the PF keyword
-writeKeywordToVPD(vpdFile, "PF", 8, "0", "hex")
-# Write the Small Resource Tag
-writeDataToVPD(vpdFile, struct.pack('>B', 0x78))
+writeDataToVPD(vpdFile, recordImages["VHDR"].record)
+writeDataToVPD(vpdFile, recordImages["VTOC"].record)
 
 for record in manifest.iter("record"):
     recordName = record.attrib.get("name")
-    writeDataToVPD(vpdFile, recordImages[recordName])
-
-exit(0)
-
-# We have 
-
-#writeVPDData(vpdFile, data, offset = None)
-
-# Write the keyword
-#writeKeyword(vpdFile, keyword, length, data, format)
-
-# Now write out all the records
-for record in manifest.iter("record"):
-    print("record:", record.tag, record.attrib, record.text)
-    for keyword in record.iter("keyword"):
-        print("  keyword:", keyword.tag, keyword.attrib, keyword.text)
-        print("  keyword:", keyword.find("kwdesc").text)
-            
-        # Write the keyword
-        print("keyword attrib is %s" % keyword.attrib.get("name"))
-        vpdFile.write(keyword.attrib.get("name").encode())
-        # Write the length of the data
-        datavalue = keyword.find("kwvalue").text
-        print("keyword length is %d" % len(datavalue))
-        datalen = len(datavalue)
-        vpdFile.write(struct.pack('B', datalen))
-        # Write the data
-        vpdFile.write(datavalue.encode())
+    writeDataToVPD(vpdFile, recordImages[recordName].record)
 
 # Done with the file
 vpdFile.close()
