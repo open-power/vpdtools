@@ -95,29 +95,13 @@ def writeDataToVPD(vpdFile, data, offset = None):
 def writeKeywordToVPD(vpdFile, keyword, length, data, format):
     rc = 0
 
-    # Write the keyword
-    vpdFile.write(keyword.encode())
-    # Write the length
-    if (keyword[0] == "#"):
-        vpdFile.write(struct.pack("<H", length))
-    else:
-        vpdFile.write(struct.pack("<B", length))
-    # Write the data
-    if (format == "ascii"):
-        # Pad if necessary
-        data = data.ljust(length, '\0')
-        # Write it
-        vpdFile.write(data.encode())
-    elif (format == "hex"):
-        # Pad if necessary (* 2 to convert nibble data to byte length)
-        data = data.ljust((length * 2), '0')
-        # Write it
-        vpdFile.write(binascii.a2b_hex(data))
-    else:
-        error("Unknown format type %s passed into writeKeywordToVPD" % format)
-        return 1
+    # Create the packed data 
+    keywordPack = packKeyword(keyword, length, data, format)
 
-    return 0
+    # Write the packed data
+    writeDataToVPD(vpdFile, keywordPack)
+
+    return rc
 
 def packKeyword(keyword, length, data, format):
     print("keyword: ", keyword)
@@ -391,9 +375,21 @@ for record in manifest.iter("record"):
     recordImages[recordName] += bytearray(bytearray.fromhex("0000"))
 
     # The keywords
+    keywordsLength = 0
     for keyword in record.iter("keyword"):
         keywordPack = packKeyword(keyword.attrib.get("name"), int(keyword.find("kwlen").text), keyword.find("kwvalue").text, keyword.find("kwformat").text)
         recordImages[recordName] += keywordPack
+        keywordsLength += len(keywordPack)
+
+    # Add the pad fill keyword at the end
+    # It will be a minimum of 1, or fill out the size to 40 if necessary
+    padfillSize = 40 - (keywordsLength + 3) # 3 is PF + 1 byte length
+    if (padfillSize < 1):
+        padfillSize = 1
+
+    # Write the PF keyword
+    keywordPack = packKeyword("PF", padfillSize, "0", "hex")
+    recordImages[recordName] += keywordPack
 
     # The small resource tag
     recordImages[recordName] += bytearray(bytearray.fromhex("78"))
@@ -408,11 +404,6 @@ for record in manifest.iter("record"):
     print(recordImages[recordName])
 
 
-exit(0)
-
-record = bytearray(bytearray.fromhex("84"))
-print(record)
-
 # Write the ECC block
 writeDataToVPD(vpdFile, binascii.a2b_hex("0000000000000000000000"))
 # Write the Large Resource Tag
@@ -425,13 +416,31 @@ writeKeywordToVPD(vpdFile, "RT", 4, "VHDR", "ascii")
 writeKeywordToVPD(vpdFile, "VD", 2, "01", "hex")
 # Write the PT keyword
 writeKeywordToVPD(vpdFile, "PT", 14, "VHDR", "ascii")
+# Write the PF keyword
+writeKeywordToVPD(vpdFile, "PF", 8, "0", "hex")
+# Write the Small Resource Tag
+writeDataToVPD(vpdFile, struct.pack('>B', 0x78))
 
-record = bytearray("hi".encode()) + bytearray(" bye".encode())
-record += bytearray("this might word".encode())
-record += binascii.a2b_hex("0123")
+# Write the Large Resource Tag
+writeDataToVPD(vpdFile, struct.pack('>B', 0x84))
+# Write the Record Length
+writeDataToVPD(vpdFile, struct.pack('<H', 40))  # FIX THIS
+# Write the RT keyword
+writeKeywordToVPD(vpdFile, "RT", 4, "VTOC", "ascii")
+# Write the PT keyword
+writeKeywordToVPD(vpdFile, "PT", 14, "VHDR", "ascii")
+# Write the PF keyword
+writeKeywordToVPD(vpdFile, "PF", 8, "0", "hex")
+# Write the Small Resource Tag
+writeDataToVPD(vpdFile, struct.pack('>B', 0x78))
 
-print(record)
+for record in manifest.iter("record"):
+    recordName = record.attrib.get("name")
+    writeDataToVPD(vpdFile, recordImages[recordName])
 
+exit(0)
+
+# We have 
 
 #writeVPDData(vpdFile, data, offset = None)
 
