@@ -116,17 +116,6 @@ def writeDataToVPD(vpdFile, data, offset = None):
 
     return rc
 
-def writeKeywordToVPD(vpdFile, keyword, length, data, format):
-    rc = 0
-
-    # Create the packed data 
-    keywordPack = packKeyword(keyword, length, data, format)
-
-    # Write the packed data
-    writeDataToVPD(vpdFile, keywordPack)
-
-    return rc
-
 def packKeyword(keyword, length, data, format):
     print("keyword: ", keyword)
     # We'll return a bytearray of the packed data
@@ -155,7 +144,7 @@ def packKeyword(keyword, length, data, format):
         # Write it
         keywordPack += bytearray.fromhex(data)
     else:
-        error("Unknown format type %s passed into writeKeywordToVPD" % format)
+        error("Unknown format type %s passed into packKeyword" % format)
         return NULL
 
     return keywordPack
@@ -400,14 +389,14 @@ recordImages[recordName].record += bytearray(bytearray.fromhex("84"))
 # Create the Record Length
 recordImages[recordName].record += struct.pack('<H', 40)
 # Create the RT keyword
-recordImages[recordName].record += packKeyword("RT", 4, "VHDR", "ascii")
+recordImages[recordName].record += packKeyword("RT", 4, recordName, "ascii")
 # Create the VD keyword
 recordImages[recordName].record += packKeyword("VD", 2, "01", "hex")
 # Create the PT keyword
 # We need to create the VTOC entry in the dictionary, and then update it with where the offset fields are
 recordImages["VTOC"] = RecordInfo()
 recordImages["VTOC"].tocName = "VHDR"
-tocOffset = imageLength + len(recordImages[recordName].record) + 3 # PT (2) + Length (1)
+tocOffset = len(recordImages[recordName].record) + 3 # PT (2) + Length (1)
 tocOffset += 6 # Record Name (4) + Record Type (2)
 recordImages["VTOC"].tocRecordOffset = tocOffset
 tocOffset += 2
@@ -431,27 +420,28 @@ imageLength += len(recordImages[recordName].record)
 recordName = "VTOC"
 # We are starting the next record, update the offset back in the TOC record
 tocName = recordImages[recordName].tocName
-recordImages[tocName].record[recordImages[recordName].tocRecordOffset:(recordImages[recordName].tocRecordOffset+2)] = struct.pack('>H', imageLength)
+tocRecordOffset = recordImages[recordName].tocRecordOffset
+recordImages[tocName].record[tocRecordOffset:(tocRecordOffset + 2)] = struct.pack('>H', imageLength)
 
 # Create the Large Resource Tag
 recordImages[recordName].record += bytearray(bytearray.fromhex("84"))
 # Create the Record Length
 recordImages[recordName].record += struct.pack('<H', 40) # FIX THIS
 # Create the RT keyword
-recordImages[recordName].record += packKeyword("RT", 4, "VHDR", "ascii")
+recordImages[recordName].record += packKeyword("RT", 4, recordName, "ascii")
 
 # We need to create all the data that will go into the PT keyword.  We'll create a big ascii string by looping over all the records
 # We'll also calculate our offsets
-tocOffset = imageLength + len(recordImages[recordName].record) + 3 # PT (2) + Length (1)
+tocOffset = len(recordImages[recordName].record) + 3 # PT (2) + Length (1)
 PTData = ""
 
 for record in manifest.iter("record"):
     loopRecordName = record.attrib.get("name")
-    PTData += loopRecordName + "0000000000"
+    PTData += loopRecordName + "\0\0\0\0\0\0\0\0\0\0"
 
     # We need to create the VTOC entry in the dictionary, and then update it with where the offset fields are
     recordImages[loopRecordName] = RecordInfo()
-    recordImages[loopRecordName].tocName = "VTOC"
+    recordImages[loopRecordName].tocName = recordName
     tocOffset += 6 # Record Name (4) + Record Type (2)
     recordImages[loopRecordName].tocRecordOffset = tocOffset
     tocOffset += 2
@@ -471,7 +461,8 @@ recordImages[recordName].record += bytearray(bytearray.fromhex("78"))
 
 # We are done with the record, update the length back in the toc
 tocName = recordImages[recordName].tocName
-recordImages[tocName].record[recordImages[recordName].tocRecordLength:(recordImages[recordName].tocRecordLength+2)] = struct.pack('>H', len(recordImages[recordName].record))
+tocRecordLength = recordImages[recordName].tocRecordLength
+recordImages[tocName].record[tocRecordLength:(tocRecordLength + 2)] = struct.pack('>H', len(recordImages[recordName].record))
 
 # Track our total image length
 imageLength += len(recordImages[recordName].record)
@@ -481,10 +472,12 @@ for record in manifest.iter("record"):
 
     # We are starting the next record, update the offset back in the TOC record
     tocName = recordImages[recordName].tocName
+    tocRecordOffset = recordImages[recordName].tocRecordOffset
     print("tocName: ", tocName)
-    print("tocRecordOffset: ", recordImages[recordName].tocRecordOffset)
+    print("tocRecordOffset: ", tocRecordOffset)
     print("imageLength: ", imageLength)
-    recordImages[tocName].record[recordImages[recordName].tocRecordOffset:(recordImages[recordName].tocRecordOffset+2)] = struct.pack('>H', imageLength)
+    recordImages[tocName].record[tocRecordOffset:(tocRecordOffset + 2)] = struct.pack('>H', imageLength)
+    #recordImages[tocName].record[tocRecordOffset:(tocRecordOffset + 2)] = bytearray(bytearray.fromhex("AB0E"))
 
     # The large resource tag
     recordImages[recordName].record += bytearray(bytearray.fromhex("84"))
@@ -520,7 +513,8 @@ for record in manifest.iter("record"):
 
     # We are done with the record, update the length back in the toc
     tocName = recordImages[recordName].tocName
-    recordImages[tocName].record[recordImages[recordName].tocRecordLength:(recordImages[recordName].tocRecordLength+2)] = struct.pack('>H', len(recordImages[recordName].record))
+    tocRecordLength = recordImages[recordName].tocRecordLength
+    recordImages[tocName].record[tocRecordLength:(tocRecordLength + 2)] = struct.pack('>H', len(recordImages[recordName].record))
 
     # Track our total image length
     imageLength += len(recordImages[recordName].record)
