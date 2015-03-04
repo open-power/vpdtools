@@ -394,7 +394,6 @@ vpdFile = open(vpdFileName, "wb")
 # Instead, I purpose creating the images for each record first and storing them in memory
 # Then we can go through and create the full VPD image in sequence and be able to write the VTOC properly the first time
 recordImages = dict()
-tocOffset = dict()
 imageLength = 0
 
 recordName = "VHDR"
@@ -546,12 +545,41 @@ for record in manifest.iter("record"):
     print(recordImages[recordName].record)
 
 
+# Done creating the records, now create their ECC data
+# Not supported at present, so allocate the space, zero it out and update the TOC
+recordName = "VTOC"
+print("len: ", len(recordImages[recordName].record))
+recordImages[recordName].ecc = bytearray(("\0" * (int(len(recordImages[recordName].record) / 4))).encode())
+tocName = recordImages[recordName].tocName
+tocEccOffset = recordImages[recordName].tocEccOffset
+recordImages[tocName].record[tocEccOffset:(tocEccOffset + 2)] = struct.pack('>H', imageLength)
+tocEccLength = recordImages[recordName].tocEccLength
+recordImages[tocName].record[tocEccLength:(tocEccLength + 2)] = struct.pack('>H', len(recordImages[recordName].ecc))
+imageLength += len(recordImages[recordName].ecc)
+
+for record in manifest.iter("record"):
+    recordName = record.attrib.get("name")
+    recordImages[recordName].ecc = bytearray(("\0" * (int(len(recordImages[recordName].record) / 4))).encode())
+    tocName = recordImages[recordName].tocName
+    tocEccOffset = recordImages[recordName].tocEccOffset
+    recordImages[tocName].record[tocEccOffset:(tocEccOffset + 2)] = struct.pack('>H', imageLength)
+    tocEccLength = recordImages[recordName].tocEccLength
+    recordImages[tocName].record[tocEccLength:(tocEccLength + 2)] = struct.pack('>H', len(recordImages[recordName].ecc))
+    imageLength += len(recordImages[recordName].ecc)
+
+# Write the files
 writeDataToVPD(vpdFile, recordImages["VHDR"].record)
 writeDataToVPD(vpdFile, recordImages["VTOC"].record)
 
 for record in manifest.iter("record"):
     recordName = record.attrib.get("name")
     writeDataToVPD(vpdFile, recordImages[recordName].record)
+
+writeDataToVPD(vpdFile, recordImages["VTOC"].ecc)
+
+for record in manifest.iter("record"):
+    recordName = record.attrib.get("name")
+    writeDataToVPD(vpdFile, recordImages[recordName].ecc)
 
 # Done with the file
 vpdFile.close()
