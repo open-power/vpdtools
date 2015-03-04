@@ -149,6 +149,24 @@ def packKeyword(keyword, length, data, format):
 
     return keywordPack
 
+def calcPadFill(record):
+    
+    pfLength = 0
+
+    # The PF keyword must exist
+    # The keyword section of record must be at least 40 bytes long, padfill will be used to acheive that
+    # If over 40, it must be aligned on word boundaries
+
+    # The record passed in at this point is the keywords + 3 other bytes (LR Tag & Record Length)
+    # Those 3 bytes happen to match the length of the PF keyword and it's length
+    # So we'll just use the length of the record, but it's due to those offsetting lengths of 3
+    pfLength = 40 - len(record)
+    if (pfLength < 1):
+        # It's > 40, so now we just need to fill to nearest word
+        pfLength = (4 - (len(record) % 4))
+
+    return pfLength
+
 ############################################################
 # Main - Main - Main - Main - Main - Main - Main - Main
 ############################################################
@@ -409,6 +427,7 @@ tocOffset += 2
 
 recordImages[recordName].record += packKeyword("PT", 14, "VTOC", "ascii")
 # Create the PF keyword
+# This PF is fixed at 8 since the VHDR is always 44 long.
 recordImages[recordName].record += packKeyword("PF", 8, "0", "hex")
 # Create the Small Resource Tag
 recordImages[recordName].record += bytearray(bytearray.fromhex("78"))
@@ -426,7 +445,8 @@ recordImages[tocName].record[tocRecordOffset:(tocRecordOffset + 2)] = struct.pac
 # Create the Large Resource Tag
 recordImages[recordName].record += bytearray(bytearray.fromhex("84"))
 # Create the Record Length
-recordImages[recordName].record += struct.pack('<H', 40) # FIX THIS
+# We will come back and update this at the end
+recordImages[recordName].record += bytearray(bytearray.fromhex("0000"))
 # Create the RT keyword
 recordImages[recordName].record += packKeyword("RT", 4, recordName, "ascii")
 
@@ -455,9 +475,16 @@ for record in manifest.iter("record"):
 # Create the PT keyword
 recordImages[recordName].record += packKeyword("PT", len(PTData), PTData, "ascii")
 # Create the PF keyword
-recordImages[recordName].record += packKeyword("PF", 8, "0", "hex") # FIX
+padfillSize = calcPadFill(recordImages[recordName].record)
+
+recordImages[recordName].record += packKeyword("PF", padfillSize, "0", "hex")
 # Create the Small Resource Tag
 recordImages[recordName].record += bytearray(bytearray.fromhex("78"))
+
+# Update the record length
+# Total length minus 4, LR(1), SR(1), Length (2)
+recordLength = len(recordImages[recordName].record) - 4
+recordImages[recordName].record[1:3] = struct.pack('<H', recordLength)
 
 # We are done with the record, update the length back in the toc
 tocName = recordImages[recordName].tocName
@@ -477,7 +504,6 @@ for record in manifest.iter("record"):
     print("tocRecordOffset: ", tocRecordOffset)
     print("imageLength: ", imageLength)
     recordImages[tocName].record[tocRecordOffset:(tocRecordOffset + 2)] = struct.pack('>H', imageLength)
-    #recordImages[tocName].record[tocRecordOffset:(tocRecordOffset + 2)] = bytearray(bytearray.fromhex("AB0E"))
 
     # The large resource tag
     recordImages[recordName].record += bytearray(bytearray.fromhex("84"))
@@ -492,12 +518,8 @@ for record in manifest.iter("record"):
         recordImages[recordName].record += keywordPack
         keywordsLength += len(keywordPack)
 
-    # Add the pad fill keyword at the end
-    # It will be a minimum of 1, or fill out the size to 40 if necessary
-    # TODO - has to be divisible by 4?
-    padfillSize = 40 - (keywordsLength + 3) # 3 is PF + 1 byte length
-    if (padfillSize < 1):
-        padfillSize = 1
+    # Calculate the padfill required
+    padfillSize = calcPadFill(recordImages[recordName].record)
 
     # Write the PF keyword
     keywordPack = packKeyword("PF", padfillSize, "0", "hex")
