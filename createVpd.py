@@ -272,7 +272,8 @@ for record in manifest.iter("record"):
         manifest.insert(list(manifest).index(record), subRecord)
         manifest.remove(record)
 
-# At this point, we have a full XML tvpd file
+################################################
+# Verify the tvpd XML
 # read thru the complete tvpd and verify/error check
 print("==== Stage 2: Verifying manifest syntax")
 errorsFound = 0
@@ -407,204 +408,237 @@ print("  Wrote tvpd file: %s" % tvpdFileName)
 vpdFile = open(vpdFileName, "wb")
 
 # Process for creating the binary file
-
-# Now to create the VPD image
-# This could be done by starting at offset 0 and just writing all the needed data to the file in order
-# However, The VTOC record depends upon knowing the offsets of all the other records - which haven't been created
-# We could write the VTOC with place holder data, then come back and update those fields later
-# That would involve 1) creating a tracking variables for all 5 required offsets for each record and then circling back to update the VTOC
+# There are 2 ways the file could be created
+# 1 - write the data to file on disk as the records are created
+# 2 - write the data to memory and then write the complete image at the end
+# Option 2 was selected for a few reasons
+# - This isn't a large amount of data where flushing to disk as we went along would help performance
+# - When the TOC entries are created, we don't know the offset/length to provide.  This has to be updated later
+#   By keeping the records in memory, it's marginally easier to update the TOC info since you don't have to manage file position
+# - While ECC isn't supported now, if it is needed in the future, the entire record will be available in memory for the algoritm
+#   If writing to the file was done, the data would have to be read back and sent to the ECC algorithm
 #
-# Instead, I purpose creating the images for each record first and storing them in memory
-# Then we can go through and create the full VPD image in sequence and be able to write the VTOC properly the first time
-recordImages = dict()
-imageLength = 0
+# The rest of this process is pretty straight forward.  There are some helper functions implemented at the top of the file
+# The most difficult piece is tracking the total image size and managing the TOC offset locations so they can be later updated
 
+# Our dictionary of all the records we've created in memory, along with info like TOC offsets
+recordInfo = dict()
+# Track total image size as the various records are created
+imageSize = 0
+
+# The VHDR and VTOC are created by the tool based upon the info in the tvpd
+# The rest of the records are derived from the tvpd
+
+################################################
+# Create VHDR
 recordName = "VHDR"
-recordImages[recordName] = RecordInfo()
+recordInfo[recordName] = RecordInfo()
 
 # Create the ECC block
-recordImages[recordName].record += bytearray(bytearray.fromhex("0000000000000000000000"))
+recordInfo[recordName].record += bytearray(bytearray.fromhex("0000000000000000000000"))
 # Create the Large Resource Tag
-recordImages[recordName].record += bytearray(bytearray.fromhex("84"))
+recordInfo[recordName].record += bytearray(bytearray.fromhex("84"))
 # Create the Record Length
-recordImages[recordName].record += struct.pack('<H', 40)
+recordInfo[recordName].record += struct.pack('<H', 40) # VHDR is always 40
 # Create the RT keyword
-recordImages[recordName].record += packKeyword("RT", 4, recordName, "ascii")
+recordInfo[recordName].record += packKeyword("RT", 4, recordName, "ascii")
 # Create the VD keyword
-recordImages[recordName].record += packKeyword("VD", 2, "01", "hex")
+recordInfo[recordName].record += packKeyword("VD", 2, "01", "hex")
 # Create the PT keyword
-# We need to create the VTOC entry in the dictionary, and then update it with where the offset fields are
-recordImages["VTOC"] = RecordInfo()
-recordImages["VTOC"].tocName = "VHDR"
-tocOffset = len(recordImages[recordName].record) + 3 # PT (2) + Length (1)
+# Since we are creating a TOC entry here, we'll need to create the RecordInfo for the record it will be pointing to
+# This will allow us to store the TOC offsets and update them later when the record gets created
+recordInfo["VTOC"] = RecordInfo()
+recordInfo["VTOC"].tocName = "VHDR"
+# The tocOffset starts where the data in the PT keyword starts
+tocOffset = len(recordInfo[recordName].record) + 3 # PT (2) + Length (1)
 tocOffset += 6 # Record Name (4) + Record Type (2)
-recordImages["VTOC"].tocRecordOffset = tocOffset
+recordInfo["VTOC"].tocRecordOffset = tocOffset
 tocOffset += 2
-recordImages["VTOC"].tocRecordLength = tocOffset
+recordInfo["VTOC"].tocRecordLength = tocOffset
 tocOffset += 2
-recordImages["VTOC"].tocEccOffset = tocOffset
+recordInfo["VTOC"].tocEccOffset = tocOffset
 tocOffset += 2
-recordImages["VTOC"].tocEccLength = tocOffset
+recordInfo["VTOC"].tocEccLength = tocOffset
 tocOffset += 2
-
-recordImages[recordName].record += packKeyword("PT", 14, "VTOC", "ascii")
+recordInfo[recordName].record += packKeyword("PT", 14, "VTOC", "ascii")
 # Create the PF keyword
 # This PF is fixed at 8 since the VHDR is always 44 long.
-recordImages[recordName].record += packKeyword("PF", 8, "0", "hex")
+recordInfo[recordName].record += packKeyword("PF", 8, "0", "hex")
 # Create the Small Resource Tag
-recordImages[recordName].record += bytearray(bytearray.fromhex("78"))
+recordInfo[recordName].record += bytearray(bytearray.fromhex("78"))
 
-# Track our total image length
-imageLength += len(recordImages[recordName].record)
+# Update our total image size
+imageSize += len(recordInfo[recordName].record)
 
-
+################################################
+# Create VTOC
 recordName = "VTOC"
-# We are starting the next record, update the offset back in the TOC record
-tocName = recordImages[recordName].tocName
-tocRecordOffset = recordImages[recordName].tocRecordOffset
-recordImages[tocName].record[tocRecordOffset:(tocRecordOffset + 2)] = struct.pack('>H', imageLength)
+# No need to create the VTOC recordInfo entry since it was done by the VHDR
 
 # Create the Large Resource Tag
-recordImages[recordName].record += bytearray(bytearray.fromhex("84"))
+recordInfo[recordName].record += bytearray(bytearray.fromhex("84"))
 # Create the Record Length
 # We will come back and update this at the end
-recordImages[recordName].record += bytearray(bytearray.fromhex("0000"))
+recordInfo[recordName].record += bytearray(bytearray.fromhex("0000"))
 # Create the RT keyword
-recordImages[recordName].record += packKeyword("RT", 4, recordName, "ascii")
-
-# We need to create all the data that will go into the PT keyword.  We'll create a big ascii string by looping over all the records
-# We'll also calculate our offsets
-tocOffset = len(recordImages[recordName].record) + 3 # PT (2) + Length (1)
-PTData = ""
-
-for record in manifest.iter("record"):
-    loopRecordName = record.attrib.get("name")
-    PTData += loopRecordName + "\0\0\0\0\0\0\0\0\0\0"
-
-    # We need to create the VTOC entry in the dictionary, and then update it with where the offset fields are
-    recordImages[loopRecordName] = RecordInfo()
-    recordImages[loopRecordName].tocName = recordName
-    tocOffset += 6 # Record Name (4) + Record Type (2)
-    recordImages[loopRecordName].tocRecordOffset = tocOffset
-    tocOffset += 2
-    recordImages[loopRecordName].tocRecordLength = tocOffset
-    tocOffset += 2
-    recordImages[loopRecordName].tocEccOffset = tocOffset
-    tocOffset += 2
-    recordImages[loopRecordName].tocEccLength = tocOffset
-    tocOffset += 2
+recordInfo[recordName].record += packKeyword("RT", 4, recordName, "ascii")
 
 # Create the PT keyword
-recordImages[recordName].record += packKeyword("PT", len(PTData), PTData, "ascii")
-# Create the PF keyword
-padfillSize = calcPadFill(recordImages[recordName].record)
+# We need to create all the data that will go into the PT keyword.  We'll create a big ascii string by looping over all the records
+PTData = ""
+# We'll also use the loop to create all our recordInfos and store the TOC offsets
+# The tocOffset starts where the data in the PT keyword starts
+tocOffset = len(recordInfo[recordName].record) + 3 # PT (2) + Length (1)
 
-recordImages[recordName].record += packKeyword("PF", padfillSize, "0", "hex")
+# The VTOC has the pointers to all the records described in the tvpd
+for record in manifest.iter("record"):
+    loopRecordName = record.attrib.get("name")
+    PTData += loopRecordName + "\0\0\0\0\0\0\0\0\0\0" # The name, plus 10 empty bytes to be updated later
+
+    # Since we are creating a TOC entry here, we'll need to create the RecordInfo for the records it will be pointing to
+    # This will allow us to store the TOC offsets and update them later when the record gets created
+    recordInfo[loopRecordName] = RecordInfo()
+    recordInfo[loopRecordName].tocName = recordName
+    tocOffset += 6 # Record Name (4) + Record Type (2)
+    recordInfo[loopRecordName].tocRecordOffset = tocOffset
+    tocOffset += 2
+    recordInfo[loopRecordName].tocRecordLength = tocOffset
+    tocOffset += 2
+    recordInfo[loopRecordName].tocEccOffset = tocOffset
+    tocOffset += 2
+    recordInfo[loopRecordName].tocEccLength = tocOffset
+    tocOffset += 2
+recordInfo[recordName].record += packKeyword("PT", len(PTData), PTData, "ascii")
+
+# Create the PF keyword
+padfillSize = calcPadFill(recordInfo[recordName].record)
+recordInfo[recordName].record += packKeyword("PF", padfillSize, "0", "hex")
+
 # Create the Small Resource Tag
-recordImages[recordName].record += bytearray(bytearray.fromhex("78"))
+recordInfo[recordName].record += bytearray(bytearray.fromhex("78"))
 
 # Update the record length
 # Total length minus 4, LR(1), SR(1), Length (2)
-recordLength = len(recordImages[recordName].record) - 4
-recordImages[recordName].record[1:3] = struct.pack('<H', recordLength)
+recordLength = len(recordInfo[recordName].record) - 4
+recordInfo[recordName].record[1:3] = struct.pack('<H', recordLength)
 
-# We are done with the record, update the length back in the toc
-tocName = recordImages[recordName].tocName
-tocRecordLength = recordImages[recordName].tocRecordLength
-recordImages[tocName].record[tocRecordLength:(tocRecordLength + 2)] = struct.pack('>H', len(recordImages[recordName].record))
+# Go back and update all our TOC info now that the record is created
+tocName = recordInfo[recordName].tocName
+# Image size hasn't been updated since the end of the last record, so it points to the start of our new record
+tocRecordOffset = recordInfo[recordName].tocRecordOffset
+recordInfo[tocName].record[tocRecordOffset:(tocRecordOffset + 2)] = struct.pack('>H', imageSize)
+# The record is complete, so we can just use the length
+tocRecordLength = recordInfo[recordName].tocRecordLength
+recordInfo[tocName].record[tocRecordLength:(tocRecordLength + 2)] = struct.pack('>H', len(recordInfo[recordName].record))
 
-# Track our total image length
-imageLength += len(recordImages[recordName].record)
+# Update our total image size
+imageSize += len(recordInfo[recordName].record)
 
+################################################
+# Create the remaining records from the tvpd
 for record in manifest.iter("record"):
     recordName = record.attrib.get("name")
 
-    # We are starting the next record, update the offset back in the TOC record
-    tocName = recordImages[recordName].tocName
-    tocRecordOffset = recordImages[recordName].tocRecordOffset
-    print("tocName: ", tocName)
-    print("tocRecordOffset: ", tocRecordOffset)
-    print("imageLength: ", imageLength)
-    recordImages[tocName].record[tocRecordOffset:(tocRecordOffset + 2)] = struct.pack('>H', imageLength)
-
     # The large resource tag
-    recordImages[recordName].record += bytearray(bytearray.fromhex("84"))
+    recordInfo[recordName].record += bytearray(bytearray.fromhex("84"))
 
     # The record length, we will come back and update this at the end
-    recordImages[recordName].record += bytearray(bytearray.fromhex("0000"))
+    recordInfo[recordName].record += bytearray(bytearray.fromhex("0000"))
 
     # The keywords
     keywordsLength = 0
     for keyword in record.iter("keyword"):
         keywordPack = packKeyword(keyword.attrib.get("name"), int(keyword.find("kwlen").text), keyword.find("kwvalue").text, keyword.find("kwformat").text)
-        recordImages[recordName].record += keywordPack
+        recordInfo[recordName].record += keywordPack
         keywordsLength += len(keywordPack)
 
     # Calculate the padfill required
-    padfillSize = calcPadFill(recordImages[recordName].record)
+    padfillSize = calcPadFill(recordInfo[recordName].record)
 
     # Write the PF keyword
     keywordPack = packKeyword("PF", padfillSize, "0", "hex")
-    recordImages[recordName].record += keywordPack
+    recordInfo[recordName].record += keywordPack
 
     # The small resource tag
-    recordImages[recordName].record += bytearray(bytearray.fromhex("78"))
+    recordInfo[recordName].record += bytearray(bytearray.fromhex("78"))
 
     # Update the record length
     # Total length minus 4, LR(1), SR(1), Length (2)
-    recordLength = len(recordImages[recordName].record) - 4
-    recordImages[recordName].record[1:3] = struct.pack('<H', recordLength)
+    recordLength = len(recordInfo[recordName].record) - 4
+    recordInfo[recordName].record[1:3] = struct.pack('<H', recordLength)
 
-    # We are done with the record, update the length back in the toc
-    tocName = recordImages[recordName].tocName
-    tocRecordLength = recordImages[recordName].tocRecordLength
-    recordImages[tocName].record[tocRecordLength:(tocRecordLength + 2)] = struct.pack('>H', len(recordImages[recordName].record))
+    # Go back and update all our TOC info now that the record is created
+    tocName = recordInfo[recordName].tocName
+    # Image size hasn't been updated since the end of the last record, so it points to the start of our new record
+    tocRecordOffset = recordInfo[recordName].tocRecordOffset
+    recordInfo[tocName].record[tocRecordOffset:(tocRecordOffset + 2)] = struct.pack('>H', imageSize)
+    # The record is complete, so we can just use the length
+    tocRecordLength = recordInfo[recordName].tocRecordLength
+    recordInfo[tocName].record[tocRecordLength:(tocRecordLength + 2)] = struct.pack('>H', len(recordInfo[recordName].record))
 
-    # Track our total image length
-    imageLength += len(recordImages[recordName].record)
+    # Update our total image size
+    imageSize += len(recordInfo[recordName].record)
 
-    print("record: ", recordName)
-    print("len: ", len(recordImages[recordName].record))
-    print(recordImages[recordName].record)
+################################################
+# Create the ECC data areas and update TOC offsets
 
+# VHDR has it's ECC in a special location at the start of the file
 
-# Done creating the records, now create their ECC data
-# Not supported at present, so allocate the space, zero it out and update the TOC
 recordName = "VTOC"
-print("len: ", len(recordImages[recordName].record))
-recordImages[recordName].ecc = bytearray(("\0" * (int(len(recordImages[recordName].record) / 4))).encode())
-tocName = recordImages[recordName].tocName
-tocEccOffset = recordImages[recordName].tocEccOffset
-recordImages[tocName].record[tocEccOffset:(tocEccOffset + 2)] = struct.pack('>H', imageLength)
-tocEccLength = recordImages[recordName].tocEccLength
-recordImages[tocName].record[tocEccLength:(tocEccLength + 2)] = struct.pack('>H', len(recordImages[recordName].ecc))
-imageLength += len(recordImages[recordName].ecc)
+# Not supported at present, so allocate the space, zero it out
+recordInfo[recordName].ecc = bytearray(("\0" * (int(len(recordInfo[recordName].record) / 4))).encode())
+# Go back and update all our TOC info now that the ecc is created
+tocName = recordInfo[recordName].tocName
+# Image size hasn't been updated since the end of the last record, so it points to the start of our new record
+tocEccOffset = recordInfo[recordName].tocEccOffset
+recordInfo[tocName].record[tocEccOffset:(tocEccOffset + 2)] = struct.pack('>H', imageSize)
+# The record is complete, so we can just use the length
+tocEccLength = recordInfo[recordName].tocEccLength
+recordInfo[tocName].record[tocEccLength:(tocEccLength + 2)] = struct.pack('>H', len(recordInfo[recordName].ecc))
 
+# Update our total image size
+imageSize += len(recordInfo[recordName].ecc)
+
+# Create the ECC for the TVPD records
 for record in manifest.iter("record"):
     recordName = record.attrib.get("name")
-    recordImages[recordName].ecc = bytearray(("\0" * (int(len(recordImages[recordName].record) / 4))).encode())
-    tocName = recordImages[recordName].tocName
-    tocEccOffset = recordImages[recordName].tocEccOffset
-    recordImages[tocName].record[tocEccOffset:(tocEccOffset + 2)] = struct.pack('>H', imageLength)
-    tocEccLength = recordImages[recordName].tocEccLength
-    recordImages[tocName].record[tocEccLength:(tocEccLength + 2)] = struct.pack('>H', len(recordImages[recordName].ecc))
-    imageLength += len(recordImages[recordName].ecc)
+    # Not supported at present, so allocate the space, zero it out
+    recordInfo[recordName].ecc = bytearray(("\0" * (int(len(recordInfo[recordName].record) / 4))).encode())
+    # Go back and update all our TOC info now that the ecc is created
+    tocName = recordInfo[recordName].tocName
+    # Image size hasn't been updated since the end of the last record, so it points to the start of our new record
+    tocEccOffset = recordInfo[recordName].tocEccOffset
+    recordInfo[tocName].record[tocEccOffset:(tocEccOffset + 2)] = struct.pack('>H', imageSize)
+    # The record is complete, so we can just use the length
+    tocEccLength = recordInfo[recordName].tocEccLength
+    recordInfo[tocName].record[tocEccLength:(tocEccLength + 2)] = struct.pack('>H', len(recordInfo[recordName].ecc))
 
-# Write the files
-writeDataToVPD(vpdFile, recordImages["VHDR"].record)
-writeDataToVPD(vpdFile, recordImages["VTOC"].record)
+    # Update our total image size
+    imageSize += len(recordInfo[recordName].ecc)
 
+################################################
+# Write the VPD 
+# Everything for the image is now in memory!
+# I'm intentionally write the file by doing VHDR, VTOC and then looping over the tvpd records
+# The file needs to be written in the order the user gave, looping over the dictionary keys would guarantee that
+
+# Write the top records
+writeDataToVPD(vpdFile, recordInfo["VHDR"].record)
+writeDataToVPD(vpdFile, recordInfo["VTOC"].record)
+
+# Write all the tvpd records
 for record in manifest.iter("record"):
     recordName = record.attrib.get("name")
-    writeDataToVPD(vpdFile, recordImages[recordName].record)
+    writeDataToVPD(vpdFile, recordInfo[recordName].record)
 
-writeDataToVPD(vpdFile, recordImages["VTOC"].ecc)
+# Write the VTOC ECC
+writeDataToVPD(vpdFile, recordInfo["VTOC"].ecc)
 
+# Write all the tvpd record ecc
 for record in manifest.iter("record"):
     recordName = record.attrib.get("name")
-    writeDataToVPD(vpdFile, recordImages[recordName].ecc)
+    writeDataToVPD(vpdFile, recordInfo[recordName].ecc)
 
 # Done with the file
 vpdFile.close()
 print("  Wrote vpd file: %s" % vpdFileName)
-
