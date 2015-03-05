@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<vpd>
+  <record name="VINI">
+    <rdesc>The VINI record</rdesc>
+    <keyword name="RT">
+      <kwdesc>The Record Type keyword</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>4</kwlen>
+      <kwdata>VINI</kwdata>
+    </keyword>
+    <keyword name="BS">
+      <kwdesc>The Bull Shit keyword</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>40</kwlen>
+      <kwdata>This data is BS</kwdata>
+    </keyword>
+  </record>
+</vpd>

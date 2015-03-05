@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<vpd>
+  <name>birch</name>
+  <size>16kb</size>
+  <record name="VINI">
+    <src>/home/albertj/vpdtemplate/tvpd/t002-vini.tvpd</src>
+  </record>
+  <record name="VSMC">
+    <rdesc>The VSMC record</rdesc>
+    <keyword name="RT">
+      <kwdesc>The Record Type keyword</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>4</kwlen>
+      <kwdata>VSMC</kwdata>
+    </keyword>
+  </record>
+</vpd>
