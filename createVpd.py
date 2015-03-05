@@ -12,13 +12,12 @@ import os
 import xml.etree.ElementTree as ET
 import struct
 import re
-import binascii
 
 ############################################################
 # Classes - Classes - Classes - Classes - Classes - Classes
 ############################################################
 class RecordInfo:
-    """Stores info about each record"""
+    """Stores the info about each vpd record"""
     def __init__(self):
         # The packed record in memory
         self.record = bytearray()
@@ -39,9 +38,12 @@ class RecordInfo:
 # Function - Functions - Functions - Functions - Functions
 ############################################################
 def help():
-    print("createVpd.py")
+    print("createVpd.py -m manifest.tvpd -o outputpath -d")
     print("Required Args")
+    print("-m|--manifest          The input file detailing all the records and keywords to be in the image")
+    print("-o|--outpath           The output path for the files created by the tool")
     print("Optional Args")
+    print("-d|--debug             Enables debug printing")
     print("-h|--help              This help text")
 
 # Common function for error printing
@@ -52,7 +54,7 @@ def error(msg):
 def debug(msg):
     print("DEBUG: %s" % msg)
 
-# Write out the resultant tvpd xml file
+# Function to Write out the resultant tvpd xml file
 def writeTvpd(manifest, outputFile):
     tree = ET.ElementTree(manifest)
     tree.write(outputFile, encoding="utf-8", xml_declaration=True)
@@ -74,37 +76,46 @@ def parseTvpd(tvpdFile, topLevel):
         for child in tvpdRoot:
             debug("  %s %s" % (child.tag, child.attrib))
 
-    # Let's make sure the required fields are found
+    # Make sure the required fields are found
     # Some are only required in a top level file, not when it's just an individual record file
-    # The <name></name> tag is required
     if (topLevel == True):
+        # The <name></name> tag is required
         if (tvpdRoot.find("name") == None):
-            error("top level tag <name></name> not found")
+            error("<name></name> tag required but not found - %s" % tvpdFile)
             return(1, None)
 
         # The <size></size> tag is required
         if (tvpdRoot.find("size") == None):
-            error("top level tag <size></size> not found")
+            error("<size></size> tag required but not found - %s" % tvpdFile)
             return(1, None)
+    else:
+        # The <name></name> tag shouldn't be there
+        if (tvpdRoot.find("name") != None):
+            error("<name></name> tag found when it should not be - %s" % tvpdFile)
+            return(1, None)
+
+        # The <size></size> tag shouldn't be there
+        if (tvpdRoot.find("size") == None):
+            error("<size></size> tag found when it should not be - %s" % tvpdFile)
+            return(1, None)
+
 
     # At least one <record></record> tag is required
     if (tvpdRoot.find("record") == None):
-        error("At least one top level tag <record></record> not found")
+        error("At least one <record></record> tag not found - %s" % tvpdFile)
         return(1, None)
 
     # The file is good
     return(0, tvpdRoot)
 
+# Function to write properly packed/encoded data to the vpdFile
 def writeDataToVPD(vpdFile, data, offset = None):
     rc = 0
 
     # If the user gave an offset, save the current offset and seek to the new one
     entryOffset = None
     if (offset != None):
-        if (vpdFile.eof()):
-            entryOffset = os.SEEK_END
-        else:
-            entryOffset = vpdFile.tell()
+        entryOffset = vpdFile.tell()
         vpdFile.seekg(offset)
 
     # Write the data
@@ -116,28 +127,33 @@ def writeDataToVPD(vpdFile, data, offset = None):
 
     return rc
 
+# Turn the tvpd keyword data into packed binary data we can write to the file
 def packKeyword(keyword, length, data, format):
-    print("keyword: ", keyword)
     # We'll return a bytearray of the packed data
     keywordPack = bytearray()
 
-    # Fill in the keyword
+    # Write the keyword
     keywordPack += bytearray(keyword.encode())
     
     # Write the length
+    # The < at the front says to pack it little endian
     if (keyword[0] == "#"):
+        # H is 2 bytes
         keywordPack += struct.pack("<H", length)
     else:
+        # B is 1 byte
         keywordPack += struct.pack("<B", length)
 
     # Write the data
+    # If the user didn't provide data = length given, we'll pad the end with 0's
     if (format == "ascii"):
         # Pad if necessary
         data = data.ljust(length, '\0')
         # Write it
         keywordPack += bytearray(data.encode())
     elif (format == "hex"):
-        # Remove any carriage returns
+        # fromhex will deal with spacing in the data, but not carriage returns
+        # Remove those before we get to fromhex
         data = data.replace("\n","")
         # Pad if necessary (* 2 to convert nibble data to byte length)
         data = data.ljust((length * 2), '0')
@@ -147,18 +163,19 @@ def packKeyword(keyword, length, data, format):
         error("Unknown format type %s passed into packKeyword" % format)
         return NULL
 
+    # The keyword is packed, send it back
     return keywordPack
 
+# Calculate the length of the PF record
 def calcPadFill(record):
-    
     pfLength = 0
 
     # The PF keyword must exist
     # The keyword section of record must be at least 40 bytes long, padfill will be used to acheive that
-    # If over 40, it must be aligned on word boundaries
+    # If the keyword section is over over 40, it must be aligned on word boundaries and PF accomplishes that
 
     # The record passed in at this point is the keywords + 3 other bytes (LR Tag & Record Length)
-    # Those 3 bytes happen to match the length of the PF keyword and it's length
+    # Those 3 bytes happen to match the length of the PF keyword and its length
     # So we'll just use the length of the record, but it's due to those offsetting lengths of 3
     pfLength = 40 - len(record)
     if (pfLength < 1):
@@ -202,7 +219,7 @@ else:
         clError+=1
 
 # Look for output files
-clOutputPath = cmdline.parseOptionWithArg("-o")
+clOutputPath = cmdline.parseOptionWithArg("-o", "--outpath")
 if (clOutputPath == None):
     error("The -o arg is required")
     clError+=1
