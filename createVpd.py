@@ -95,7 +95,7 @@ def parseTvpd(tvpdFile, topLevel):
             return(1, None)
 
         # The <size></size> tag shouldn't be there
-        if (tvpdRoot.find("size") == None):
+        if (tvpdRoot.find("size") != None):
             error("<size></size> tag found when it should not be - %s" % tvpdFile)
             return(1, None)
 
@@ -305,7 +305,7 @@ for record in manifest.iter("record"):
         keywordName = keyword.attrib.get("name")
 
         # Setup a dictionary of the supported tags
-        kwTags = {"keyword" : False, "kwdesc" : False, "kwformat" : False, "kwlen" : False, "kwvalue" : False}
+        kwTags = {"keyword" : False, "kwdesc" : False, "kwformat" : False, "kwlen" : False, "kwdata" : False}
 
         # --------
         # We'll loop through all the tags found in this keyword and check for all required and any extra ones
@@ -320,8 +320,8 @@ for record in manifest.iter("record"):
                 if (kw.tag == "kwlen"):
                     kwlen = int(kw.text)
 
-                if (kw.tag == "kwvalue"):
-                    kwvalue = kw.text
+                if (kw.tag == "kwdata"):
+                    kwdata = kw.text
 
             else:
                 # Flag that we found an unsupported tag.  This may help catch typos, etc..
@@ -337,9 +337,9 @@ for record in manifest.iter("record"):
 
         # --------
         # Now we know the basics of the template are correct, now do more indepth checking of length, etc..
-        # A check to make sure the RT keyword kwvalue matches the name of the record we are in
-        if ((keywordName == "RT") and (recordName != kwvalue)):
-            error("The value of the RT keyword \"%s\" does not match the record name \"%s\"" % (kwvalue, recordName))
+        # A check to make sure the RT keyword kwdata matches the name of the record we are in
+        if ((keywordName == "RT") and (recordName != kwdata)):
+            error("The value of the RT keyword \"%s\" does not match the record name \"%s\"" % (kwdata, recordName))
             errorsFound+=1
 
         # --------
@@ -356,25 +356,25 @@ for record in manifest.iter("record"):
         # --------
         # If the input format is hex, make sure the input data is hex only
         if (kwformat == "hex"):
-            # Remove white space and carriage returns from the kwvalue
-            kwvalue = kwvalue.replace(" ","")
-            kwvalue = kwvalue.replace("\n","")
+            # Remove white space and carriage returns from the kwdata
+            kwdata = kwdata.replace(" ","")
+            kwdata = kwdata.replace("\n","")
             # Now look to see if there are any characters other than 0-9 & a-f
-            match = re.search("([g-zG-Z]+)", kwvalue)
+            match = re.search("([g-zG-Z]+)", kwdata)
             if (match):
-                error("A non hex character \"%s\" was found at %s in the kwvalue for keyword %s in record %s" % (match.group(), match.span(), keywordName, recordName))
+                error("A non hex character \"%s\" was found at %s in the kwdata for keyword %s in record %s" % (match.group(), match.span(), keywordName, recordName))
                 errorsFound+=1
 
         # --------
         # Verify that the data isn't longer than the length given
         # Future checks could include making sure hex data is hex
         if (kwformat == "ascii"):
-            if (len(kwvalue) > kwlen):
+            if (len(kwdata) > kwlen):
                 error("The length of the value is longer than the given <kwlen> for keyword %s in record %s" % (keywordName, recordName))
                 errorsFound+=1
         elif (kwformat == "hex"):
             # Convert hex nibbles to bytes for len compare
-            if ((len(kwvalue)/2) > kwlen):
+            if ((len(kwdata)/2) > kwlen):
                 error("The length of the value is longer than the given <kwlen> for keyword %s in record %s" % (keywordName, recordName))
                 errorsFound+=1
         else:
@@ -436,14 +436,19 @@ recordInfo[recordName] = RecordInfo()
 
 # Create the ECC block
 recordInfo[recordName].record += bytearray(bytearray.fromhex("0000000000000000000000"))
+
 # Create the Large Resource Tag
 recordInfo[recordName].record += bytearray(bytearray.fromhex("84"))
+
 # Create the Record Length
 recordInfo[recordName].record += struct.pack('<H', 40) # VHDR is always 40
+
 # Create the RT keyword
 recordInfo[recordName].record += packKeyword("RT", 4, recordName, "ascii")
+
 # Create the VD keyword
 recordInfo[recordName].record += packKeyword("VD", 2, "01", "hex")
+
 # Create the PT keyword
 # Since we are creating a TOC entry here, we'll need to create the RecordInfo for the record it will be pointing to
 # This will allow us to store the TOC offsets and update them later when the record gets created
@@ -461,6 +466,7 @@ tocOffset += 2
 recordInfo["VTOC"].tocEccLength = tocOffset
 tocOffset += 2
 recordInfo[recordName].record += packKeyword("PT", 14, "VTOC", "ascii")
+
 # Create the PF keyword
 # This PF is fixed at 8 since the VHDR is always 44 long.
 recordInfo[recordName].record += packKeyword("PF", 8, "0", "hex")
@@ -548,7 +554,7 @@ for record in manifest.iter("record"):
     # The keywords
     keywordsLength = 0
     for keyword in record.iter("keyword"):
-        keywordPack = packKeyword(keyword.attrib.get("name"), int(keyword.find("kwlen").text), keyword.find("kwvalue").text, keyword.find("kwformat").text)
+        keywordPack = packKeyword(keyword.attrib.get("name"), int(keyword.find("kwlen").text), keyword.find("kwdata").text, keyword.find("kwformat").text)
         recordInfo[recordName].record += keywordPack
         keywordsLength += len(keywordPack)
 
