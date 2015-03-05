@@ -193,66 +193,65 @@ cwd = os.path.dirname(os.path.abspath(__file__))
 
 ################################################
 # Command line options
-clError = 0
+clErrors = 0
 
 # Help text
 if (cmdline.parseOption("-h","--help")):
     help()
     exit(0)
 
+# Debug printing
 clDebug = cmdline.parseOption("-d", "--debug")
 
-# We can run in two different modes
-# 1) manifest mode - you pass in one xml file that gives all the required input args
-# 2) cmdline mode - you pass in multiple command line args that recreate what would be in the manifest - might not be needed
-# For now let's get manifest mode working since that will be the easiest
+# We could possibly run in two different modes
+# 1) manifest mode - the user passes in one xml file that gives all the required input args
+# 2) cmdline mode - the user passes in multiple command line args that recreate what would be in the manifest
+# 1 is the easiest option to start with, and maybe all that is needed.  We start with manifest mode!
 
 # Get the manifest file and get this party started
 clManifestFile = cmdline.parseOptionWithArg("-m", "--manifest")
 if (clManifestFile == None):
     error("The -m arg is required!")
-    clError+=1
+    clErrors+=1
 else:
     # Make sure the file exists
     if (os.path.exists(clManifestFile) != True):
         error("The manifest file given does not exist")
-        clError+=1
+        clErrors+=1
 
-# Look for output files
+# Look for output path
 clOutputPath = cmdline.parseOptionWithArg("-o", "--outpath")
 if (clOutputPath == None):
     error("The -o arg is required")
-    clError+=1
+    clErrors+=1
 
 # Error check the command line
-if (clError):
+if (clErrors):
     error("Missing/incorrect cmdline args!  Please review the output above to determine which ones!")
-    exit(clError)
+    exit(clErrors)
 
 # All cmdline args should be processed, so if any left throw an error
 if (len(sys.argv) != 1):
     error("Extra cmdline args detected - %s" % (sys.argv[1:])) # [1:] don't inclue script name in the list
     exit(len(sys.argv))
 
+# We are going to do this in 3 stages
+# 1 - Read in the manifest and any other referenced files.  This will create a complete XML description of the VPD
+# 2 - Parse thru the XML records and make sure they are correct.  Also check things like data not greater than length, etc..
+# 3 - With the XML verified correct, loop thru it again and write out the VPD data
+# Looping thru the XML twice lets all errors be surfaced to the user in stage 2 at once instead of one at a time
 
 ################################################
 # Work with the manifest
-
 print("==== Stage 1: Loading manifest file")
 # Read in the manifest 
 (rc, manifest) = parseTvpd(clManifestFile, True)
 if (rc):
-    error("Error occurred reading in the manifest!")
+    error("Problem reading in the manifest! - %s" % clManifestFile)
     exit(rc)
 
 # Stash away some variables for use later
-name = manifest.find("name").text
-
-# We need to read in/create all the records
-# Then we need to parse thru them all and make sure they are correct
-# Then loop thru again and write out the data
-# Doing this as two stages of looping so all errors can be surfaced at once instead of iteratively
-# The first pass will also allow for calculation of total record sizes to help in the creation of the VTOC during write phase.
+vpdName = manifest.find("name").text
 
 # Look for reference files
 for record in manifest.iter("record"):
@@ -263,9 +262,9 @@ for record in manifest.iter("record"):
         if (rc):
             error("Error occurred reading in %s" % src.text)
             exit(rc)
-        # Now merge the main manifest with the new record
+        # Merge the new record into the main manifest
         # ET doesn't have a replace function.  You can do an extend/remove, but that changes the order of the file
-        # The goal is to preserve record & keyword order, so this method doesn't work
+        # The goal is to preserve record & keyword order, so that method doesn't work
         # The below code will insert the refrenced record from the file in the list above the current record location
         # Then remove the original record, preserving order
         # Since the referenced file also starts with <vpd> tag, you need to get one level down and find the start of the record element, hence the find
@@ -273,11 +272,13 @@ for record in manifest.iter("record"):
         manifest.insert(list(manifest).index(record), subRecord)
         manifest.remove(record)
 
+# At this point, we have a full XML tvpd file
+# read thru the complete tvpd and verify/error check
 print("==== Stage 2: Verifying manifest syntax")
-# Now read thru our expanded tvpd and verify/error check syntax
 errorsFound = 0
 # Keep a dictionary of the record names we come across, will let us find duplicates
 recordNames = dict()
+
 # Loop thru our records and then thru the keywords in each record
 for record in manifest.iter("record"):
     # Pull the record name out for use throughout
@@ -294,10 +295,9 @@ for record in manifest.iter("record"):
     # --------
     # Make sure the record name is 4 charaters long
     if (len(recordName) != 4):
-        error("The record name entry \"%s\" is not 4 characters long" % record.attrib.get("name"))
+        error("The record name entry \"%s\" is not 4 characters long" % recordName)
         errorsFound+=1
 
-    # --------
     # Loop through the keywords and verify them
     for keyword in record.iter("keyword"):
         # Pull the keyword name out for use throughout
@@ -307,15 +307,14 @@ for record in manifest.iter("record"):
         kwTags = {"keyword" : False, "kwdesc" : False, "kwformat" : False, "kwlen" : False, "kwvalue" : False}
 
         # --------
-        # We'll loop through all the tags found in this keyword and check for both required and extra ones
+        # We'll loop through all the tags found in this keyword and check for all required and any extra ones
         for kw in keyword.iter():
             if kw.tag in kwTags:
                 # Mark that we found a required tag
                 kwTags[kw.tag] = True
                 # Save the values we'll need into variables for ease of use
                 if (kw.tag == "kwformat"):
-                    kwformat = kw.text
-                    kwformat = kwformat.lower()
+                    kwformat = kw.text.lower() # lower() for ease of compare
 
                 if (kw.tag == "kwlen"):
                     kwlen = int(kw.text)
@@ -349,14 +348,14 @@ for record in manifest.iter("record"):
             maxlen = 65535
         else:
             maxlen = 255
-        if (kwlen >= maxlen):
-                error("The specified length %d is bigger than the max length %d for keyword %s in record %s" % (kwlen, maxlen, keywordName, recordName))
-                errorsFound+=1
+        if (kwlen > maxlen):
+            error("The specified length %d is bigger than the max length %d for keyword %s in record %s" % (kwlen, maxlen, keywordName, recordName))
+            errorsFound+=1
 
         # --------
         # If the input format is hex, make sure the input data is hex only
         if (kwformat == "hex"):
-            # Remove white space from the kwvalue for now and future checks
+            # Remove white space and carriage returns from the kwvalue
             kwvalue = kwvalue.replace(" ","")
             kwvalue = kwvalue.replace("\n","")
             # Now look to see if there are any characters other than 0-9 & a-f
@@ -383,24 +382,31 @@ for record in manifest.iter("record"):
 
 if (errorsFound):
     error("%d error%s found in the tvpd description.  Please review the above errors and correct them." % (errorsFound, "s" if (errorsFound > 1) else ""))
-    tvpdFileName = clOutputPath + "/" + name + "-err.tvpd"
+    tvpdFileName = clOutputPath + "/" + vpdName + "-err.tvpd"
     writeTvpd(manifest, tvpdFileName)
-    print("Wrote tvpd file: %s" % tvpdFileName)
+    print("Wrote tvpd file to help in debug: %s" % tvpdFileName)
     exit(errorsFound)
 
-print("==== Stage 3: Writing files")
-tvpdFileName = clOutputPath + "/" + name + ".tvpd"
-vpdFileName = clOutputPath + "/" + name + ".vpd"
-for desc in manifest.iter('kwdesc'):
-    print(desc.tag, desc.attrib, desc.text)
+# We now have a correct tvpd, use it to create a binary VPD image
+print("==== Stage 3: Creating binary VPD image")
+# Create ourput file names 
+tvpdFileName = clOutputPath + "/" + vpdName + ".tvpd"
+vpdFileName = clOutputPath + "/" + vpdName + ".vpd"
 
+if (clDebug):
+    for desc in manifest.iter('kwdesc'):
+        print(desc.tag, desc.attrib, desc.text)
+
+# This is our easy one, write the XML back out
 # Write out the full template vpd representing the data contained in our image
 writeTvpd(manifest, tvpdFileName)
 print("  Wrote tvpd file: %s" % tvpdFileName)
 
-# Write out the binary file
+# Now the hard part, write out the binary file
 # Open up our file to write
 vpdFile = open(vpdFileName, "wb")
+
+# Process for creating the binary file
 
 # Now to create the VPD image
 # This could be done by starting at offset 0 and just writing all the needed data to the file in order
