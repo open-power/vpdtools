@@ -175,7 +175,7 @@ def calcPadFill(record):
     # If the keyword section is over over 40, it must be aligned on word boundaries and PF accomplishes that
 
     # The record passed in at this point is the keywords + 3 other bytes (LR Tag & Record Length)
-    # Those 3 bytes happen to match the length of the PF keyword and its length
+    # Those 3 bytes happen to match the length of the PF keyword and its length which needs to be in the calculation
     # So we'll just use the length of the record, but it's due to those offsetting lengths of 3
     pfLength = 40 - len(record)
     if (pfLength < 1):
@@ -224,6 +224,12 @@ clOutputPath = cmdline.parseOptionWithArg("-o", "--outpath")
 if (clOutputPath == None):
     error("The -o arg is required")
     clErrors+=1
+else:
+    # Make sure the path exists, we aren't going to create it
+    if (os.path.exists(clOutputPath) != True):
+        error("The given output path %s does not exist!" % clOutputPath)
+        error("Please create the output directory and run again")
+        clErrors+=1
 
 # Error check the command line
 if (clErrors):
