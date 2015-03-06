@@ -61,6 +61,11 @@ def writeTvpd(manifest, outputFile):
 
 # Parses a tvpd file using ET and then checks to ensure some basic required fields are present
 def parseTvpd(tvpdFile, topLevel):
+
+    # Let the user know what file we are reading
+    # We could make this optional with a new function param in the future
+    print("  Parsing tvpd %s" % tvpdFile)
+
     # Read in the file
     tvpdRoot = ET.parse(tvpdFile).getroot()
 
@@ -88,6 +93,11 @@ def parseTvpd(tvpdFile, topLevel):
         if (tvpdRoot.find("size") == None):
             error("<size></size> tag required but not found - %s" % tvpdFile)
             return(1, None)
+
+        # The <VD></VD> tag is required
+        if (tvpdRoot.find("VD") == None):
+            error("<VD></VD> tag required but not found - %s" % tvpdFile)
+            return(1, None)
     else:
         # The <name></name> tag shouldn't be there
         if (tvpdRoot.find("name") != None):
@@ -99,6 +109,10 @@ def parseTvpd(tvpdFile, topLevel):
             error("<size></size> tag found when it should not be - %s" % tvpdFile)
             return(1, None)
 
+        # The <VD></VD> tag shouldn't be there
+        if (tvpdRoot.find("VD") != None):
+            error("<VD></VD> tag found when it should not be - %s" % tvpdFile)
+            return(1, None)
 
     # At least one <record></record> tag is required
     if (tvpdRoot.find("record") == None):
@@ -249,7 +263,7 @@ if (len(sys.argv) != 1):
 
 ################################################
 # Work with the manifest
-print("==== Stage 1: Loading manifest file")
+print("==== Stage 1: Parsing tvpd XML")
 # Read in the manifest 
 (rc, manifest) = parseTvpd(clManifestFile, True)
 if (rc):
@@ -281,7 +295,7 @@ for record in manifest.iter("record"):
 ################################################
 # Verify the tvpd XML
 # read thru the complete tvpd and verify/error check
-print("==== Stage 2: Verifying manifest syntax")
+print("==== Stage 2: Verifying tvpd syntax")
 errorsFound = 0
 # Keep a dictionary of the record names we come across, will let us find duplicates
 recordNames = dict()
@@ -290,6 +304,8 @@ recordNames = dict()
 for record in manifest.iter("record"):
     # Pull the record name out for use throughout
     recordName = record.attrib.get("name")
+
+    print("  Checking record %s" % recordName)
     
     # --------
     # Make sure we aren't finding a record we haven't already seen
@@ -305,6 +321,8 @@ for record in manifest.iter("record"):
         error("The record name entry \"%s\" is not 4 characters long" % recordName)
         errorsFound+=1
 
+    # Track the keywords we come across so we can find duplicate
+    keywordNames = dict()
     # Loop through the keywords and verify them
     for keyword in record.iter("keyword"):
         # Pull the keyword name out for use throughout
@@ -312,6 +330,14 @@ for record in manifest.iter("record"):
 
         # Setup a dictionary of the supported tags
         kwTags = {"keyword" : False, "kwdesc" : False, "kwformat" : False, "kwlen" : False, "kwdata" : False}
+
+        # --------
+        # Make sure we aren't finding a record we haven't already seen
+        if (keywordName in keywordNames):
+            error("The keyword \"%s\" has previously been defined in record %s" % (keywordName, recordName))
+            errorsFound+=1
+        else:
+            keywordNames[keywordName] = 1
 
         # --------
         # We'll loop through all the tags found in this keyword and check for all required and any extra ones
@@ -453,7 +479,8 @@ recordInfo[recordName].record += struct.pack('<H', 40) # VHDR is always 40
 recordInfo[recordName].record += packKeyword("RT", 4, recordName, "ascii")
 
 # Create the VD keyword
-recordInfo[recordName].record += packKeyword("VD", 2, "01", "hex")
+version = manifest.find("VD").text
+recordInfo[recordName].record += packKeyword("VD", 2, version, "hex")
 
 # Create the PT keyword
 # Since we are creating a TOC entry here, we'll need to create the RecordInfo for the record it will be pointing to
