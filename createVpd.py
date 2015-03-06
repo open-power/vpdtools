@@ -8,6 +8,7 @@
 import sys
 sys.path.insert(0,"pymod");
 import cmdline
+import out
 import os
 import xml.etree.ElementTree as ET
 import struct
@@ -38,21 +39,13 @@ class RecordInfo:
 # Function - Functions - Functions - Functions - Functions
 ############################################################
 def help():
-    print("createVpd.py -m manifest.tvpd -o outputpath -d")
-    print("Required Args")
-    print("-m|--manifest          The input file detailing all the records and keywords to be in the image")
-    print("-o|--outpath           The output path for the files created by the tool")
-    print("Optional Args")
-    print("-d|--debug             Enables debug printing")
-    print("-h|--help              This help text")
-
-# Common function for error printing
-def error(msg):
-    print("ERROR: %s" % msg)
-
-# Common function for debug printing
-def debug(msg):
-    print("DEBUG: %s" % msg)
+    out.msg("createVpd.py -m manifest.tvpd -o outputpath -d")
+    out.msg("Required Args")
+    out.msg("-m|--manifest          The input file detailing all the records and keywords to be in the image")
+    out.msg("-o|--outpath           The output path for the files created by the tool")
+    out.msg("Optional Args")
+    out.msg("-d|--debug             Enables debug printing")
+    out.msg("-h|--help              This help text")
 
 # Function to Write out the resultant tvpd xml file
 def writeTvpd(manifest, outputFile):
@@ -64,7 +57,7 @@ def parseTvpd(tvpdFile, topLevel):
 
     # Let the user know what file we are reading
     # We could make this optional with a new function param in the future
-    print("  Parsing tvpd %s" % tvpdFile)
+    out.msg("Parsing tvpd %s" % tvpdFile)
 
     # Read in the file
     tvpdRoot = ET.parse(tvpdFile).getroot()
@@ -72,51 +65,51 @@ def parseTvpd(tvpdFile, topLevel):
     # Do some basic error checking of what we've read in
     # Make sure the root starts with the vpd tag
     if (tvpdRoot.tag != "vpd"):
-        error("%s does not start with a <vpd> tag" % tvpdFile)
+        out.error("%s does not start with a <vpd> tag" % tvpdFile)
         return(1, None)
 
     # Print the top level tags from the parsing
     if (clDebug):
-        debug("Top level tag/attrib found")
+        out.debug("Top level tag/attrib found")
         for child in tvpdRoot:
-            debug("  %s %s" % (child.tag, child.attrib))
+            out.debug("%s %s" % (child.tag, child.attrib))
 
     # Make sure the required fields are found
     # Some are only required in a top level file, not when it's just an individual record file
     if (topLevel == True):
         # The <name></name> tag is required
         if (tvpdRoot.find("name") == None):
-            error("<name></name> tag required but not found - %s" % tvpdFile)
+            out.error("<name></name> tag required but not found - %s" % tvpdFile)
             return(1, None)
 
         # The <size></size> tag is required
         if (tvpdRoot.find("size") == None):
-            error("<size></size> tag required but not found - %s" % tvpdFile)
+            out.error("<size></size> tag required but not found - %s" % tvpdFile)
             return(1, None)
 
         # The <VD></VD> tag is required
         if (tvpdRoot.find("VD") == None):
-            error("<VD></VD> tag required but not found - %s" % tvpdFile)
+            out.error("<VD></VD> tag required but not found - %s" % tvpdFile)
             return(1, None)
     else:
         # The <name></name> tag shouldn't be there
         if (tvpdRoot.find("name") != None):
-            error("<name></name> tag found when it should not be - %s" % tvpdFile)
+            out.error("<name></name> tag found when it should not be - %s" % tvpdFile)
             return(1, None)
 
         # The <size></size> tag shouldn't be there
         if (tvpdRoot.find("size") != None):
-            error("<size></size> tag found when it should not be - %s" % tvpdFile)
+            out.error("<size></size> tag found when it should not be - %s" % tvpdFile)
             return(1, None)
 
         # The <VD></VD> tag shouldn't be there
         if (tvpdRoot.find("VD") != None):
-            error("<VD></VD> tag found when it should not be - %s" % tvpdFile)
+            out.error("<VD></VD> tag found when it should not be - %s" % tvpdFile)
             return(1, None)
 
     # At least one <record></record> tag is required
     if (tvpdRoot.find("record") == None):
-        error("At least one <record></record> tag not found - %s" % tvpdFile)
+        out.error("At least one <record></record> tag not found - %s" % tvpdFile)
         return(1, None)
 
     # The file is good
@@ -174,7 +167,7 @@ def packKeyword(keyword, length, data, format):
         # Write it
         keywordPack += bytearray.fromhex(data)
     else:
-        error("Unknown format type %s passed into packKeyword" % format)
+        out.error("Unknown format type %s passed into packKeyword" % format)
         return NULL
 
     # The keyword is packed, send it back
@@ -225,34 +218,34 @@ clDebug = cmdline.parseOption("-d", "--debug")
 # Get the manifest file and get this party started
 clManifestFile = cmdline.parseOptionWithArg("-m", "--manifest")
 if (clManifestFile == None):
-    error("The -m arg is required!")
+    out.error("The -m arg is required!")
     clErrors+=1
 else:
     # Make sure the file exists
     if (os.path.exists(clManifestFile) != True):
-        error("The manifest file given does not exist")
+        out.error("The manifest file given does not exist")
         clErrors+=1
 
 # Look for output path
 clOutputPath = cmdline.parseOptionWithArg("-o", "--outpath")
 if (clOutputPath == None):
-    error("The -o arg is required")
+    out.error("The -o arg is required")
     clErrors+=1
 else:
     # Make sure the path exists, we aren't going to create it
     if (os.path.exists(clOutputPath) != True):
-        error("The given output path %s does not exist!" % clOutputPath)
-        error("Please create the output directory and run again")
+        out.error("The given output path %s does not exist!" % clOutputPath)
+        out.error("Please create the output directory and run again")
         clErrors+=1
 
 # Error check the command line
 if (clErrors):
-    error("Missing/incorrect cmdline args!  Please review the output above to determine which ones!")
+    out.error("Missing/incorrect cmdline args!  Please review the output above to determine which ones!")
     exit(clErrors)
 
 # All cmdline args should be processed, so if any left throw an error
 if (len(sys.argv) != 1):
-    error("Extra cmdline args detected - %s" % (sys.argv[1:])) # [1:] don't inclue script name in the list
+    out.error("Extra cmdline args detected - %s" % (sys.argv[1:])) # [1:] don't inclue script name in the list
     exit(len(sys.argv))
 
 # We are going to do this in 3 stages
@@ -263,11 +256,13 @@ if (len(sys.argv) != 1):
 
 ################################################
 # Work with the manifest
-print("==== Stage 1: Parsing tvpd XML")
+out.setIndent(0)
+out.msg("==== Stage 1: Parsing tvpd XML")
+out.setIndent(2)
 # Read in the manifest 
 (rc, manifest) = parseTvpd(clManifestFile, True)
 if (rc):
-    error("Problem reading in the manifest! - %s" % clManifestFile)
+    out.error("Problem reading in the manifest! - %s" % clManifestFile)
     exit(rc)
 
 # Stash away some variables for use later
@@ -280,7 +275,7 @@ for record in manifest.iter("record"):
         # We have a reference to a different file, read that in
         (rc, recordTvpd) = parseTvpd(src.text, False)
         if (rc):
-            error("Error occurred reading in %s" % src.text)
+            out.error("Error occurred reading in %s" % src.text)
             exit(rc)
         # Merge the new record into the main manifest
         # ET doesn't have a replace function.  You can do an extend/remove, but that changes the order of the file
@@ -295,7 +290,9 @@ for record in manifest.iter("record"):
 ################################################
 # Verify the tvpd XML
 # read thru the complete tvpd and verify/error check
-print("==== Stage 2: Verifying tvpd syntax")
+out.setIndent(0)
+out.msg("==== Stage 2: Verifying tvpd syntax")
+out.setIndent(2)
 errorsFound = 0
 # Keep a dictionary of the record names we come across, will let us find duplicates
 recordNames = dict()
@@ -305,12 +302,12 @@ for record in manifest.iter("record"):
     # Pull the record name out for use throughout
     recordName = record.attrib.get("name")
 
-    print("  Checking record %s" % recordName)
+    out.msg("Checking record %s" % recordName)
     
     # --------
     # Make sure we aren't finding a record we haven't already seen
     if (recordName in recordNames):
-        error("The record \"%s\" has previously been defined in the tvpd" % recordName)
+        out.error("The record \"%s\" has previously been defined in the tvpd" % recordName)
         errorsFound+=1
     else:
         recordNames[recordName] = 1
@@ -318,7 +315,7 @@ for record in manifest.iter("record"):
     # --------
     # Make sure the record name is 4 charaters long
     if (len(recordName) != 4):
-        error("The record name entry \"%s\" is not 4 characters long" % recordName)
+        out.error("The record name entry \"%s\" is not 4 characters long" % recordName)
         errorsFound+=1
 
     # Track the keywords we come across so we can find duplicate
@@ -334,7 +331,7 @@ for record in manifest.iter("record"):
         # --------
         # Make sure we aren't finding a record we haven't already seen
         if (keywordName in keywordNames):
-            error("The keyword \"%s\" has previously been defined in record %s" % (keywordName, recordName))
+            out.error("The keyword \"%s\" has previously been defined in record %s" % (keywordName, recordName))
             errorsFound+=1
         else:
             keywordNames[keywordName] = 1
@@ -357,21 +354,21 @@ for record in manifest.iter("record"):
 
             else:
                 # Flag that we found an unsupported tag.  This may help catch typos, etc..
-                error("The unsupported tag \"<%s>\" was found in keyword %s in record %s" % (kw.tag, keywordName, recordName))
+                out.error("The unsupported tag \"<%s>\" was found in keyword %s in record %s" % (kw.tag, keywordName, recordName))
                 errorsFound+=1
                 
         # --------
         # Make sure all the required kwTags were found
         for kw in kwTags:
             if (kwTags[kw] == False):
-                error("Required tag \"<%s>\" was not found in keyword %s in record %s" % (kw, keywordName, recordName))
+                out.error("Required tag \"<%s>\" was not found in keyword %s in record %s" % (kw, keywordName, recordName))
                 errorsFound+=1
 
         # --------
         # Now we know the basics of the template are correct, now do more indepth checking of length, etc..
         # A check to make sure the RT keyword kwdata matches the name of the record we are in
         if ((keywordName == "RT") and (recordName != kwdata)):
-            error("The value of the RT keyword \"%s\" does not match the record name \"%s\"" % (kwdata, recordName))
+            out.error("The value of the RT keyword \"%s\" does not match the record name \"%s\"" % (kwdata, recordName))
             errorsFound+=1
 
         # --------
@@ -382,7 +379,7 @@ for record in manifest.iter("record"):
         else:
             maxlen = 255
         if (kwlen > maxlen):
-            error("The specified length %d is bigger than the max length %d for keyword %s in record %s" % (kwlen, maxlen, keywordName, recordName))
+            out.error("The specified length %d is bigger than the max length %d for keyword %s in record %s" % (kwlen, maxlen, keywordName, recordName))
             errorsFound+=1
 
         # --------
@@ -394,7 +391,7 @@ for record in manifest.iter("record"):
             # Now look to see if there are any characters other than 0-9 & a-f
             match = re.search("([g-zG-Z]+)", kwdata)
             if (match):
-                error("A non hex character \"%s\" was found at %s in the kwdata for keyword %s in record %s" % (match.group(), match.span(), keywordName, recordName))
+                out.error("A non hex character \"%s\" was found at %s in the kwdata for keyword %s in record %s" % (match.group(), match.span(), keywordName, recordName))
                 errorsFound+=1
 
         # --------
@@ -402,38 +399,47 @@ for record in manifest.iter("record"):
         # Future checks could include making sure hex data is hex
         if (kwformat == "ascii"):
             if (len(kwdata) > kwlen):
-                error("The length of the value is longer than the given <kwlen> for keyword %s in record %s" % (keywordName, recordName))
+                out.error("The length of the value is longer than the given <kwlen> for keyword %s in record %s" % (keywordName, recordName))
                 errorsFound+=1
         elif (kwformat == "hex"):
             # Convert hex nibbles to bytes for len compare
             if ((len(kwdata)/2) > kwlen):
-                error("The length of the value is longer than the given <kwlen> for keyword %s in record %s" % (keywordName, recordName))
+                out.error("The length of the value is longer than the given <kwlen> for keyword %s in record %s" % (keywordName, recordName))
                 errorsFound+=1
         else:
-            error("Unknown keyword format \"%s\" given for keyword %s in record %s" % (kwformat, keywordName, recordName))
+            out.error("Unknown keyword format \"%s\" given for keyword %s in record %s" % (kwformat, keywordName, recordName))
             errorsFound+=1
 
+    # --------
+    # We are done reading the keywords in this record, so make sure we have at least 1 keyword
+    if (len(keywordNames) < 1):
+        out.error("No keywords were found for record %s" % recordName)
+        errorsFound+=1
+
 if (errorsFound):
-    error("%d error%s found in the tvpd description.  Please review the above errors and correct them." % (errorsFound, "s" if (errorsFound > 1) else ""))
+    out.msg("")
+    out.error("%d error%s found in the tvpd description.  Please review the above errors and correct them." % (errorsFound, "s" if (errorsFound > 1) else ""))
     tvpdFileName = clOutputPath + "/" + vpdName + "-err.tvpd"
     writeTvpd(manifest, tvpdFileName)
-    print("Wrote tvpd file to help in debug: %s" % tvpdFileName)
+    out.msg("Wrote tvpd file to help in debug: %s" % tvpdFileName)
     exit(errorsFound)
 
 # We now have a correct tvpd, use it to create a binary VPD image
-print("==== Stage 3: Creating binary VPD image")
-# Create ourput file names 
+out.setIndent(0)
+out.msg("==== Stage 3: Creating binary VPD image")
+out.setIndent(2)
+# Create our output file names 
 tvpdFileName = clOutputPath + "/" + vpdName + ".tvpd"
 vpdFileName = clOutputPath + "/" + vpdName + ".vpd"
 
 if (clDebug):
     for desc in manifest.iter('kwdesc'):
-        print(desc.tag, desc.attrib, desc.text)
+        out.debug(desc.tag, desc.attrib, desc.text)
 
 # This is our easy one, write the XML back out
 # Write out the full template vpd representing the data contained in our image
 writeTvpd(manifest, tvpdFileName)
-print("  Wrote tvpd file: %s" % tvpdFileName)
+out.msg("Wrote tvpd file: %s" % tvpdFileName)
 
 # Now the hard part, write out the binary file
 # Open up our file to write
@@ -680,4 +686,4 @@ for record in manifest.iter("record"):
 
 # Done with the file
 vpdFile.close()
-print("  Wrote vpd file: %s" % vpdFileName)
+out.msg("Wrote vpd file: %s" % vpdFileName)
