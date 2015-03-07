@@ -41,11 +41,16 @@ class RecordInfo:
 def help():
     out.msg("createVpd.py -m manifest.tvpd -o outputpath -d")
     out.msg("Required Args")
+    out.setIndent(2)
     out.msg("-m|--manifest          The input file detailing all the records and keywords to be in the image")
     out.msg("-o|--outpath           The output path for the files created by the tool")
+    out.setIndent(0)
     out.msg("Optional Args")
+    out.setIndent(2)
     out.msg("-d|--debug             Enables debug printing")
     out.msg("-h|--help              This help text")
+    out.msg("-b|--binary-records    Create binary files for each record in the template")
+    out.setIndent(0)
 
 # Function to Write out the resultant tvpd xml file
 def writeTvpd(manifest, outputFile):
@@ -273,20 +278,38 @@ vpdName = manifest.find("name").text
 
 # Look for reference files
 for record in manifest.iter("record"):
-    src = record.find("src")
-    if (src != None):
+    rtvpd = record.find("rtvpd")
+    if (rtvpd != None):
         # We have a reference to a different file, read that in
-        (rc, recordTvpd) = parseTvpd(src.text, False)
+        (rc, recordTvpd) = parseTvpd(rtvpd.text, False)
         if (rc):
-            out.error("Error occurred reading in %s" % src.text)
+            out.error("Error occurred reading in %s" % rtvpd.text)
             exit(rc)
         # Merge the new record into the main manifest
         # ET doesn't have a replace function.  You can do an extend/remove, but that changes the order of the file
         # The goal is to preserve record & keyword order, so that method doesn't work
         # The below code will insert the refrenced record from the file in the list above the current record location
         # Then remove the original record, preserving order
+
+        # --------
+        # Make sure the rtvpd only has 1 record in it
+        rcount = 0
+        for whocares in recordTvpd.iter("record"):
+            rcount+=1
+        if (rcount > 1):
+            out.error("More than 1 record entry found in rtvpd file %s.  Only 1 record is allowed!" % (rtvpd.text))
+            exit(1)
+
         # Since the referenced file also starts with <vpd> tag, you need to get one level down and find the start of the record element, hence the find
-        subRecord = recordTvpd.find("record");
+        subRecord = recordTvpd.find("record")
+
+        # --------
+        # Make sure the record found in rtvpd is the same as the record in the manifiest
+        if (subRecord.attrib.get("name") != record.attrib.get("name")):
+            out.error("The record (%s) found in %s doesn't match the record name in the manifest (%s)" % (subRecord.attrib.get("name"), rtvpd.text, record.attrib.get("name")))
+            exit(1)
+
+        # Everything looks good, insert/remove
         manifest.insert(list(manifest).index(record), subRecord)
         manifest.remove(record)
 
@@ -681,7 +704,7 @@ for record in manifest.iter("record"):
     # If the user wanted discrete binary files for each record writen out, we'll do it here
     if (clBinaryRecords):
         rvpdFileName = clOutputPath + "/" + vpdName + "-" + recordName + ".vpd"
-        out.msg("Wrote record vpd file: %s" % rvpdFileName)
+        out.msg("Wrote %s record vpd file: %s" % (recordName, rvpdFileName))
         rvpdFile = open(rvpdFileName, "wb")
         rvpdFile.write(recordInfo[recordName].record)
         rvpdFile.close()
