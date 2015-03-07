@@ -2,8 +2,9 @@
 <vpd>
   <name>birch</name>
   <size>16kb</size>
+  <VD>01</VD>
   <record name="VINI">
-    <src>/home/albertj/vpdtemplate/tvpd/t002-vini.tvpd</src>
+    <rtvpd>/home/albertj/vpdtemplate/tvpd/t002-vini.tvpd</rtvpd>
   </record>
   <record name="VSMC">
     <rdesc>The VSMC record</rdesc>

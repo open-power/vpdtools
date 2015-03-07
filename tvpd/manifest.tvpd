@@ -1,7 +1,8 @@
 <?xml version="1.0"?>
 <vpd>
-  <name>birch</name>
+  <name>sample</name>
   <size>16kb</size>
+  <VD>01</VD>
   <record name="VINI">
     <rdesc>The VINI record</rdesc>
     <keyword name="RT">
@@ -10,11 +11,11 @@
       <kwlen>4</kwlen>
       <kwdata>VINI</kwdata>
     </keyword>
-    <keyword name="BS">
-      <kwdesc>The Bull Shit keyword</kwdesc>
+    <keyword name="AS">
+      <kwdesc>The ascii keyword</kwdesc>
       <kwformat>ascii</kwformat>
-      <kwlen>15</kwlen>
-      <kwdata>This data is BS</kwdata>
+      <kwlen>20</kwlen>
+      <kwdata>This is text data</kwdata>
     </keyword>
     <keyword name="HX">
       <kwdesc>The Hex keyword</kwdesc>
