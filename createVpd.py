@@ -207,9 +207,6 @@ if (cmdline.parseOption("-h","--help")):
     help()
     exit(0)
 
-# Debug printing
-clDebug = cmdline.parseOption("-d", "--debug")
-
 # We could possibly run in two different modes
 # 1) manifest mode - the user passes in one xml file that gives all the required input args
 # 2) cmdline mode - the user passes in multiple command line args that recreate what would be in the manifest
@@ -240,8 +237,14 @@ else:
 
 # Error check the command line
 if (clErrors):
-    out.error("Missing/incorrect cmdline args!  Please review the output above to determine which ones!")
+    out.error("Missing/incorrect required cmdline args!  Please review the output above to determine which ones!")
     exit(clErrors)
+
+# Debug printing
+clDebug = cmdline.parseOption("-d", "--debug")
+
+# Create separate binary files for each record
+clBinaryRecords = cmdline.parseOption("-b", "--binary-records")
 
 # All cmdline args should be processed, so if any left throw an error
 if (len(sys.argv) != 1):
@@ -675,6 +678,13 @@ writeDataToVPD(vpdFile, recordInfo["VTOC"].record)
 for record in manifest.iter("record"):
     recordName = record.attrib.get("name")
     writeDataToVPD(vpdFile, recordInfo[recordName].record)
+    # If the user wanted discrete binary files for each record writen out, we'll do it here
+    if (clBinaryRecords):
+        rvpdFileName = clOutputPath + "/" + vpdName + "-" + recordName + ".vpd"
+        out.msg("Wrote record vpd file: %s" % rvpdFileName)
+        rvpdFile = open(rvpdFileName, "wb")
+        rvpdFile.write(recordInfo[recordName].record)
+        rvpdFile.close()
 
 # Write the VTOC ECC
 writeDataToVPD(vpdFile, recordInfo["VTOC"].ecc)
