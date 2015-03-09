@@ -597,10 +597,10 @@ recordInfo[recordName].record[1:3] = struct.pack('<H', recordLength)
 tocName = recordInfo[recordName].tocName
 # Image size hasn't been updated since the end of the last record, so it points to the start of our new record
 tocRecordOffset = recordInfo[recordName].tocRecordOffset
-recordInfo[tocName].record[tocRecordOffset:(tocRecordOffset + 2)] = struct.pack('>H', imageSize)
+recordInfo[tocName].record[tocRecordOffset:(tocRecordOffset + 2)] = struct.pack('<H', imageSize)
 # The record is complete, so we can just use the length
 tocRecordLength = recordInfo[recordName].tocRecordLength
-recordInfo[tocName].record[tocRecordLength:(tocRecordLength + 2)] = struct.pack('>H', len(recordInfo[recordName].record))
+recordInfo[tocName].record[tocRecordLength:(tocRecordLength + 2)] = struct.pack('<H', len(recordInfo[recordName].record))
 
 # Update our total image size
 imageSize += len(recordInfo[recordName].record)
@@ -642,10 +642,10 @@ for record in manifest.iter("record"):
     tocName = recordInfo[recordName].tocName
     # Image size hasn't been updated since the end of the last record, so it points to the start of our new record
     tocRecordOffset = recordInfo[recordName].tocRecordOffset
-    recordInfo[tocName].record[tocRecordOffset:(tocRecordOffset + 2)] = struct.pack('>H', imageSize)
+    recordInfo[tocName].record[tocRecordOffset:(tocRecordOffset + 2)] = struct.pack('<H', imageSize)
     # The record is complete, so we can just use the length
     tocRecordLength = recordInfo[recordName].tocRecordLength
-    recordInfo[tocName].record[tocRecordLength:(tocRecordLength + 2)] = struct.pack('>H', len(recordInfo[recordName].record))
+    recordInfo[tocName].record[tocRecordLength:(tocRecordLength + 2)] = struct.pack('<H', len(recordInfo[recordName].record))
 
     # Update our total image size
     imageSize += len(recordInfo[recordName].record)
@@ -662,10 +662,10 @@ recordInfo[recordName].ecc = bytearray(("\0" * (int(len(recordInfo[recordName].r
 tocName = recordInfo[recordName].tocName
 # Image size hasn't been updated since the end of the last record, so it points to the start of our new record
 tocEccOffset = recordInfo[recordName].tocEccOffset
-recordInfo[tocName].record[tocEccOffset:(tocEccOffset + 2)] = struct.pack('>H', imageSize)
+recordInfo[tocName].record[tocEccOffset:(tocEccOffset + 2)] = struct.pack('<H', imageSize)
 # The record is complete, so we can just use the length
 tocEccLength = recordInfo[recordName].tocEccLength
-recordInfo[tocName].record[tocEccLength:(tocEccLength + 2)] = struct.pack('>H', len(recordInfo[recordName].ecc))
+recordInfo[tocName].record[tocEccLength:(tocEccLength + 2)] = struct.pack('<H', len(recordInfo[recordName].ecc))
 
 # Update our total image size
 imageSize += len(recordInfo[recordName].ecc)
@@ -679,10 +679,10 @@ for record in manifest.iter("record"):
     tocName = recordInfo[recordName].tocName
     # Image size hasn't been updated since the end of the last record, so it points to the start of our new record
     tocEccOffset = recordInfo[recordName].tocEccOffset
-    recordInfo[tocName].record[tocEccOffset:(tocEccOffset + 2)] = struct.pack('>H', imageSize)
+    recordInfo[tocName].record[tocEccOffset:(tocEccOffset + 2)] = struct.pack('<H', imageSize)
     # The record is complete, so we can just use the length
     tocEccLength = recordInfo[recordName].tocEccLength
-    recordInfo[tocName].record[tocEccLength:(tocEccLength + 2)] = struct.pack('>H', len(recordInfo[recordName].ecc))
+    recordInfo[tocName].record[tocEccLength:(tocEccLength + 2)] = struct.pack('<H', len(recordInfo[recordName].ecc))
 
     # Update our total image size
     imageSize += len(recordInfo[recordName].ecc)
