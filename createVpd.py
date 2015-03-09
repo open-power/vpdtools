@@ -5,11 +5,13 @@
 ############################################################
 # Imports - Imports - Imports - Imports - Imports - Imports
 ############################################################
+import os
+# Get the path the script resides in
+scriptPath = os.path.dirname(os.path.realpath(__file__))
 import sys
-sys.path.insert(0,"pymod");
+sys.path.insert(0,scriptPath + "/pymod");
 import cmdline
 import out
-import os
 import xml.etree.ElementTree as ET
 import struct
 import re
