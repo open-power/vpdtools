@@ -392,8 +392,15 @@ for record in manifest.iter("record"):
                 out.error("Required tag \"<%s>\" was not found in keyword %s in record %s" % (kw, keywordName, recordName))
                 errorsFound+=1
 
-        # --------
         # Now we know the basics of the template are correct, now do more indepth checking of length, etc..
+
+        # --------
+        # Make sure the keyword is two characters long
+        if (len(keywordName) != 2):
+            out.error("The length of the keyword %s in record %s is not 2 characters long" % (keywordName, recordName))
+            errorsFound+=1
+
+        # --------
         # A check to make sure the RT keyword kwdata matches the name of the record we are in
         if ((keywordName == "RT") and (recordName != kwdata)):
             out.error("The value of the RT keyword \"%s\" does not match the record name \"%s\"" % (kwdata, recordName))
@@ -417,7 +424,8 @@ for record in manifest.iter("record"):
             kwdata = kwdata.replace(" ","")
             kwdata = kwdata.replace("\n","")
             # Now look to see if there are any characters other than 0-9 & a-f
-            match = re.search("([g-zG-Z]+)", kwdata)
+            #match = re.search("([g-zG-Z]+)", kwdata)
+            match = re.search("([^0-9a-fA-F]+)", kwdata)
             if (match):
                 out.error("A non hex character \"%s\" was found at %s in the kwdata for keyword %s in record %s" % (match.group(), match.span(), keywordName, recordName))
                 errorsFound+=1
