@@ -51,7 +51,8 @@ def help():
     out.setIndent(2)
     out.msg("-d|--debug             Enables debug printing")
     out.msg("-h|--help              This help text")
-    out.msg("-b|--binary-records    Create binary files for each record in the template")
+    out.msg("-r|--binary-records    Create binary files for each record in the template")
+    out.msg("-k|--binary-keywords   Create binary files for each keyword in the template")
     out.setIndent(0)
 
 # Function to Write out the resultant tvpd xml file
@@ -185,7 +186,7 @@ def calcPadFill(record):
     pfLength = 0
 
     # The PF keyword must exist
-    # The keyword section of record must be at least 40 bytes long, padfill will be used to acheive that
+    # The keyword section of record must be at least 40 bytes long, padfill will be used to achieve that
     # If the keyword section is over over 40, it must be aligned on word boundaries and PF accomplishes that
 
     # The record passed in at this point is the keywords + 3 other bytes (LR Tag & Record Length)
@@ -202,8 +203,6 @@ def calcPadFill(record):
 # Main - Main - Main - Main - Main - Main - Main - Main
 ############################################################
 rc = 0
-# Get the path the script is being called from
-cwd = os.path.dirname(os.path.abspath(__file__))
 
 ################################################
 # Command line options
@@ -251,7 +250,10 @@ if (clErrors):
 clDebug = cmdline.parseOption("-d", "--debug")
 
 # Create separate binary files for each record
-clBinaryRecords = cmdline.parseOption("-b", "--binary-records")
+clBinaryRecords = cmdline.parseOption("-r", "--binary-records")
+
+# Create separate binary files for each keyword
+clBinaryKeywords = cmdline.parseOption("-k", "--binary-keywords")
 
 # All cmdline args should be processed, so if any left throw an error
 if (len(sys.argv) != 1):
@@ -346,112 +348,149 @@ for record in manifest.iter("record"):
         out.error("The record name entry \"%s\" is not 4 characters long" % recordName)
         errorsFound+=1
 
-    # Track the keywords we come across so we can find duplicate
-    keywordNames = dict()
-    # Loop through the keywords and verify them
-    for keyword in record.iter("keyword"):
-        # Pull the keyword name out for use throughout
-        keywordName = keyword.attrib.get("name")
-
-        # Setup a dictionary of the supported tags
-        kwTags = {"keyword" : False, "kwdesc" : False, "kwformat" : False, "kwlen" : False, "kwdata" : False}
-
-        # --------
-        # Make sure we aren't finding a record we haven't already seen
-        if (keywordName in keywordNames):
-            out.error("The keyword \"%s\" has previously been defined in record %s" % (keywordName, recordName))
-            errorsFound+=1
-        else:
-            keywordNames[keywordName] = 1
-
-        # --------
-        # We'll loop through all the tags found in this keyword and check for all required and any extra ones
-        for kw in keyword.iter():
-            if kw.tag in kwTags:
-                # Mark that we found a required tag
-                kwTags[kw.tag] = True
-                # Save the values we'll need into variables for ease of use
-                if (kw.tag == "kwformat"):
-                    kwformat = kw.text.lower() # lower() for ease of compare
-
-                if (kw.tag == "kwlen"):
-                    kwlen = int(kw.text)
-
-                if (kw.tag == "kwdata"):
-                    kwdata = kw.text
-
-            else:
-                # Flag that we found an unsupported tag.  This may help catch typos, etc..
-                out.error("The unsupported tag \"<%s>\" was found in keyword %s in record %s" % (kw.tag, keywordName, recordName))
-                errorsFound+=1
-                
-        # --------
-        # Make sure all the required kwTags were found
-        for kw in kwTags:
-            if (kwTags[kw] == False):
-                out.error("Required tag \"<%s>\" was not found in keyword %s in record %s" % (kw, keywordName, recordName))
-                errorsFound+=1
-
-        # Now we know the basics of the template are correct, now do more indepth checking of length, etc..
-
-        # --------
-        # Make sure the keyword is two characters long
-        if (len(keywordName) != 2):
-            out.error("The length of the keyword %s in record %s is not 2 characters long" % (keywordName, recordName))
-            errorsFound+=1
-
-        # --------
-        # A check to make sure the RT keyword kwdata matches the name of the record we are in
-        if ((keywordName == "RT") and (recordName != kwdata)):
-            out.error("The value of the RT keyword \"%s\" does not match the record name \"%s\"" % (kwdata, recordName))
-            errorsFound+=1
-
-        # --------
-        # Check that the length specified isn't longer than the keyword supports
-        # Keywords that start with # are 2 bytes, others are 1 byte
-        if (keywordName[0] == "#"):
-            maxlen = 65535
-        else:
-            maxlen = 255
-        if (kwlen > maxlen):
-            out.error("The specified length %d is bigger than the max length %d for keyword %s in record %s" % (kwlen, maxlen, keywordName, recordName))
-            errorsFound+=1
-
-        # --------
-        # If the input format is hex, make sure the input data is hex only
-        if (kwformat == "hex"):
-            # Remove white space and carriage returns from the kwdata
-            kwdata = kwdata.replace(" ","")
-            kwdata = kwdata.replace("\n","")
-            # Now look to see if there are any characters other than 0-9 & a-f
-            #match = re.search("([g-zG-Z]+)", kwdata)
-            match = re.search("([^0-9a-fA-F]+)", kwdata)
-            if (match):
-                out.error("A non hex character \"%s\" was found at %s in the kwdata for keyword %s in record %s" % (match.group(), match.span(), keywordName, recordName))
-                errorsFound+=1
-
-        # --------
-        # Verify that the data isn't longer than the length given
-        # Future checks could include making sure hex data is hex
-        if (kwformat == "ascii"):
-            if (len(kwdata) > kwlen):
-                out.error("The length of the value is longer than the given <kwlen> for keyword %s in record %s" % (keywordName, recordName))
-                errorsFound+=1
-        elif (kwformat == "hex"):
-            # Convert hex nibbles to bytes for len compare
-            if ((len(kwdata)/2) > kwlen):
-                out.error("The length of the value is longer than the given <kwlen> for keyword %s in record %s" % (keywordName, recordName))
-                errorsFound+=1
-        else:
-            out.error("Unknown keyword format \"%s\" given for keyword %s in record %s" % (kwformat, keywordName, recordName))
-            errorsFound+=1
-
     # --------
-    # We are done reading the keywords in this record, so make sure we have at least 1 keyword
-    if (len(keywordNames) < 1):
-        out.error("No keywords were found for record %s" % recordName)
+    # Determine if they gave a list of keyword descriptions to convert to binary data of if they gave a binary data record
+    keywordTagFound = False
+    rbinfileTagFound = False
+    if (record.find("keyword") != None):
+        keywordTagFound = True
+    if (record.find("rbinfile") != None):
+        rbinfileTagFound = True
+    # Both given
+    if (keywordTagFound and rbinfileTagFound):
+        out.error("Both <keyword> and <rbinfile> tags were found in record %s.  Only one or the other is supported!" % (recordName))
+        errorsFound+=1
+        break
+
+    # Neither given
+    if (not keywordTagFound and not rbinfileTagFound):
+        out.error("Neither the <keyword> or <rbinfile> tags were found in record %s.  One must be given!" % (recordName))
         errorsFound+=1
 
+    # Do very basic checking on the rbinfile if found
+    # It is assumed that this file was generated by this tool at an earlier date, so it should be format correct
+    # We'll simply ensure it is actually a record that goes with this record name
+    if (rbinfileTagFound):
+        # Get the name
+        rbinfile = record.find("rbinfile").text
+        # Make sure the file exists
+        if (os.path.exists(rbinfile) != True):
+            out.error("The rbinfile given %s does not exist" % (rbinfile))
+            clErrors+=1
+            break
+
+        # It does, read it in so we can check the record name
+        rbinfileContents = open(rbinfile, mode='rb').read()
+
+        # --------
+        # Check the record name
+        # This is just the hard coded offset into any record where the contents of the RT keyword would be found
+        if (recordName != rbinfileContents[6:10].decode()):
+            out.error("The record name found %s in %s, does not match the name of the record %s in the tvpd" % (rbinfileContents[6:10].decode(), rbinfile, recordName))
+            clErrors+=1
+
+    # For the keyword tags we'll do much more extensive checking
+    if (keywordTagFound):
+        # Track the keywords we come across so we can find duplicate
+        keywordNames = dict()
+        # Loop through the keywords and verify them
+        for keyword in record.iter("keyword"):
+            # Pull the keyword name out for use throughout
+            keywordName = keyword.attrib.get("name")
+
+            # Setup a dictionary of the supported tags
+            kwTags = {"keyword" : False, "kwdesc" : False, "kwformat" : False, "kwlen" : False, "kwdata" : False}
+
+            # --------
+            # Make sure we aren't finding a record we haven't already seen
+            if (keywordName in keywordNames):
+                out.error("The keyword \"%s\" has previously been defined in record %s" % (keywordName, recordName))
+                errorsFound+=1
+            else:
+                keywordNames[keywordName] = 1
+
+            # --------
+            # We'll loop through all the tags found in this keyword and check for all required and any extra ones
+            for kw in keyword.iter():
+                if kw.tag in kwTags:
+                    # Mark that we found a required tag
+                    kwTags[kw.tag] = True
+                    # Save the values we'll need into variables for ease of use
+                    if (kw.tag == "kwformat"):
+                        kwformat = kw.text.lower() # lower() for ease of compare
+
+                    if (kw.tag == "kwlen"):
+                        kwlen = int(kw.text)
+
+                    if (kw.tag == "kwdata"):
+                        kwdata = kw.text
+
+                else:
+                    # Flag that we found an unsupported tag.  This may help catch typos, etc..
+                    out.error("The unsupported tag \"<%s>\" was found in keyword %s in record %s" % (kw.tag, keywordName, recordName))
+                    errorsFound+=1
+                
+            # --------
+            # Make sure all the required kwTags were found
+            for kw in kwTags:
+                if (kwTags[kw] == False):
+                    out.error("Required tag \"<%s>\" was not found in keyword %s in record %s" % (kw, keywordName, recordName))
+                    errorsFound+=1
+
+            # Now we know the basics of the template are correct, now do more indepth checking of length, etc..
+
+            # --------
+            # Make sure the keyword is two characters long
+            if (len(keywordName) != 2):
+                out.error("The length of the keyword %s in record %s is not 2 characters long" % (keywordName, recordName))
+                errorsFound+=1
+
+            # --------
+            # A check to make sure the RT keyword kwdata matches the name of the record we are in
+            if ((keywordName == "RT") and (recordName != kwdata)):
+                out.error("The value of the RT keyword \"%s\" does not match the record name \"%s\"" % (kwdata, recordName))
+                errorsFound+=1
+
+            # --------
+            # Check that the length specified isn't longer than the keyword supports
+            # Keywords that start with # are 2 bytes, others are 1 byte
+            if (keywordName[0] == "#"):
+                maxlen = 65535
+            else:
+                maxlen = 255
+            if (kwlen > maxlen):
+                out.error("The specified length %d is bigger than the max length %d for keyword %s in record %s" % (kwlen, maxlen, keywordName, recordName))
+                errorsFound+=1
+
+            # --------
+            # If the input format is hex, make sure the input data is hex only
+            if (kwformat == "hex"):
+                # Remove white space and carriage returns from the kwdata
+                kwdata = kwdata.replace(" ","")
+                kwdata = kwdata.replace("\n","")
+                # Now look to see if there are any characters other than 0-9 & a-f
+                match = re.search("([^0-9a-fA-F]+)", kwdata)
+                if (match):
+                    out.error("A non hex character \"%s\" was found at %s in the kwdata for keyword %s in record %s" % (match.group(), match.span(), keywordName, recordName))
+                    errorsFound+=1
+
+            # --------
+            # Verify that the data isn't longer than the length given
+            # Future checks could include making sure hex data is hex
+            if (kwformat == "ascii"):
+                if (len(kwdata) > kwlen):
+                    out.error("The length of the value is longer than the given <kwlen> for keyword %s in record %s" % (keywordName, recordName))
+                    errorsFound+=1
+            elif (kwformat == "hex"):
+                # Convert hex nibbles to bytes for len compare
+                if ((len(kwdata)/2) > kwlen):
+                    out.error("The length of the value is longer than the given <kwlen> for keyword %s in record %s" % (keywordName, recordName))
+                    errorsFound+=1
+            else:
+                out.error("Unknown keyword format \"%s\" given for keyword %s in record %s" % (kwformat, keywordName, recordName))
+                errorsFound+=1
+
+# All done with error check, bailout if we hit something
 if (errorsFound):
     out.msg("")
     out.error("%d error%s found in the tvpd description.  Please review the above errors and correct them." % (errorsFound, "s" if (errorsFound > 1) else ""))
@@ -620,33 +659,53 @@ imageSize += len(recordInfo[recordName].record)
 for record in manifest.iter("record"):
     recordName = record.attrib.get("name")
 
-    # The large resource tag
-    recordInfo[recordName].record += bytearray(bytearray.fromhex("84"))
+    # Figure out if we need to create an image from keywords, or just stick a record binary in place
+    # We already did all the check to make sure only a rbinfile or keyword(s) tag was given
+    # Don't error check those cases here.  If rbinfile is fine, just go and else the keyword case
+    if (record.find("rbinfile") != None):
+        # Get the name
+        rbinfile = record.find("rbinfile").text
 
-    # The record length, we will come back and update this at the end
-    recordInfo[recordName].record += bytearray(bytearray.fromhex("0000"))
+        # Open the file and stick it into the record
+        recordInfo[recordName].record = open(rbinfile, mode='rb').read()
 
-    # The keywords
-    keywordsLength = 0
-    for keyword in record.iter("keyword"):
-        keywordPack = packKeyword(keyword.attrib.get("name"), int(keyword.find("kwlen").text), keyword.find("kwdata").text, keyword.find("kwformat").text)
+    # Create the record image from the xml description
+    else:
+
+        # The large resource tag
+        recordInfo[recordName].record += bytearray(bytearray.fromhex("84"))
+
+        # The record length, we will come back and update this at the end
+        recordInfo[recordName].record += bytearray(bytearray.fromhex("0000"))
+
+        # The keywords
+        for keyword in record.iter("keyword"):
+            keywordName = keyword.attrib.get("name")
+
+            keywordPack = packKeyword(keywordName, int(keyword.find("kwlen").text), keyword.find("kwdata").text, keyword.find("kwformat").text)
+            recordInfo[recordName].record += keywordPack
+            # If the user wanted discrete binary files for each keyword writen out, we'll do it here
+            if (clBinaryKeywords):
+                kvpdFileName = clOutputPath + "/" + vpdName + "-" + recordName + "-" + keywordName + ".vpd"
+                out.msg("Wrote record %s keyword %s vpd file: %s" % (recordName, keywordName, kvpdFileName))
+                kvpdFile = open(kvpdFileName, "wb")
+                kvpdFile.write(keywordPack)
+                kvpdFile.close()
+
+        # Calculate the padfill required
+        padfillSize = calcPadFill(recordInfo[recordName].record)
+
+        # Write the PF keyword
+        keywordPack = packKeyword("PF", padfillSize, "0", "hex")
         recordInfo[recordName].record += keywordPack
-        keywordsLength += len(keywordPack)
 
-    # Calculate the padfill required
-    padfillSize = calcPadFill(recordInfo[recordName].record)
+        # The small resource tag
+        recordInfo[recordName].record += bytearray(bytearray.fromhex("78"))
 
-    # Write the PF keyword
-    keywordPack = packKeyword("PF", padfillSize, "0", "hex")
-    recordInfo[recordName].record += keywordPack
-
-    # The small resource tag
-    recordInfo[recordName].record += bytearray(bytearray.fromhex("78"))
-
-    # Update the record length
-    # Total length minus 4, LR(1), SR(1), Length (2)
-    recordLength = len(recordInfo[recordName].record) - 4
-    recordInfo[recordName].record[1:3] = struct.pack('<H', recordLength)
+        # Update the record length
+        # Total length minus 4, LR(1), SR(1), Length (2)
+        recordLength = len(recordInfo[recordName].record) - 4
+        recordInfo[recordName].record[1:3] = struct.pack('<H', recordLength)
 
     # Go back and update all our TOC info now that the record is created
     tocName = recordInfo[recordName].tocName
