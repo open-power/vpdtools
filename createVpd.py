@@ -278,12 +278,12 @@ vpdName = manifest.find("name").text
 
 # Look for reference files
 for record in manifest.iter("record"):
-    rtvpd = record.find("rtvpd")
-    if (rtvpd != None):
+    rtvpdfile = record.find("rtvpdfile")
+    if (rtvpdfile != None):
         # We have a reference to a different file, read that in
-        (rc, recordTvpd) = parseTvpd(rtvpd.text, False)
+        (rc, recordTvpd) = parseTvpd(rtvpdfile.text, False)
         if (rc):
-            out.error("Error occurred reading in %s" % rtvpd.text)
+            out.error("Error occurred reading in %s" % rtvpdfile.text)
             exit(rc)
         # Merge the new record into the main manifest
         # ET doesn't have a replace function.  You can do an extend/remove, but that changes the order of the file
@@ -297,7 +297,7 @@ for record in manifest.iter("record"):
         for whocares in recordTvpd.iter("record"):
             rcount+=1
         if (rcount > 1):
-            out.error("More than 1 record entry found in rtvpd file %s.  Only 1 record is allowed!" % (rtvpd.text))
+            out.error("More than 1 record entry found in rtvpdfile %s.  Only 1 record is allowed!" % (rtvpd.text))
             exit(1)
 
         # Since the referenced file also starts with <vpd> tag, you need to get one level down and find the start of the record element, hence the find
