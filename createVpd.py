@@ -174,6 +174,13 @@ def packKeyword(keyword, length, data, format):
         data = data.ljust((length * 2), '0')
         # Write it
         keywordPack += bytearray.fromhex(data)
+    elif (format == "bin"):
+        # Pad if necessary
+        data = bytearray(data)
+        for i in range (len(data), length):
+            data.append(0)
+        # Stick the binary data we have right back into the record
+        keywordPack += data
     else:
         out.error("Unknown format type %s passed into packKeyword" % format)
         return NULL
@@ -463,6 +470,20 @@ for record in manifest.iter("record"):
                 errorsFound+=1
 
             # --------
+            # If the input format is bin, make sure the file exists and then read in the data
+            if (kwformat == "bin"):
+                # Make sure the file exists
+                databinfile = kwdata
+                if (os.path.exists(databinfile) != True):
+                    out.error("The binary file %s given for keyword %s in record %s doesn't exist" % (databinfile, keywordName, recordName))
+                    clErrors+=1
+                    break
+
+                # It does, read it in so we can check the record name
+                # We'll replace the kwdata with the actual data instead of the file name for the rest of the checks
+                kwdata = open(databinfile, mode='rb').read()
+
+            # --------
             # If the input format is hex, make sure the input data is hex only
             if (kwformat == "hex"):
                 # Remove white space and carriage returns from the kwdata
@@ -477,7 +498,7 @@ for record in manifest.iter("record"):
             # --------
             # Verify that the data isn't longer than the length given
             # Future checks could include making sure hex data is hex
-            if (kwformat == "ascii"):
+            if (kwformat == "ascii" or kwformat == "bin"):
                 if (len(kwdata) > kwlen):
                     out.error("The length of the value is longer than the given <kwlen> for keyword %s in record %s" % (keywordName, recordName))
                     errorsFound+=1
@@ -660,8 +681,8 @@ for record in manifest.iter("record"):
     recordName = record.attrib.get("name")
 
     # Figure out if we need to create an image from keywords, or just stick a record binary in place
-    # We already did all the check to make sure only a rbinfile or keyword(s) tag was given
-    # Don't error check those cases here.  If rbinfile is fine, just go and else the keyword case
+    # We already did all the checks to make sure only a rbinfile or keyword(s) tag was given
+    # Don't error check those cases here again.  If rbinfile is found, just go and else the keyword case
     if (record.find("rbinfile") != None):
         # Get the name
         rbinfile = record.find("rbinfile").text
@@ -681,8 +702,15 @@ for record in manifest.iter("record"):
         # The keywords
         for keyword in record.iter("keyword"):
             keywordName = keyword.attrib.get("name")
+            kwlen = int(keyword.find("kwlen").text)
+            kwdata = keyword.find("kwdata").text
+            kwformat = keyword.find("kwformat").text
+            # If the input format is bin, we need to pull the data in from the file
+            # We know the file exists from the check in step 2
+            if (kwformat == "bin"):
+                kwdata = open(kwdata, mode='rb').read()
 
-            keywordPack = packKeyword(keywordName, int(keyword.find("kwlen").text), keyword.find("kwdata").text, keyword.find("kwformat").text)
+            keywordPack = packKeyword(keywordName,  kwlen, kwdata, kwformat)
             recordInfo[recordName].record += keywordPack
             # If the user wanted discrete binary files for each keyword writen out, we'll do it here
             if (clBinaryKeywords):
