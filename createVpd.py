@@ -55,6 +55,21 @@ def help():
     out.msg("-k|--binary-keywords   Create binary files for each keyword in the template")
     out.setIndent(0)
 
+# Find file in a given path or paths
+# Used by the ---inpath option
+def findFile(filename, searchPath):
+   found = False
+   paths = searchPath.split(os.path.pathsep)
+   for path in paths:
+       #print("Trying %s" % (os.path.join(path,filename)))
+       if os.path.exists(os.path.join(path, filename)):
+           found = 1
+           break
+   if found:
+       return os.path.abspath(os.path.join(path, filename))
+   else:
+       return None
+
 # Function to Write out the resultant tvpd xml file
 def writeTvpd(manifest, outputFile):
     tree = ET.ElementTree(manifest)
@@ -230,11 +245,6 @@ clManifestFile = cmdline.parseOptionWithArg("-m", "--manifest")
 if (clManifestFile == None):
     out.error("The -m arg is required!")
     clErrors+=1
-else:
-    # Make sure the file exists
-    if (os.path.exists(clManifestFile) != True):
-        out.error("The manifest file given does not exist")
-        clErrors+=1
 
 # Look for output path
 clOutputPath = cmdline.parseOptionWithArg("-o", "--outpath")
@@ -247,6 +257,20 @@ else:
         out.error("The given output path %s does not exist!" % clOutputPath)
         out.error("Please create the output directory and run again")
         clErrors+=1
+
+# Look for input path
+clInputPath = cmdline.parseOptionWithArg("-i", "--inpath")
+# Make sure the path exists
+if (clInputPath != None):
+    pass
+    # Let's not do this check because it will allow the user to pass in multiple paths
+    # Yes, we could split the path and check each one, but not now
+    #if (os.path.exists(clInputPath) != True):
+    #    out.error("The given input path %s does not exist!" % clOutputPath)
+    #    clErrors+=1
+else:
+    # Set it the CWD since it will be used throughout the program and having it set to None breaks things
+    clInputPath = "."
 
 # Error check the command line
 if (clErrors):
@@ -278,10 +302,18 @@ if (len(sys.argv) != 1):
 out.setIndent(0)
 out.msg("==== Stage 1: Parsing tvpd XML")
 out.setIndent(2)
+errorsFound = 0
+
+# Get the full path to the file given
+manifestfile = findFile(clManifestFile, clInputPath)
+if (manifestfile == None):
+    out.error("The manifest file %s could not be found!  Please check your -m or -i cmdline options for typos" % (clManifestFile))
+    exit(1)
+
 # Read in the manifest 
-(rc, manifest) = parseTvpd(clManifestFile, True)
+(rc, manifest) = parseTvpd(manifestfile, True)
 if (rc):
-    out.error("Problem reading in the manifest! - %s" % clManifestFile)
+    out.error("Problem reading in the manifest! - %s" % manifestfile)
     exit(rc)
 
 # Stash away some variables for use later
@@ -291,11 +323,20 @@ vpdName = manifest.find("name").text
 for record in manifest.iter("record"):
     rtvpdfile = record.find("rtvpdfile")
     if (rtvpdfile != None):
+        # Get the full path to the file given
+        fileName = findFile(rtvpdfile.text, clInputPath)
+        if (fileName == None):
+            out.error("The rtvpdfile %s could not be found!  Please check your tvpd or input path" % (rtvpdfile.text))
+            errorsFound+=1
+            break
+
         # We have a reference to a different file, read that in
-        (rc, recordTvpd) = parseTvpd(rtvpdfile.text, False)
+        (rc, recordTvpd) = parseTvpd(fileName, False)
         if (rc):
-            out.error("Error occurred reading in %s" % rtvpdfile.text)
-            exit(rc)
+            out.error("Error occurred reading in %s" % fileName)
+            errorsFound+=1
+            break
+
         # Merge the new record into the main manifest
         # ET doesn't have a replace function.  You can do an extend/remove, but that changes the order of the file
         # The goal is to preserve record & keyword order, so that method doesn't work
@@ -309,7 +350,8 @@ for record in manifest.iter("record"):
             rcount+=1
         if (rcount > 1):
             out.error("More than 1 record entry found in rtvpdfile %s.  Only 1 record is allowed!" % (rtvpd.text))
-            exit(1)
+            errorsFound+=1
+            break
 
         # Since the referenced file also starts with <vpd> tag, you need to get one level down and find the start of the record element, hence the find
         subRecord = recordTvpd.find("record")
@@ -318,11 +360,18 @@ for record in manifest.iter("record"):
         # Make sure the record found in rtvpd is the same as the record in the manifiest
         if (subRecord.attrib.get("name") != record.attrib.get("name")):
             out.error("The record (%s) found in %s doesn't match the record name in the manifest (%s)" % (subRecord.attrib.get("name"), rtvpd.text, record.attrib.get("name")))
-            exit(1)
+            errorsFound+=1
+            break
 
         # Everything looks good, insert/remove
         manifest.insert(list(manifest).index(record), subRecord)
         manifest.remove(record)
+
+# All done with error checks, bailout if we hit something
+if (errorsFound):
+    out.msg("")
+    out.error("%d error%s found in the manifest.  Please review the above errors and correct them." % (errorsFound, "s" if (errorsFound > 1) else ""))
+    exit(errorsFound)
 
 ################################################
 # Verify the tvpd XML
@@ -380,10 +429,12 @@ for record in manifest.iter("record"):
     if (rbinfileTagFound):
         # Get the name
         rbinfile = record.find("rbinfile").text
-        # Make sure the file exists
-        if (os.path.exists(rbinfile) != True):
-            out.error("The rbinfile given %s does not exist" % (rbinfile))
-            clErrors+=1
+
+        # Get the full path to the file given
+        rbinfile = findFile(rbinfile, clInputPath)
+        if (rbinfile == None):
+            out.error("The rbinfile %s could not be found!  Please check your tvpd or input path" % (rbinfile))
+            errorsFound+=1
             break
 
         # It does, read it in so we can check the record name
@@ -472,11 +523,11 @@ for record in manifest.iter("record"):
             # --------
             # If the input format is bin, make sure the file exists and then read in the data
             if (kwformat == "bin"):
-                # Make sure the file exists
-                databinfile = kwdata
-                if (os.path.exists(databinfile) != True):
-                    out.error("The binary file %s given for keyword %s in record %s doesn't exist" % (databinfile, keywordName, recordName))
-                    clErrors+=1
+                # Get the full path to the file given
+                databinfile = findFile(kwdata, clInputPath)
+                if (databinfile == None):
+                    out.error("The databinfile %s could not be found!  Please check your tvpd or input path" % (kwdata))
+                    errorsFound+=1
                     break
 
                 # It does, read it in so we can check the record name
@@ -511,7 +562,7 @@ for record in manifest.iter("record"):
                 out.error("Unknown keyword format \"%s\" given for keyword %s in record %s" % (kwformat, keywordName, recordName))
                 errorsFound+=1
 
-# All done with error check, bailout if we hit something
+# All done with error checks, bailout if we hit something
 if (errorsFound):
     out.msg("")
     out.error("%d error%s found in the tvpd description.  Please review the above errors and correct them." % (errorsFound, "s" if (errorsFound > 1) else ""))
@@ -527,10 +578,6 @@ out.setIndent(2)
 # Create our output file names 
 tvpdFileName = clOutputPath + "/" + vpdName + ".tvpd"
 vpdFileName = clOutputPath + "/" + vpdName + ".vpd"
-
-if (clDebug):
-    for desc in manifest.iter('kwdesc'):
-        out.debug(desc.tag, desc.attrib, desc.text)
 
 # This is our easy one, write the XML back out
 # Write out the full template vpd representing the data contained in our image
