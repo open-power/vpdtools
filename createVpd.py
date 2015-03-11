@@ -51,6 +51,7 @@ def help():
     out.setIndent(2)
     out.msg("-d|--debug             Enables debug printing")
     out.msg("-h|--help              This help text")
+    out.msg("-i|--inpath            The search path to use for files referenced in the template")
     out.msg("-r|--binary-records    Create binary files for each record in the template")
     out.msg("-k|--binary-keywords   Create binary files for each keyword in the template")
     out.setIndent(0)
