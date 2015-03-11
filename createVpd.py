@@ -78,18 +78,15 @@ def writeTvpd(manifest, outputFile):
 # Parses a tvpd file using ET and then checks to ensure some basic required fields are present
 def parseTvpd(tvpdFile, topLevel):
 
+    errorsFound = 0
     # Let the user know what file we are reading
     # We could make this optional with a new function param in the future
     out.msg("Parsing tvpd %s" % tvpdFile)
 
     # Read in the file
+    # If there are tag mismatch errors or other general gross format problems, it will get caught here
+    # Once we return from this function, then we'll check to make sure only supported tags were given, etc..
     tvpdRoot = ET.parse(tvpdFile).getroot()
-
-    # Do some basic error checking of what we've read in
-    # Make sure the root starts with the vpd tag
-    if (tvpdRoot.tag != "vpd"):
-        out.error("%s does not start with a <vpd> tag" % tvpdFile)
-        return(1, None)
 
     # Print the top level tags from the parsing
     if (clDebug):
@@ -97,46 +94,112 @@ def parseTvpd(tvpdFile, topLevel):
         for child in tvpdRoot:
             out.debug("%s %s" % (child.tag, child.attrib))
 
-    # Make sure the required fields are found
-    # Some are only required in a top level file, not when it's just an individual record file
-    if (topLevel == True):
-        # The <name></name> tag is required
-        if (tvpdRoot.find("name") == None):
-            out.error("<name></name> tag required but not found - %s" % tvpdFile)
-            return(1, None)
-
-        # The <size></size> tag is required
-        if (tvpdRoot.find("size") == None):
-            out.error("<size></size> tag required but not found - %s" % tvpdFile)
-            return(1, None)
-
-        # The <VD></VD> tag is required
-        if (tvpdRoot.find("VD") == None):
-            out.error("<VD></VD> tag required but not found - %s" % tvpdFile)
-            return(1, None)
-    else:
-        # The <name></name> tag shouldn't be there
-        if (tvpdRoot.find("name") != None):
-            out.error("<name></name> tag found when it should not be - %s" % tvpdFile)
-            return(1, None)
-
-        # The <size></size> tag shouldn't be there
-        if (tvpdRoot.find("size") != None):
-            out.error("<size></size> tag found when it should not be - %s" % tvpdFile)
-            return(1, None)
-
-        # The <VD></VD> tag shouldn't be there
-        if (tvpdRoot.find("VD") != None):
-            out.error("<VD></VD> tag found when it should not be - %s" % tvpdFile)
-            return(1, None)
-
-    # At least one <record></record> tag is required
-    if (tvpdRoot.find("record") == None):
-        out.error("At least one <record></record> tag not found - %s" % tvpdFile)
+    # Do some basic error checking of what we've read in
+    # Make sure the root starts with the vpd tag
+    # If it doesn't, it's not worth syntax checking any further
+    if (tvpdRoot.tag != "vpd"):
+        out.error("%s does not start with a <vpd> tag.  No further checking will be done until fixed!" % tvpdFile)
         return(1, None)
 
-    # The file is good
-    return(0, tvpdRoot)
+    # We at least have a proper top level vpd tag, so loop thru the rest of the levels and check for any unknown tags
+    # This will also be a good place to check for some required tags
+
+    # Define the expected tags at this level
+    vpdTags = {"name" : 0, "size" : 0, "VD" : 0, "record" : 0}
+
+    for vpd in tvpdRoot:
+        # See if this is a tag we even expect
+        if vpd.tag not in vpdTags:
+            out.error("Unsupported tag <%s> found while parsing the <vpd> level" % vpd.tag)
+            errorsFound +=1
+            # We continue here because we don't want to parse down this hierarcy path when we don't know what it is
+            continue
+
+        # It was a supported tag
+        else:
+            vpdTags[vpd.tag] +=1
+
+        # Do the record level checks
+        if (vpd.tag == "record"):
+            # Define the expected tags at this level
+            recordTags = {"rdesc" : 0, "keyword" : 0, "rtvpdfile" : 0, "rbinfile" : 0}
+
+            # Make sure the record has a name attrib, save for later use
+            recordName = vpd.attrib.get("name")
+            if (recordName == None):
+                out.error("<record> tag is missing the name attribute")
+                errorsFound+=1
+
+            # Loop thru the tags defined for this record
+            for record in vpd:
+                # See if this is a tag we even expect
+                if record.tag not in recordTags:
+                    out.error("Unsupported tag <%s> found while parsing the <record> level for record %s" % (record.tag, recordName))
+                    errorsFound +=1
+                else:
+                    recordTags[record.tag] +=1
+
+                # Do the keyword level checks
+                if (record.tag == "keyword"):
+                    # Define the expected tags at this level
+                    keywordTags = {"kwdesc" : 0, "kwformat" : 0, "kwlen" : 0, "kwdata" : 0}
+
+                    # Make sure the record has a name attrib, save for later use
+                    keywordName = record.attrib.get("name")
+                    if (keywordName == None):
+                        out.error("<keyword> tag in record %s is missing the name attribute" % (recordName))
+                        errorsFound+=1
+
+                    # Loop thru the tags defined for this keyword
+                    for keyword in record:
+                        # See if this is a tag we even expect
+                        if keyword.tag not in keywordTags:
+                            out.error("Unsupported tag <%s> found while parsing the <keyword> level for keyword %s" % (keyword.tag, keywordName))
+                            errorsFound +=1
+                        else:
+                            keywordTags[keyword.tag] +=1
+
+                    # We've checked for unknown keyword tags, now make sure we have the right number of each
+                    # This is a simple one, we can only have 1 of each
+                    for tag in keywordTags:
+                        if (keywordTags[tag] != 1):
+                            out.error("The tag <%s> was expected to have a count of 1, but found with a count of %d" % (tag, keywordTags[tag]))
+                            errorsFound+=1
+
+            # We've checked for unknown record tags, now make sure we've got the right number, they don't conflict, etc..
+            recordTagTotal = bool(recordTags["keyword"]) + bool(recordTags["rbinfile"]) + bool(recordTags["rtvpdfile"])
+            # keyword, rbinfile and rtvpdfile are mutually exclusive.  Make sure we have only one
+            if (recordTagTotal > 1):
+                out.error("For record %s, more than one tag of type keyword, rbinfile or rtvpdfile was given!" % (recordName))
+                out.error("Use of only 1 at a time is supported for a given record!")
+                errorsFound+=1
+            # We check if we had more than 1, let's make sure we have at least 1
+            if (recordTagTotal < 1):
+                out.error("For record %s, 0 tags of type keyword, rbinfile or rtvpdfile was given!" % (recordName))
+                out.error("1 tag of the 3 must be in use for the record to be valid!")
+                errorsFound+=1
+
+    # Do some checking of what we found at the vpd level
+    if (topLevel == True):
+        comparer = 1
+    else:
+        comparer = 0
+    for tag in ["name", "size", "VD"]:
+        if (vpdTags[tag] != comparer):
+            out.error("The tag <%s> was found %d times, when %d is required" % (tag, vpdTags[tag], comparer))
+            errorsFound+=1
+
+    # Make sure at least one record tag was found
+    if (vpdTags["record"] == 0):
+        out.error("At least one <record> must be defined for the file to be valid!")
+        errorsFound+=1
+
+    ######
+    # All done, vary our return based upon the errorsFound
+    if (errorsFound):
+        return (errorsFound, None)
+    else:
+        return(0, tvpdRoot)
 
 # Function to write properly packed/encoded data to the vpdFile
 def writeDataToVPD(vpdFile, data, offset = None):
@@ -321,6 +384,9 @@ vpdName = manifest.find("name").text
 
 # Look for reference files
 for record in manifest.iter("record"):
+    recordName = record.attrib.get("name")
+
+    # See if a rtvpdfile was given and if so, load it in
     rtvpdfile = record.find("rtvpdfile")
     if (rtvpdfile != None):
         # Get the full path to the file given
@@ -355,11 +421,12 @@ for record in manifest.iter("record"):
 
         # Since the referenced file also starts with <vpd> tag, you need to get one level down and find the start of the record element, hence the find
         subRecord = recordTvpd.find("record")
+        subRecordName = subRecord.attrib.get("name")
 
         # --------
         # Make sure the record found in rtvpd is the same as the record in the manifiest
-        if (subRecord.attrib.get("name") != record.attrib.get("name")):
-            out.error("The record (%s) found in %s doesn't match the record name in the manifest (%s)" % (subRecord.attrib.get("name"), rtvpd.text, record.attrib.get("name")))
+        if (subRecordName != recordName):
+            out.error("The record (%s) found in %s doesn't match the record name in the manifest (%s)" % (subRecordName, rtvpd.text, recordName))
             errorsFound+=1
             break
 
