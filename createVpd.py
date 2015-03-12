@@ -103,11 +103,12 @@ def parseTvpd(tvpdFile, topLevel):
         return(1, None)
 
     # We at least have a proper top level vpd tag, so loop thru the rest of the levels and check for any unknown tags
-    # This will also be a good place to check for some required tags
+    # This will also be a good place to check for the required tags
 
     # Define the expected tags at this level
     vpdTags = {"name" : 0, "size" : 0, "VD" : 0, "record" : 0}
 
+    # Go thru the tags at this level
     for vpd in tvpdRoot:
         # See if this is a tag we even expect
         if vpd.tag not in vpdTags:
@@ -127,7 +128,7 @@ def parseTvpd(tvpdFile, topLevel):
             # Make sure the record has a name attrib, save for later use
             recordName = vpd.attrib.get("name")
             if (recordName == None):
-                out.error("<record> tag is missing the name attribute")
+                out.error("A <record> tag is missing the name attribute")
                 errorsFound+=1
 
             # Loop thru the tags defined for this record
@@ -147,7 +148,7 @@ def parseTvpd(tvpdFile, topLevel):
                     # Define the expected tags at this level
                     keywordTags = {"kwdesc" : 0, "kwformat" : 0, "kwlen" : 0, "kwdata" : 0}
 
-                    # Make sure the record has a name attrib, save for later use
+                    # Make sure the keyword has a name attrib, save for later use
                     keywordName = record.attrib.get("name")
                     if (keywordName == None):
                         out.error("<keyword> tag in record %s is missing the name attribute" % (recordName))
@@ -157,7 +158,7 @@ def parseTvpd(tvpdFile, topLevel):
                     for keyword in record:
                         # See if this is a tag we even expect
                         if keyword.tag not in keywordTags:
-                            out.error("Unsupported tag <%s> found while parsing the <keyword> level for keyword %s" % (keyword.tag, keywordName))
+                            out.error("Unsupported tag <%s> found while parsing the <keyword> level for keyword %s in record %s" % (keyword.tag, keywordName, recordName))
                             errorsFound +=1
                             # We continue here because we don't want to parse down this hierarcy path when we don't know what it is
                             continue
@@ -169,7 +170,7 @@ def parseTvpd(tvpdFile, topLevel):
                     # This is a simple one, we can only have 1 of each
                     for tag in keywordTags:
                         if (keywordTags[tag] != 1):
-                            out.error("The tag <%s> was expected to have a count of 1, but found with a count of %d" % (tag, keywordTags[tag]))
+                            out.error("The tag <%s> was expected to have a count of 1, but was found with a count of %d for keyword %s in record %s" % (tag, keywordTags[tag], keywordName, recordName))
                             errorsFound+=1
 
             # We've checked for unknown record tags, now make sure we've got the right number, they don't conflict, etc..
@@ -179,7 +180,7 @@ def parseTvpd(tvpdFile, topLevel):
                 out.error("For record %s, more than one tag of type keyword, rbinfile or rtvpdfile was given!" % (recordName))
                 out.error("Use of only 1 at a time is supported for a given record!")
                 errorsFound+=1
-            # We check if we had more than 1, let's make sure we have at least 1
+            # We checked if we had more than 1, let's make sure we have at least 1
             if (recordTagTotal < 1):
                 out.error("For record %s, 0 tags of type keyword, rbinfile or rtvpdfile was given!" % (recordName))
                 out.error("1 tag of the 3 must be in use for the record to be valid!")
@@ -192,7 +193,7 @@ def parseTvpd(tvpdFile, topLevel):
         comparer = 0
     for tag in ["name", "size", "VD"]:
         if (vpdTags[tag] != comparer):
-            out.error("The tag <%s> was found %d times, when %d is required" % (tag, vpdTags[tag], comparer))
+            out.error("The tag <%s> was expected to have a count of %d, but was found with a count of %d" % (tag, comparer, vpdTags[tag]))
             errorsFound+=1
 
     # Make sure at least one record tag was found
@@ -440,7 +441,7 @@ for record in manifest.iter("record"):
 # All done with error checks, bailout if we hit something
 if (errorsFound):
     out.msg("")
-    out.error("%d error%s found in the manifest.  Please review the above errors and correct them." % (errorsFound, "s" if (errorsFound > 1) else ""))
+    out.error("%d error%s found in the tvpd xml.  Please review the above errors and correct them." % (errorsFound, "s" if (errorsFound > 1) else ""))
     exit(errorsFound)
 
 ################################################
@@ -623,7 +624,7 @@ for record in manifest.iter("record"):
 # All done with error checks, bailout if we hit something
 if (errorsFound):
     out.msg("")
-    out.error("%d error%s found in the tvpd description.  Please review the above errors and correct them." % (errorsFound, "s" if (errorsFound > 1) else ""))
+    out.error("%d error%s found in the tvpd data.  Please review the above errors and correct them." % (errorsFound, "s" if (errorsFound > 1) else ""))
     tvpdFileName = clOutputPath + "/" + vpdName + "-err.tvpd"
     writeTvpd(manifest, tvpdFileName)
     out.msg("Wrote tvpd file to help in debug: %s" % tvpdFileName)
