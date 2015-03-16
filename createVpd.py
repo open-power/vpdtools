@@ -411,6 +411,9 @@ if (rc):
 
 # Stash away some variables for use later
 vpdName = manifest.find("name").text
+# If the user passed in the special name of FILENAME, we'll use in the input file name, minus the extension, as the output
+if (vpdName == "FILENAME"):
+    vpdName = os.path.splitext(os.path.basename(clManifestFile))[0]
 
 # Look for rtvpdfile lines
 for record in manifest.iter("record"):
