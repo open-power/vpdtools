@@ -185,12 +185,17 @@ def parseTvpd(tvpdFile, topLevel):
                 out.error("For record %s, 0 tags of type keyword, rbinfile or rtvpdfile was given!" % (recordName))
                 out.error("1 tag of the 3 must be in use for the record to be valid!")
                 errorsFound+=1
+            # Make sure the rdesc is available
+            if (recordTags["rdesc"] != 1):
+                out.error("The tag <rdesc> was expected to have a count of 1, but was found with a count of %d for record %s" % (keywordTags["rdesc"], recordName))
+                errorsFound+=1
 
     # Do some checking of what we found at the vpd level
     if (topLevel == True):
         comparer = 1
     else:
         comparer = 0
+    # Don't go thru all of them, "record" has special handling below
     for tag in ["name", "size", "VD"]:
         if (vpdTags[tag] != comparer):
             out.error("The tag <%s> was expected to have a count of %d, but was found with a count of %d" % (tag, comparer, vpdTags[tag]))
