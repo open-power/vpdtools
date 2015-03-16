@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='utf-8'?>
+<vpd>
+  <name>FILENAME</name>
+  <size>16kb</size>
+  <VD>01</VD>
+  <record name="VINI">
+    <rdesc>The VINI record</rdesc>
+    <keyword name="RT">
+      <kwdesc>The Record Type keyword</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>4</kwlen>
+      <kwdata>VINI</kwdata>
+    </keyword>
+    <keyword name="BD">
+      <kwdesc>The Big Data keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>128</kwlen>
+      <kwdata>
+        <!-- Offset 0 -->
+        00000000 00000000 00000000 00000000
+        00000000 00000000 00000000 00000000
+        00000000 00000000 00000000 00000000
+        00000000 00000000 00000000 00000000
+        <!-- Offset 128 -->
+        00000000 00000000 00000000 00000000
+        00000000 00000000 00000000 00000000
+        00000000 00000000 00000000 00000000
+        00000000 00000000 00000000 00000000
+      </kwdata>
+    </keyword>
+  </record>
+</vpd>

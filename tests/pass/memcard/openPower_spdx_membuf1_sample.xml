@@ -1,0 +1,107 @@
+<?xml version="1.0"?>
+<vpd>
+
+  <record name="SPDX">
+    <rdesc>The Memory data record</rdesc>
+
+    <keyword name="RT">
+      <kwdesc>The Record Type keyword</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>4</kwlen>
+      <kwdata>SPDX</kwdata>
+    </keyword>
+
+    <keyword name="VD">
+      <kwdesc>Record Version keyword</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>2</kwlen>
+      <kwdata>02</kwdata>
+    </keyword>
+
+    <keyword name="VM">
+      <kwdesc>Memory data version keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>4</kwlen>
+      <kwdata>00000000</kwdata>
+    </keyword>
+
+    <keyword name="DW">
+      <kwdesc>Memory Buffer Voltage keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>2</kwlen>
+      <kwdata>0000</kwdata>
+    </keyword>
+
+    <keyword name="MX">
+      <kwdesc>Bank Delete keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>64</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="M0">
+      <kwdesc>MR Centaur Mappter (Centaur MRUID)Delete keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>32</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="M1">
+      <kwdesc>First copy of MR data keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="T1">
+      <kwdesc>First copy of MT data keyword (1 dimm 1 rank)</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="T2">
+      <kwdesc>Second copy of MT data (1 dimm 2 ranks)</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="T4">
+      <kwdesc>Third copy of MT data (1 dimm 4 ranks)</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="Q0">
+      <kwdesc>DQ Data mapper-Memory Buffer MRUID</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>32</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="Q1">
+      <kwdesc>First copy of DQ</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>96</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="K0">
+      <kwdesc>DQS Data mapper-Memory Buffer MRUID</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>32</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="K1">
+      <kwdesc>First copy of DQS</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>32</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+  </record>
+
+</vpd>
