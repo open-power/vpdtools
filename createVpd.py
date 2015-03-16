@@ -353,7 +353,8 @@ else:
 clInputPath = cmdline.parseOptionWithArg("-i", "--inpath")
 # Make sure the path exists
 if (clInputPath != None):
-    pass
+    # Add the CWD onto the path
+    clInputPath += ":."
     # Let's not do this check because it will allow the user to pass in multiple : seperated paths
     # Yes, we could split the path and check each one, but not now
     #if (os.path.exists(clInputPath) != True):
