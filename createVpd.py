@@ -57,7 +57,7 @@ def help():
     out.setIndent(0)
 
 # Find file in a given path or paths
-# Used by the ---inpath option
+# searchPath comes from the --inpath option
 def findFile(filename, searchPath):
    found = False
    paths = searchPath.split(os.path.pathsep)
@@ -71,15 +71,19 @@ def findFile(filename, searchPath):
    else:
        return None
 
-# Function to Write out the resultant tvpd xml file
+# Function to write out the resultant tvpd xml file
 def writeTvpd(manifest, outputFile):
     tree = ET.ElementTree(manifest)
     tree.write(outputFile, encoding="utf-8", xml_declaration=True)
+    return None
 
-# Parses a tvpd file using ET and then checks to ensure some basic required fields are present
+# Parses a tvpd file using ET.  That will generate errors for bad xml formatting
+# The valid XML is then checked to make sure the required tags are found at each level
 def parseTvpd(tvpdFile, topLevel):
-
+    # Accumulate errors and return the total at the end
+    # This allows the user to see all mistakes at once instead of iteratively running
     errorsFound = 0
+
     # Let the user know what file we are reading
     # We could make this optional with a new function param in the future
     out.msg("Parsing tvpd %s" % tvpdFile)
@@ -98,6 +102,7 @@ def parseTvpd(tvpdFile, topLevel):
     # Do some basic error checking of what we've read in
     # Make sure the root starts with the vpd tag
     # If it doesn't, it's not worth syntax checking any further
+    # This is the only time we'll just bail instead of accumulating
     if (tvpdRoot.tag != "vpd"):
         out.error("%s does not start with a <vpd> tag.  No further checking will be done until fixed!" % tvpdFile)
         return(1, None)
@@ -113,12 +118,12 @@ def parseTvpd(tvpdFile, topLevel):
         # See if this is a tag we even expect
         if vpd.tag not in vpdTags:
             out.error("Unsupported tag <%s> found while parsing the <vpd> level" % vpd.tag)
-            errorsFound +=1
+            errorsFound+=1
             # We continue here because we don't want to parse down this hierarcy path when we don't know what it is
             continue
         # It was a supported tag
         else:
-            vpdTags[vpd.tag] +=1
+            vpdTags[vpd.tag]+=1
 
         # Do the record level checks
         if (vpd.tag == "record"):
@@ -130,18 +135,19 @@ def parseTvpd(tvpdFile, topLevel):
             if (recordName == None):
                 out.error("A <record> tag is missing the name attribute")
                 errorsFound+=1
+                recordName = "INVALID" # Set the invalid name so the code below can use it without issue
 
             # Loop thru the tags defined for this record
             for record in vpd:
                 # See if this is a tag we even expect
                 if record.tag not in recordTags:
                     out.error("Unsupported tag <%s> found while parsing the <record> level for record %s" % (record.tag, recordName))
-                    errorsFound +=1
+                    errorsFound+=1
                     # We continue here because we don't want to parse down this hierarcy path when we don't know what it is
                     continue
                 # It was a supported tag
                 else:
-                    recordTags[record.tag] +=1
+                    recordTags[record.tag]+=1
 
                 # Do the keyword level checks
                 if (record.tag == "keyword"):
@@ -153,13 +159,14 @@ def parseTvpd(tvpdFile, topLevel):
                     if (keywordName == None):
                         out.error("<keyword> tag in record %s is missing the name attribute" % (recordName))
                         errorsFound+=1
+                        keywordName = "INVALID" # Set the invalid name so the code below can use it without issue
 
                     # Loop thru the tags defined for this keyword
                     for keyword in record:
                         # See if this is a tag we even expect
                         if keyword.tag not in keywordTags:
                             out.error("Unsupported tag <%s> found while parsing the <keyword> level for keyword %s in record %s" % (keyword.tag, keywordName, recordName))
-                            errorsFound +=1
+                            errorsFound+=1
                             # We continue here because we don't want to parse down this hierarcy path when we don't know what it is
                             continue
                         # It was a supported tag
@@ -182,15 +189,17 @@ def parseTvpd(tvpdFile, topLevel):
                 errorsFound+=1
             # We checked if we had more than 1, let's make sure we have at least 1
             if (recordTagTotal < 1):
-                out.error("For record %s, 0 tags of type keyword, rbinfile or rtvpdfile was given!" % (recordName))
+                out.error("For record %s, 0 tags of type keyword, rbinfile or rtvpdfile were given!" % (recordName))
                 out.error("1 tag of the 3 must be in use for the record to be valid!")
                 errorsFound+=1
             # Make sure the rdesc is available
-            if (recordTags["rdesc"] != 1):
-                out.error("The tag <rdesc> was expected to have a count of 1, but was found with a count of %d for record %s" % (keywordTags["rdesc"], recordName))
+            if (recordTags["keyword"] and recordTags["rdesc"] != 1):
+                out.error("The tag <rdesc> was expected to have a count of 1, but was found with a count of %d for record %s" % (recordTags["rdesc"], recordName))
                 errorsFound+=1
 
     # Do some checking of what we found at the vpd level
+    # Top level is the manifest passed in on the command line
+    # When false, it's just a record description and doesn't require the high level descriptors
     if (topLevel == True):
         comparer = 1
     else:
@@ -207,6 +216,7 @@ def parseTvpd(tvpdFile, topLevel):
         errorsFound+=1
 
     # If this is an included tvpd, it can only have 1 record in it
+    # This check is just by convention.  If a compelling case to change it was provided, it could be done
     if (topLevel == False):
         if (vpdTags["record"] > 1):
             out.error("More than 1 record entry found in %s.  Only 1 record is allowed!" % (tvpdFile))
@@ -248,7 +258,7 @@ def packKeyword(keyword, length, data, format):
     
     # Write the length
     # The < at the front says to pack it little endian
-    if (keyword[0] == "#"):
+    if (keyword[0] == "#"): # Keywords that start with pound have a 2 byte length
         # H is 2 bytes
         keywordPack += struct.pack("<H", length)
     else:
@@ -279,7 +289,7 @@ def packKeyword(keyword, length, data, format):
         keywordPack += data
     else:
         out.error("Unknown format type %s passed into packKeyword" % format)
-        return NULL
+        return None
 
     # The keyword is packed, send it back
     return keywordPack
@@ -307,6 +317,11 @@ def calcPadFill(record):
 ############################################################
 rc = 0
 
+# We could possibly run in two different modes
+# 1) manifest mode - the user passes in one xml file that gives all the required input args
+# 2) cmdline mode - the user passes in multiple command line args that recreate what would be in the manifest
+# 1 is the easiest option to start with, and maybe all that is needed.  We start with manifest mode!
+
 ################################################
 # Command line options
 clErrors = 0
@@ -315,11 +330,6 @@ clErrors = 0
 if (cmdline.parseOption("-h","--help")):
     help()
     exit(0)
-
-# We could possibly run in two different modes
-# 1) manifest mode - the user passes in one xml file that gives all the required input args
-# 2) cmdline mode - the user passes in multiple command line args that recreate what would be in the manifest
-# 1 is the easiest option to start with, and maybe all that is needed.  We start with manifest mode!
 
 # Get the manifest file and get this party started
 clManifestFile = cmdline.parseOptionWithArg("-m", "--manifest")
@@ -344,7 +354,7 @@ clInputPath = cmdline.parseOptionWithArg("-i", "--inpath")
 # Make sure the path exists
 if (clInputPath != None):
     pass
-    # Let's not do this check because it will allow the user to pass in multiple paths
+    # Let's not do this check because it will allow the user to pass in multiple : seperated paths
     # Yes, we could split the path and check each one, but not now
     #if (os.path.exists(clInputPath) != True):
     #    out.error("The given input path %s does not exist!" % clOutputPath)
@@ -374,9 +384,11 @@ if (len(sys.argv) != 1):
 
 # We are going to do this in 3 stages
 # 1 - Read in the manifest and any other referenced files.  This will create a complete XML description of the VPD
-# 2 - Parse thru the XML records and make sure they are correct.  Also check things like data not greater than length, etc..
-# 3 - With the XML verified correct, loop thru it again and write out the VPD data
-# Looping thru the XML twice lets all errors be surfaced to the user in stage 2 at once instead of one at a time
+#     We will also check to make sure that all required tags are given and no extra tags exist
+# 2 - Parse thru the tvpd description and make sure the data with in the tags is valid.  This is checks like data not greater than length, etc..
+# 3 - With the XML and contents verified correct, loop thru it again and write out the VPD data
+# Note: Looping thru the XML twice between stage 1 and 2 makes it easier to surface multiple errors to the user at once.
+#       If we were trying to both validate the xml and data at once, it would be harder to continue and gather multiple errors like we do now
 
 ################################################
 # Work with the manifest
@@ -400,7 +412,7 @@ if (rc):
 # Stash away some variables for use later
 vpdName = manifest.find("name").text
 
-# Look for reference files
+# Look for rtvpdfile lines
 for record in manifest.iter("record"):
     recordName = record.attrib.get("name")
 
@@ -414,7 +426,7 @@ for record in manifest.iter("record"):
             errorsFound+=1
             break
 
-        # We have a reference to a different file, read that in
+        # Read in the rtvpdfile since it exists
         (rc, recordTvpd) = parseTvpd(fileName, False)
         if (rc):
             out.error("Error occurred reading in %s" % fileName)
@@ -424,14 +436,15 @@ for record in manifest.iter("record"):
         # Merge the new record into the main manifest
         # ET doesn't have a replace function.  You can do an extend/remove, but that changes the order of the file
         # The goal is to preserve record & keyword order, so that method doesn't work
-        # The below code will insert the refrenced record from the file in the list above the current record location
-        # Then remove the original record, preserving order
+        # The below code will insert the rtvpdfile record in the list above the current matching record definition
+        # Then remove the original record definition, preserving order
 
         # Since the referenced file also starts with <vpd> tag, you need to get one level down and find the start of the record element, hence the find
+        # We know this will contain a record because the parse validates that.  No need to check for find errors.
         subRecord = recordTvpd.find("record")
 
         # --------
-        # Make sure the record found in rtvpd is the same as the record in the manifiest
+        # Make sure the record found in rtvpdfile is the same as the record in the manifiest
         # We have to do this error check here because the recordName doesn't exist in parseTvpd
         subRecordName = subRecord.attrib.get("name")
         if (subRecordName != recordName):
@@ -451,7 +464,7 @@ if (errorsFound):
 
 ################################################
 # Verify the tvpd XML
-# read thru the complete tvpd and verify/error check
+# read thru the complete tvpd and verify/check actual tag contents
 out.setIndent(0)
 out.msg("==== Stage 2: Verifying tvpd syntax")
 out.setIndent(2)
@@ -898,8 +911,8 @@ for record in manifest.iter("record"):
 ################################################
 # Write the VPD 
 # Everything for the image is now in memory!
-# I'm intentionally write the file by doing VHDR, VTOC and then looping over the tvpd records
-# The file needs to be written in the order the user gave, looping over the dictionary keys would guarantee that
+# I'm intentionally writing the file by doing VHDR, VTOC and then looping over the tvpd records
+# The file needs to be written in the order the user gave, looping over the dictionary keys would not guarantee that
 
 # Write the top records
 writeDataToVPD(vpdFile, recordInfo["VHDR"].record)
