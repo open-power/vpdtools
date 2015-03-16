@@ -836,7 +836,9 @@ for record in manifest.iter("record"):
             # If the input format is bin, we need to pull the data in from the file
             # We know the file exists from the check in step 2
             if (kwformat == "bin"):
-                kwdata = open(kwdata, mode='rb').read()
+                # Get the full path to the file given, error checked before
+                databinfile = findFile(kwdata, clInputPath)
+                kwdata = open(databinfile, mode='rb').read()
 
             keywordPack = packKeyword(keywordName,  kwlen, kwdata, kwformat)
             recordInfo[recordName].record += keywordPack
