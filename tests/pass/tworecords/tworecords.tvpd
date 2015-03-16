@@ -24,13 +24,13 @@
       <kwdata>00000000</kwdata>
     </keyword>
   </record>
-  <record name="VSMC">
-    <rdesc>The VSMC record</rdesc>
+  <record name="VMSC">
+    <rdesc>The VMSC record</rdesc>
     <keyword name="RT">
       <kwdesc>The Record Type keyword</kwdesc>
       <kwformat>ascii</kwformat>
       <kwlen>4</kwlen>
-      <kwdata>VSMC</kwdata>
+      <kwdata>VMSC</kwdata>
     </keyword>
   </record>
 </vpd>
