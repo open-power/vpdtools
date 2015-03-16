@@ -842,8 +842,8 @@ for record in manifest.iter("record"):
             recordInfo[recordName].record += keywordPack
             # If the user wanted discrete binary files for each keyword writen out, we'll do it here
             if (clBinaryKeywords):
-                kvpdFileName = clOutputPath + "/" + vpdName + "-" + recordName + "-" + keywordName + ".vpd"
-                out.msg("Wrote record %s keyword %s vpd file: %s" % (recordName, keywordName, kvpdFileName))
+                kvpdFileName = clOutputPath + "/" + vpdName + "-" + recordName + "-" + keywordName + ".kvpd"
+                out.msg("Wrote record %s keyword %s kvpd file: %s" % (recordName, keywordName, kvpdFileName))
                 kvpdFile = open(kvpdFileName, "wb")
                 kvpdFile.write(keywordPack)
                 kvpdFile.close()
@@ -928,8 +928,8 @@ for record in manifest.iter("record"):
     writeDataToVPD(vpdFile, recordInfo[recordName].record)
     # If the user wanted discrete binary files for each record writen out, we'll do it here
     if (clBinaryRecords):
-        rvpdFileName = clOutputPath + "/" + vpdName + "-" + recordName + ".vpd"
-        out.msg("Wrote %s record vpd file: %s" % (recordName, rvpdFileName))
+        rvpdFileName = clOutputPath + "/" + vpdName + "-" + recordName + ".rvpd"
+        out.msg("Wrote %s record rvpd file: %s" % (recordName, rvpdFileName))
         rvpdFile = open(rvpdFileName, "wb")
         rvpdFile.write(recordInfo[recordName].record)
         rvpdFile.close()
