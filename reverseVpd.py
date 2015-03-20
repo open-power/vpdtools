@@ -22,10 +22,6 @@ import re
 class RecordInfo:
     """Stores the info about each vpd record"""
     def __init__(self):
-        # The packed record in memory
-        self.record = bytearray()
-        # The packed ecc in memory
-        self.ecc = bytearray()
         # The name of the record where the toc entry is located
         self.tocName = None
         # The location of the Record Offset
@@ -134,6 +130,30 @@ offset+=1
 
 # Keep a dictionary of the record names we come across
 recordNames = dict()
+
+# Loop through the toc and read out the record locations
+tocOffset = 0
+while (tocOffset < tocLength):
+    # Get the record name
+    recordName = vpdContents[(tocOffset + offset):(tocOffset + offset + 4)].decode()
+    # Create the entry with the name
+    recordNames[recordName] = RecordInfo()
+    tocOffset+=4
+    # Skip the record type
+    tocOffset+=2
+    # recordOffset
+    recordNames[recordName].recordOffset = struct.unpack('<H', vpdContents[(tocOffset + offset):(tocOffset + offset + 2)])
+    tocOffset+=2
+    # recordLength
+    recordNames[recordName].recordLength = struct.unpack('<H', vpdContents[(tocOffset + offset):(tocOffset + offset + 2)])
+    tocOffset+=2
+    # eccOffset
+    recordNames[recordName].eccOffset = struct.unpack('<H', vpdContents[(tocOffset + offset):(tocOffset + offset + 2)])
+    tocOffset+=2
+    # eccLength
+    recordNames[recordName].eccLength = struct.unpack('<H', vpdContents[(tocOffset + offset):(tocOffset + offset + 2)])
+    tocOffset+=2
+    
 
 print("yeah!")
 
