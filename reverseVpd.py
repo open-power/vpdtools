@@ -21,7 +21,8 @@ import operator
 
 def asciiAllowed(s):
     for c in s:
-        if c not in string.ascii_letters and c not in string.digits and c not in string.whitespace:
+        if c not in string.printable and c != '\0':
+        #if c not in string.ascii_letters and c not in string.digits and c not in string.whitespace:
             return False
     return True
 
@@ -239,7 +240,8 @@ for recordItem in (sorted(recordNames.values(), key=operator.attrgetter('recordO
 
         if (asciiState):
             ET.SubElement(keyword, "kwformat").text = "ascii"
-            ET.SubElement(keyword, "kwdata").text = keywordData.decode()
+            # Convert to ascii and strip off any padded null terminators
+            ET.SubElement(keyword, "kwdata").text = keywordData.decode().rstrip('\0')
         else:
             ET.SubElement(keyword, "kwformat").text = "hex"
             ET.SubElement(keyword, "kwdata").text = binascii.hexlify(keywordData).decode()
