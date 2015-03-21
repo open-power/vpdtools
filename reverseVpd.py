@@ -15,6 +15,7 @@ import out
 import xml.etree.ElementTree as ET
 import struct
 import re
+import binascii
 
 ############################################################
 # Classes - Classes - Classes - Classes - Classes - Classes
@@ -124,8 +125,9 @@ if (vpdContents[offset:(offset+4)].decode() != "VTOC"):
 offset+=4
 
 # Skip the PT keyword and read the 1 byte length to loop over the VTOC contents and create our record list
-offset+=1 # PT skip
+offset+=2 # PT skip
 tocLength = vpdContents[offset]
+print("tocLength: %d" % tocLength)
 offset+=1
 
 # Keep a dictionary of the record names we come across
@@ -142,30 +144,90 @@ while (tocOffset < tocLength):
     # Skip the record type
     tocOffset+=2
     # recordOffset
-    recordNames[recordName].recordOffset = struct.unpack('<H', vpdContents[(tocOffset + offset):(tocOffset + offset + 2)])
+    recordNames[recordName].recordOffset = struct.unpack('<H', vpdContents[(tocOffset + offset):(tocOffset + offset + 2)])[0]
+    print("recordOffset: ", recordNames[recordName].recordOffset)
     tocOffset+=2
     # recordLength
-    recordNames[recordName].recordLength = struct.unpack('<H', vpdContents[(tocOffset + offset):(tocOffset + offset + 2)])
+    recordNames[recordName].recordLength = struct.unpack('<H', vpdContents[(tocOffset + offset):(tocOffset + offset + 2)])[0]
     tocOffset+=2
     # eccOffset
-    recordNames[recordName].eccOffset = struct.unpack('<H', vpdContents[(tocOffset + offset):(tocOffset + offset + 2)])
+    recordNames[recordName].eccOffset = struct.unpack('<H', vpdContents[(tocOffset + offset):(tocOffset + offset + 2)])[0]
     tocOffset+=2
     # eccLength
-    recordNames[recordName].eccLength = struct.unpack('<H', vpdContents[(tocOffset + offset):(tocOffset + offset + 2)])
+    recordNames[recordName].eccLength = struct.unpack('<H', vpdContents[(tocOffset + offset):(tocOffset + offset + 2)])[0]
     tocOffset+=2
     
-
-print("yeah!")
-
-exit(0)
+# We have all the record offsets in memory along with the entire VPD image.
+# Go onto our next step and create XML in memory
 
 ################################################
-# Verify the tvpd XML
-# read thru the complete tvpd and verify/check actual tag contents
+# Create tvpd XML
 out.setIndent(0)
-out.msg("==== Stage 2: Verifying tvpd syntax")
+out.msg("==== Stage 2: Creating tvpd XML")
 out.setIndent(2)
-errorsFound = 0
+
+# Create our top level level XML
+vpd = ET.Element("vpd")
+
+# Loop thru our records and create our record/keyword entries
+for recordName in recordNames:
+    # Create our record
+    record=ET.SubElement(vpd, "record", {'name':recordName})
+
+    # Start walking thru our record reading keywords out
+    # As we get to each keyword, we'll create the keyword tag and it's sub tags
+    recordOffset = recordNames[recordName].recordOffset
+
+    # Skip the LR tag
+    recordOffset+=1
+
+    # Get the length
+    recordLength = struct.unpack('<H', vpdContents[recordOffset:(recordOffset + 2)])[0]
+    recordOffset+=2
+
+    # Now loop and read until we get until the end of the record
+    recordEnd = recordOffset + recordLength
+    print("recordOffset: %d, recordLength: %d" % (recordOffset, recordLength))
+    while (recordOffset < recordEnd):
+        # Read the keyword
+        keywordName = vpdContents[recordOffset:(recordOffset + 2)].decode()
+        print("keyword: %s" % keywordName)
+        recordOffset+=2
+
+        # Determine if length is 1 or 2 bytes
+        if (keywordName[0] == "#"):
+            keywordLength = struct.unpack('<H', vpdContents[recordOffset:(recordOffset + 2)])[0]
+            recordOffset+=2
+        else:
+            keywordLength = vpdContents[recordOffset]
+            recordOffset+=1
+
+        # Get the keyword data out
+        keywordData = vpdContents[recordOffset:(recordOffset + keywordLength)]
+        recordOffset+=keywordLength
+
+        # If the keyword is PF, we are at the end at skip it
+        if (keywordName == "PF"):
+            continue
+
+        # Create our keyword tag and subtags
+        keyword=ET.SubElement(record, "keyword", {"name":keywordName})
+        ET.SubElement(keyword, "kwdesc").text = "The " + keywordName + " keyword"
+        allAscii = keywordData.isalpha()
+        if (allAscii):
+            ET.SubElement(keyword, "kwformat").text = "ascii"
+        else:
+            ET.SubElement(keyword, "kwformat").text = "hex"
+        ET.SubElement(keyword, "kwlen").text = str(keywordLength)
+        if (allAscii):
+            ET.SubElement(keyword, "kwdata").text = keywordData.decode()
+        else:
+            ET.SubElement(keyword, "kwdata").text = binascii.hexlify(keywordData)
+
+    # We should be done with all the keywords, which means it's pointing to the SR tag
+    if (vpdContents[recordOffset] != 0x78):
+        out.error("Small resource tag not found!")
+        exit(1)
 
 # We now have a correct tvpd, use it to create a binary VPD image
 out.setIndent(0)
@@ -176,6 +238,6 @@ tvpdFileName = clOutputPath + "/" + vpdName + ".tvpd"
 
 # This is our easy one, write the XML back out
 # Write out the full template vpd representing the data contained in our image
-writeTvpd(manifest, tvpdFileName)
+writeTvpd(vpd, tvpdFileName)
 out.msg("Wrote tvpd file: %s" % tvpdFileName)
 
