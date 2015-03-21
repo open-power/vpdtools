@@ -16,6 +16,14 @@ import xml.etree.ElementTree as ET
 import struct
 import re
 import binascii
+import string
+import operator
+
+def asciiAllowed(s):
+    for c in s:
+        if c not in string.ascii_letters and c not in string.digits and c not in string.whitespace:
+            return False
+    return True
 
 ############################################################
 # Classes - Classes - Classes - Classes - Classes - Classes
@@ -23,8 +31,8 @@ import binascii
 class RecordInfo:
     """Stores the info about each vpd record"""
     def __init__(self):
-        # The name of the record where the toc entry is located
-        self.tocName = None
+        # The name of the record
+        self.recordName = None
         # The location of the Record Offset
         self.recordOffset = None
         # The location of the Record Length
@@ -127,7 +135,6 @@ offset+=4
 # Skip the PT keyword and read the 1 byte length to loop over the VTOC contents and create our record list
 offset+=2 # PT skip
 tocLength = vpdContents[offset]
-print("tocLength: %d" % tocLength)
 offset+=1
 
 # Keep a dictionary of the record names we come across
@@ -140,12 +147,12 @@ while (tocOffset < tocLength):
     recordName = vpdContents[(tocOffset + offset):(tocOffset + offset + 4)].decode()
     # Create the entry with the name
     recordNames[recordName] = RecordInfo()
+    recordNames[recordName].recordName = recordName
     tocOffset+=4
     # Skip the record type
     tocOffset+=2
     # recordOffset
     recordNames[recordName].recordOffset = struct.unpack('<H', vpdContents[(tocOffset + offset):(tocOffset + offset + 2)])[0]
-    print("recordOffset: ", recordNames[recordName].recordOffset)
     tocOffset+=2
     # recordLength
     recordNames[recordName].recordLength = struct.unpack('<H', vpdContents[(tocOffset + offset):(tocOffset + offset + 2)])[0]
@@ -170,13 +177,18 @@ out.setIndent(2)
 vpd = ET.Element("vpd")
 
 # Loop thru our records and create our record/keyword entries
-for recordName in recordNames:
+for recordItem in (sorted(recordNames.values(), key=operator.attrgetter('recordOffset'))):
+    out.setIndent(2)
+    recordName = recordItem.recordName
+
     # Create our record
     record=ET.SubElement(vpd, "record", {'name':recordName})
 
     # Start walking thru our record reading keywords out
     # As we get to each keyword, we'll create the keyword tag and it's sub tags
-    recordOffset = recordNames[recordName].recordOffset
+    recordOffset = recordItem.recordOffset
+
+    out.msg("Record: %s Offset: %d" % (recordName, recordOffset))
 
     # Skip the LR tag
     recordOffset+=1
@@ -187,11 +199,9 @@ for recordName in recordNames:
 
     # Now loop and read until we get until the end of the record
     recordEnd = recordOffset + recordLength
-    print("recordOffset: %d, recordLength: %d" % (recordOffset, recordLength))
     while (recordOffset < recordEnd):
         # Read the keyword
         keywordName = vpdContents[recordOffset:(recordOffset + 2)].decode()
-        print("keyword: %s" % keywordName)
         recordOffset+=2
 
         # Determine if length is 1 or 2 bytes
@@ -213,16 +223,29 @@ for recordName in recordNames:
         # Create our keyword tag and subtags
         keyword=ET.SubElement(record, "keyword", {"name":keywordName})
         ET.SubElement(keyword, "kwdesc").text = "The " + keywordName + " keyword"
-        allAscii = keywordData.isalpha()
-        if (allAscii):
-            ET.SubElement(keyword, "kwformat").text = "ascii"
-        else:
-            ET.SubElement(keyword, "kwformat").text = "hex"
         ET.SubElement(keyword, "kwlen").text = str(keywordLength)
-        if (allAscii):
+        # This is overly complicated in my opinion, but the only way I could get it to work with the time allowed
+        # First try to decode the data from ascii.  If a byte is outside the range (like 0xff), it will throw the exception
+        # If it doesn't throw the exception, then check to make sure the string contains only chars we allow in VPD.  Otherwise, hex
+        try:
+            keywordData.decode('ascii')
+        except UnicodeDecodeError:
+            asciiState = False
+        else:
+            if asciiAllowed(keywordData.decode('ascii')):
+                asciiState = True
+            else:
+                asciiState = False
+
+        if (asciiState):
+            ET.SubElement(keyword, "kwformat").text = "ascii"
             ET.SubElement(keyword, "kwdata").text = keywordData.decode()
         else:
-            ET.SubElement(keyword, "kwdata").text = binascii.hexlify(keywordData)
+            ET.SubElement(keyword, "kwformat").text = "hex"
+            ET.SubElement(keyword, "kwdata").text = binascii.hexlify(keywordData).decode()
+
+        out.setIndent(4)
+        out.msg("Keyword: %s Type: %s" % (keywordName, ("ascii" if (asciiState) else "hex")))
 
     # We should be done with all the keywords, which means it's pointing to the SR tag
     if (vpdContents[recordOffset] != 0x78):
