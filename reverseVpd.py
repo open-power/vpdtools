@@ -21,7 +21,7 @@ import operator
 
 def asciiAllowed(s):
     for c in s:
-        if c not in string.printable and c != '\0':
+        if c not in string.printable:
         #if c not in string.ascii_letters and c not in string.digits and c not in string.whitespace:
             return False
     return True
@@ -226,8 +226,25 @@ for recordItem in (sorted(recordNames.values(), key=operator.attrgetter('recordO
         ET.SubElement(keyword, "kwdesc").text = "The " + keywordName + " keyword"
         ET.SubElement(keyword, "kwlen").text = str(keywordLength)
         # This is overly complicated in my opinion, but the only way I could get it to work with the time allowed
-        # First try to decode the data from ascii.  If a byte is outside the range (like 0xff), it will throw the exception
+        # First strip off any trailing zero byte values.  If you don't, then it's outside the ascii range and it thinks all data is hex
+        # Then try to decode the data from ascii.  If a byte is outside the range (like 0xff), it will throw the exception
         # If it doesn't throw the exception, then check to make sure the string contains only chars we allow in VPD.  Otherwise, hex
+
+        # Walk backwords and bail the first time a nonzero value is found
+        nzeroidx = len(keywordData) - 1
+        while (nzeroidx >= 0):
+            if (keywordData[nzeroidx] != 0x00):
+                break;
+            nzeroidx-=1
+
+        # If we didn't get back to the start, shorten the data
+        if (nzeroidx >= 0):
+            keywordData = keywordData[0:(nzeroidx+1)]
+        # Made it all the way to the start, must be all zero.  Shorten it to just the first zero byte to put into the template
+        else:
+            keywordData = keywordData[0:1]
+
+        # Now try to decode and figure out hex vs ascii
         try:
             keywordData.decode('ascii')
         except UnicodeDecodeError:
@@ -238,10 +255,10 @@ for recordItem in (sorted(recordNames.values(), key=operator.attrgetter('recordO
             else:
                 asciiState = False
 
+        # We know if its ascii or not, store away our data
         if (asciiState):
             ET.SubElement(keyword, "kwformat").text = "ascii"
-            # Convert to ascii and strip off any padded null terminators
-            ET.SubElement(keyword, "kwdata").text = keywordData.decode().rstrip('\0')
+            ET.SubElement(keyword, "kwdata").text = keywordData.decode()
         else:
             ET.SubElement(keyword, "kwformat").text = "hex"
             ET.SubElement(keyword, "kwdata").text = binascii.hexlify(keywordData).decode()
