@@ -212,7 +212,7 @@ for recordItem in (sorted(recordNames.values(), key=operator.attrgetter('recordO
     # As we get to each keyword, we'll create the keyword tag and it's sub tags
     recordOffset = recordItem.recordOffset
 
-    out.msg("Record: %s Offset: %d" % (recordName, recordOffset))
+    out.msg("Record: %s" % (recordName))
 
     # Skip the LR tag
     recordOffset+=1
@@ -287,7 +287,7 @@ for recordItem in (sorted(recordNames.values(), key=operator.attrgetter('recordO
             ET.SubElement(keyword, "kwdata").text = binascii.hexlify(keywordData).decode()
 
         out.setIndent(4)
-        out.msg("Keyword: %s Type: %s" % (keywordName, ("ascii" if (asciiState) else "hex")))
+        out.msg("Keyword: %s Type: %5s Length: %s" % (keywordName, ("ascii" if (asciiState) else "hex"), str(keywordLength)))
 
     # We should be done with all the keywords, which means it's pointing to the SR tag
     if (vpdContents[recordOffset] != 0x78):
