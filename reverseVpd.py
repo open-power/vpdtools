@@ -106,8 +106,8 @@ if (clErrors):
 # Debug printing
 clDebug = cmdline.parseOption("-d", "--debug")
 
-# Create separate binary files for each record
-clBinaryRecords = cmdline.parseOption("-r", "--create-records")
+# Create separate tvpd files for each record
+clCreateRecords = cmdline.parseOption("-r", "--create-records")
 
 # All cmdline args should be processed, so if any left throw an error
 if (len(sys.argv) != 1):
@@ -177,13 +177,36 @@ out.setIndent(2)
 # Create our top level level XML
 vpd = ET.Element("vpd")
 
+# Stick in our required tags
+ET.SubElement(vpd, "name").text = vpdName
+ET.SubElement(vpd, "size").text = "16 kB"
+# VD is in a fixed location in VHDR, just rip it out instead of reading teh VPD to find it
+ET.SubElement(vpd, "VD").text = ("%02X" % struct.unpack('<H', vpdContents[24:26])[0])
+
+recordTvpd = dict()
+# If we are going to be creating individual record vpd files
+# Stash away the top level vpd we created for use below
+if (clCreateRecords):
+    toplevelvpd = vpd
+
 # Loop thru our records and create our record/keyword entries
 for recordItem in (sorted(recordNames.values(), key=operator.attrgetter('recordOffset'))):
     out.setIndent(2)
     recordName = recordItem.recordName
 
+    # The little indirection needed when creating individual record files
+    if (clCreateRecords):
+        # Create a different vpd for use throughout below
+        vpd = ET.Element("vpd")
+        # Add a record and rtvpdfile to the toplevelvpd
+        record = ET.SubElement(toplevelvpd, "record", {'name':recordName})
+        ET.SubElement(record, "rtvpdfile").text = vpdName + "-" + recordName + ".tvpd"
+
     # Create our record
-    record=ET.SubElement(vpd, "record", {'name':recordName})
+    record = ET.SubElement(vpd, "record", {'name':recordName})
+    
+    # Create the record description
+    ET.SubElement(record, "rdesc").text = "The " + recordName + " record"
 
     # Start walking thru our record reading keywords out
     # As we get to each keyword, we'll create the keyword tag and it's sub tags
@@ -222,7 +245,7 @@ for recordItem in (sorted(recordNames.values(), key=operator.attrgetter('recordO
             continue
 
         # Create our keyword tag and subtags
-        keyword=ET.SubElement(record, "keyword", {"name":keywordName})
+        keyword = ET.SubElement(record, "keyword", {"name":keywordName})
         ET.SubElement(keyword, "kwdesc").text = "The " + keywordName + " keyword"
         ET.SubElement(keyword, "kwlen").text = str(keywordLength)
         # This is overly complicated in my opinion, but the only way I could get it to work with the time allowed
@@ -271,6 +294,14 @@ for recordItem in (sorted(recordNames.values(), key=operator.attrgetter('recordO
         out.error("Small resource tag not found!")
         exit(1)
 
+    # Handle our indirection and add the record vpd to our dict for printing below
+    if (clCreateRecords):
+        recordTvpd[recordName] = vpd
+
+# All done with records, cleanup our indirection
+if (clCreateRecords):
+    vpd = toplevelvpd
+
 # We now have a correct tvpd, use it to create a binary VPD image
 out.setIndent(0)
 out.msg("==== Stage 3: Writing the tvpd output file")
@@ -289,3 +320,21 @@ if (rc):
     out.error("Unable to call xmllint to fixing xml formatting")
     exit(rc)
 
+# Write the sub files
+if (clCreateRecords):
+    # This can be in whatever order, we don't care
+    for recordName in recordNames:
+        
+        # Create our output file names 
+        tvpdFileName = clOutputPath + "/" + vpdName + "-" + recordName + ".tvpd"
+        
+        # This is our easy one, write the XML back out
+        # Write out the full template vpd representing the data contained in our image
+        writeTvpd(recordTvpd[recordName], tvpdFileName)
+        out.msg("Wrote tvpd file: %s" % tvpdFileName)
+
+        # Now rip it through xmllint quick to cleanup formatting problems from the ET print
+        rc = os.system("xmllint --format %s -o %s" % (tvpdFileName, tvpdFileName))
+        if (rc):
+            out.error("Unable to call xmllint to fixing xml formatting")
+            exit(rc)
