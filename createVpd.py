@@ -55,6 +55,11 @@ def help():
     out.msg("-r|--binary-records    Create binary files for each record in the template")
     out.msg("-k|--binary-keywords   Create binary files for each keyword in the template")
     out.setIndent(0)
+    out.msg("Examples")
+    out.setIndent(2)
+    out.msg("./createVpd.py -m examples/simple/simple.tvpd -o /tmp")
+    out.msg("./createVpd.py -m examples/rbinfile/rbinfile.tvpd -i examples/rbinfile -o /tmp")
+    out.setIndent(0)
 
 # Find file in a given path or paths
 # searchPath comes from the --inpath option
@@ -813,7 +818,7 @@ for record in manifest.iter("record"):
     # Don't error check those cases here again.  If rbinfile is found, just go and else the keyword case
     if (record.find("rbinfile") != None):
         # Get the name
-        rbinfile = record.find("rbinfile").text
+        rbinfile = findFile(record.find("rbinfile").text, clInputPath)
 
         # Open the file and stick it into the record
         recordInfo[recordName].record = open(rbinfile, mode='rb').read()
