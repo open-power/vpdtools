@@ -6,6 +6,10 @@ cp ../reverseVpd.py /gsa/rchgsa/projects/o/optk/vpdtemplate/.
 chmod +x /gsa/rchgsa/projects/o/optk/vpdtemplate/createVpd.py
 chmod +x /gsa/rchgsa/projects/o/optk/vpdtemplate/reverseVpd.py
 
+# Copy out the pymods
+cp -r ../pymod /gsa/rchgsa/projects/o/optk/vpdtemplate/.
+chmod +r /gsa/rchgsa/projects/o/optk/vpdtemplate/pymod
+
 # Copy the examples out
 for test in `ls ../tests/pass/`;
 do
