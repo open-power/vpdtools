@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<vpd>
+  <record name="VER0">
+    <rdesc>The Vendor repair data record for Memriser</rdesc>
+
+    <keyword name="RT">
+      <kwdesc>The Record Type keyword</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>4</kwlen>
+      <kwdata>VER0</kwdata>
+    </keyword>
+
+    <keyword name="#I">
+      <kwdesc>Repair Data </kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>48</kwlen>
+      <kwdata>01040800</kwdata>
+    </keyword>
+
+  </record>
+
+</vpd>
