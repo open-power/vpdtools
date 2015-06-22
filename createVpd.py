@@ -421,6 +421,34 @@ vpdName = manifest.find("name").text
 if (vpdName == "FILENAME"):
     vpdName = os.path.splitext(os.path.basename(clManifestFile))[0]
 
+# Determining the size given
+vpdSize = manifest.find("size").text
+# Make a new string with only the number
+maxSizeBytes = re.match('[0-9]*', vpdSize).group()
+# Check to see if the number is even there
+if (maxSizeBytes == ''):
+    maxSizeBytes = '0'
+    out.error("No number detected in the size string.  Format of string must be number first, then units, e.g. 16KB. Remove any characters or white space from in front of the number.")
+    errorsFound+=1
+# Make a new string with the number removed
+sizeUnits = vpdSize[len(maxSizeBytes):]
+# Remove a space, if one was inserted between the number and units
+whitespace = re.match(' *', sizeUnits).group()
+sizeUnits = sizeUnits[len(whitespace):]
+# Check the units to see if they are okay
+if (sizeUnits == "kB" or sizeUnits == "kb" or sizeUnits == "Kb" or sizeUnits == "KB"):
+    maxSizeBytes = int(maxSizeBytes) * 1024
+elif (sizeUnits == "b" or sizeUnits == "B"):
+    maxSizeBytes = int(maxSizeBytes)
+elif (sizeUnits == "Mb" or sizeUnits == "MB"):
+    maxSizeBytes = int(maxSizeBytes) * 1024 * 1024
+elif (sizeUnits == ""):
+    out.error("Please specify units at the end of the size string. Acceptable units: B; KB; MB.")
+    errorsFound+=1
+else:
+    out.error("Unexpected units in the size string. Expected: B; KB; MB. Yours: %s" % sizeUnits)
+    errorsFound+=1
+
 # Look for rtvpdfile lines
 for record in manifest.iter("record"):
     recordName = record.attrib.get("name")
@@ -919,6 +947,7 @@ for record in manifest.iter("record"):
     # Update our total image size
     imageSize += len(recordInfo[recordName].ecc)
 
+
 ################################################
 # Write the VPD 
 # Everything for the image is now in memory!
@@ -952,3 +981,14 @@ for record in manifest.iter("record"):
 # Done with the file
 vpdFile.close()
 out.msg("Wrote vpd file: %s" % vpdFileName)
+
+# Check if the image size is larger than the maxSizeBytes
+if (imageSize > maxSizeBytes):
+    out.error("The generated binary image (%s) is too large for the size given (%s)"%(imageSize, maxSizeBytes))
+    errorsFound += 1
+# Catch the errors
+if (errorsFound):
+    out.msg("")
+    out.error("%d error%s found while creating the binary image.  Please review the above errors and correct them." % (errorsFound, "s" if (errorsFound > 1) else ""))
+# Return the number of errors found as the return code
+exit (errorsFound)
