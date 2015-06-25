@@ -64,27 +64,6 @@ class RecordInfo:
 ############################################################
 # Function - Functions - Functions - Functions - Functions
 ############################################################
-def help():
-    out.msg("createVpd.py -m manifest.tvpd -o outputpath -d")
-    out.msg("Required Args")
-    out.setIndent(2)
-    out.msg("-m|--manifest          The input file detailing all the records and keywords to be in the image")
-    out.msg("-o|--outpath           The output path for the files created by the tool")
-    out.setIndent(0)
-    out.msg("Optional Args")
-    out.setIndent(2)
-    out.msg("-d|--debug             Enables debug printing")
-    out.msg("-h|--help              This help text")
-    out.msg("-i|--inpath            The search path to use for files referenced in the template")
-    out.msg("-r|--binary-records    Create binary files for each record in the template")
-    out.msg("-k|--binary-keywords   Create binary files for each keyword in the template")
-    out.setIndent(0)
-    out.msg("Examples")
-    out.setIndent(2)
-    out.msg("./createVpd.py -m examples/simple/simple.tvpd -o /tmp")
-    out.msg("./createVpd.py -m examples/rbinfile/rbinfile.tvpd -i examples/rbinfile -o /tmp")
-    out.setIndent(0)
-
 # Find file in a given path or paths
 # searchPath comes from the --inpath option
 def findFile(filename, searchPath):
@@ -353,22 +332,27 @@ rc = 0
 
 ################################################
 # Command line options
-
+# Create the argparser object
+# We disable auto help options here and add them manually below.  This is we can get everything in 1 group
 parser = argparse.ArgumentParser(description='The VPD image creation tool', add_help=False, formatter_class=argparse.RawDescriptionHelpFormatter,
                                  epilog=textwrap.dedent('''\
                                  Examples:
                                    ./createVpd.py -m examples/simple/simple.tvpd -o /tmp
                                    ./createVpd.py -m examples/rbinfile/rbinfile.tvpd -i examples/rbinfile -o /tmp
                                  '''))
+# Create our group of required command line args
 reqgroup = parser.add_argument_group('Required Arguments')
 reqgroup.add_argument('-m', '--manifest', help='The input file detailing all the records and keywords to be in the image', required=True)
 reqgroup.add_argument('-o', '--outpath', help='The output path for the files created by the tool', required=True)
+# Create our group of optional command line args
 optgroup = parser.add_argument_group('Optional Arguments')
 optgroup.add_argument('-h', '--help', help="Show this help message and exit", action="store_true")
 optgroup.add_argument('-d', '--debug', help="Enables debug printing",action="store_true")
 optgroup.add_argument('-r', '--binary-records', help="Create binary files for each record in the template",action="store_true")
 optgroup.add_argument('-k', '--binary-keywords', help="Create binary files for each keyword in the template",action="store_true")
 optgroup.add_argument('-i', '--inpath', help="The search path to use for the files referenced in the manifest")
+
+# We've got everything we want loaded up, now look for it
 args = parser.parse_args()
 
 # Because we had to monkey with the groups above, we disabled the built in help handling so that all optional args were grouped together
