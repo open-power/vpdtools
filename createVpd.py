@@ -38,6 +38,7 @@ import xml.etree.ElementTree as ET
 import struct
 import re
 import argparse
+import textwrap
 
 ############################################################
 # Classes - Classes - Classes - Classes - Classes - Classes
@@ -353,7 +354,12 @@ rc = 0
 ################################################
 # Command line options
 
-parser = argparse.ArgumentParser(description='The VPD image creation tool', add_help=False)
+parser = argparse.ArgumentParser(description='The VPD image creation tool', add_help=False, formatter_class=argparse.RawDescriptionHelpFormatter,
+                                 epilog=textwrap.dedent('''\
+                                 Examples:
+                                   ./createVpd.py -m examples/simple/simple.tvpd -o /tmp
+                                   ./createVpd.py -m examples/rbinfile/rbinfile.tvpd -i examples/rbinfile -o /tmp
+                                 '''))
 reqgroup = parser.add_argument_group('Required Arguments')
 reqgroup.add_argument('-m', '--manifest', help='The input file detailing all the records and keywords to be in the image', required=True)
 reqgroup.add_argument('-o', '--outpath', help='The output path for the files created by the tool', required=True)
