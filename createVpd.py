@@ -33,11 +33,11 @@ import os
 scriptPath = os.path.dirname(os.path.realpath(__file__))
 import sys
 sys.path.insert(0,scriptPath + "/pymod");
-import cmdline
 import out
 import xml.etree.ElementTree as ET
 import struct
 import re
+import argparse
 
 ############################################################
 # Classes - Classes - Classes - Classes - Classes - Classes
@@ -352,64 +352,54 @@ rc = 0
 
 ################################################
 # Command line options
-clErrors = 0
 
-# Help text
-if (cmdline.parseOption("-h","--help")):
-    help()
+parser = argparse.ArgumentParser(description='The VPD image creation tool', add_help=False)
+reqgroup = parser.add_argument_group('Required Arguments')
+reqgroup.add_argument('-m', '--manifest', help='The input file detailing all the records and keywords to be in the image', required=True)
+reqgroup.add_argument('-o', '--outpath', help='The output path for the files created by the tool', required=True)
+optgroup = parser.add_argument_group('Optional Arguments')
+optgroup.add_argument('-h', '--help', help="Show this help message and exit", action="store_true")
+optgroup.add_argument('-d', '--debug', help="Enables debug printing",action="store_true")
+optgroup.add_argument('-r', '--binary-records', help="Create binary files for each record in the template",action="store_true")
+optgroup.add_argument('-k', '--binary-keywords', help="Create binary files for each keyword in the template",action="store_true")
+optgroup.add_argument('-i', '--inpath', help="The search path to use for the files referenced in the manifest")
+args = parser.parse_args()
+
+# Because we had to monkey with the groups above, we disabled the built in help handling so that all optional args were grouped together
+# So, if help was given, check that first then call it and bail
+if (args.help):
+    parser.print_help()
     exit(0)
 
 # Get the manifest file and get this party started
-clManifestFile = cmdline.parseOptionWithArg("-m", "--manifest")
-if (clManifestFile == None):
-    out.error("The -m arg is required!")
-    clErrors+=1
+clManifestFile = args.manifest
 
 # Look for output path
-clOutputPath = cmdline.parseOptionWithArg("-o", "--outpath")
-if (clOutputPath == None):
-    out.error("The -o arg is required")
+clOutputPath = args.outpath
+# Make sure the path exists, we aren't going to create it
+if (os.path.exists(clOutputPath) != True):
+    out.error("The given output path %s does not exist!" % clOutputPath)
+    out.error("Please create the output directory and run again")
     clErrors+=1
-else:
-    # Make sure the path exists, we aren't going to create it
-    if (os.path.exists(clOutputPath) != True):
-        out.error("The given output path %s does not exist!" % clOutputPath)
-        out.error("Please create the output directory and run again")
-        clErrors+=1
 
 # Look for input path
-clInputPath = cmdline.parseOptionWithArg("-i", "--inpath")
+clInputPath = args.inpath
 # Make sure the path exists
 if (clInputPath != None):
-    # Add the CWD onto the path
+    # Add the CWD onto the path so the local directory is always looked at
     clInputPath += ":."
-    # Let's not do this check because it will allow the user to pass in multiple : seperated paths
-    # Yes, we could split the path and check each one, but not now
-    #if (os.path.exists(clInputPath) != True):
-    #    out.error("The given input path %s does not exist!" % clOutputPath)
-    #    clErrors+=1
 else:
     # Set it the CWD since it will be used throughout the program and having it set to None breaks things
     clInputPath = "."
 
-# Error check the command line
-if (clErrors):
-    out.error("Missing/incorrect required cmdline args!  Please review the output above to determine which ones!")
-    exit(clErrors)
-
 # Debug printing
-clDebug = cmdline.parseOption("-d", "--debug")
+clDebug = args.debug
 
 # Create separate binary files for each record
-clBinaryRecords = cmdline.parseOption("-r", "--binary-records")
+clBinaryRecords = args.binary_records
 
 # Create separate binary files for each keyword
-clBinaryKeywords = cmdline.parseOption("-k", "--binary-keywords")
-
-# All cmdline args should be processed, so if any left throw an error
-if (len(sys.argv) != 1):
-    out.error("Extra cmdline args detected - %s" % (sys.argv[1:])) # [1:] don't inclue script name in the list
-    exit(len(sys.argv))
+clBinaryKeywords = args.binary_keywords
 
 # We are going to do this in 3 stages
 # 1 - Read in the manifest and any other referenced files.  This will create a complete XML description of the VPD
