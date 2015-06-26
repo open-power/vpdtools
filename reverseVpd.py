@@ -33,7 +33,8 @@ import os
 scriptPath = os.path.dirname(os.path.realpath(__file__))
 import sys
 sys.path.insert(0,scriptPath + "/pymod");
-import cmdline
+import argparse
+import textwrap
 import out
 import xml.etree.ElementTree as ET
 import struct
@@ -45,7 +46,6 @@ import operator
 def asciiAllowed(s):
     for c in s:
         if c not in string.printable:
-        #if c not in string.ascii_letters and c not in string.digits and c not in string.whitespace:
             return False
     return True
 
@@ -69,20 +69,6 @@ class RecordInfo:
 ############################################################
 # Function - Functions - Functions - Functions - Functions
 ############################################################
-def help():
-    out.msg("reverseVpd.py -v image.vpd -o outputpath -d")
-    out.msg("Required Args")
-    out.setIndent(2)
-    out.msg("-v|--vpdfile           The valid vpd formatted input file")
-    out.msg("-o|--outpath           The output path for the files created by the tool")
-    out.setIndent(0)
-    out.msg("Optional Args")
-    out.setIndent(2)
-    out.msg("-d|--debug             Enables debug printing")
-    out.msg("-h|--help              This help text")
-    out.msg("-r|--create-records    Create tvpd files for each record in the vpd")
-    out.setIndent(0)
-
 # Function to write out the resultant tvpd xml file
 def writeTvpd(manifest, outputFile):
     tree = ET.ElementTree(manifest)
@@ -96,46 +82,48 @@ rc = 0
 
 ################################################
 # Command line options
-clErrors = 0
+# Create the argparser object
+# We disable auto help options here and add them manually below.  This is we can get all the optional args in 1 group
+parser = argparse.ArgumentParser(description='Reverses a VPD image into XML template files', add_help=False, formatter_class=argparse.RawDescriptionHelpFormatter,
+                                 epilog=textwrap.dedent('''\
+                                 Examples:
+                                   ./reverseVpd.py -v image.vpd -o /tmp
+                                 '''))
+# Create our group of required command line args
+reqgroup = parser.add_argument_group('Required Arguments')
+reqgroup.add_argument('-v', '--vpdfile', help='The valid vpd formatted input file', required=True)
+reqgroup.add_argument('-o', '--outpath', help='The output path for the files created by the tool', required=True)
+# Create our group of optional command line args
+optgroup = parser.add_argument_group('Optional Arguments')
+optgroup.add_argument('-h', '--help', help="Show this help message and exit", action="store_true")
+optgroup.add_argument('-d', '--debug', help="Enables debug printing",action="store_true")
+optgroup.add_argument('-r', '--create-records', help="Create tvpd files for each record in the vpd",action="store_true")
 
-# Help text
-if (cmdline.parseOption("-h","--help")):
-    help()
+# We've got everything we want loaded up, now look for it
+args = parser.parse_args()
+
+# Because we had to monkey with the groups above, we disabled the built in help handling so that all optional args were grouped together
+# So, if help was given, check that first then call it and bail
+if (args.help):
+    parser.print_help()
     exit(0)
 
 # Get the manifest file and get this party started
-clVpdFile = cmdline.parseOptionWithArg("-v", "--vpdfile")
-if (clVpdFile == None):
-    out.error("The -v arg is required!")
-    clErrors+=1
+clVpdFile = args.vpdfile
 
 # Look for output path
-clOutputPath = cmdline.parseOptionWithArg("-o", "--outpath")
-if (clOutputPath == None):
-    out.error("The -o arg is required")
-    clErrors+=1
-else:
-    # Make sure the path exists, we aren't going to create it
-    if (os.path.exists(clOutputPath) != True):
-        out.error("The given output path %s does not exist!" % clOutputPath)
-        out.error("Please create the output directory and run again")
-        clErrors+=1
-
-# Error check the command line
-if (clErrors):
-    out.error("Missing/incorrect required cmdline args!  Please review the output above to determine which ones!")
-    exit(clErrors)
+clOutputPath = args.outpath
+# Make sure the path exists, we aren't going to create it
+if (os.path.exists(clOutputPath) != True):
+    out.error("The given output path %s does not exist!" % clOutputPath)
+    out.error("Please create the output directory and run again")
+    exit(1)
 
 # Debug printing
-clDebug = cmdline.parseOption("-d", "--debug")
+clDebug = args.debug
 
 # Create separate tvpd files for each record
-clCreateRecords = cmdline.parseOption("-r", "--create-records")
-
-# All cmdline args should be processed, so if any left throw an error
-if (len(sys.argv) != 1):
-    out.error("Extra cmdline args detected - %s" % (sys.argv[1:])) # [1:] don't inclue script name in the list
-    exit(len(sys.argv))
+clCreateRecords = args.create_records
 
 ################################################
 # Read in the VPD file and break it apart
