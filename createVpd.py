@@ -333,7 +333,7 @@ rc = 0
 ################################################
 # Command line options
 # Create the argparser object
-# We disable auto help options here and add them manually below.  This is we can get everything in 1 group
+# We disable auto help options here and add them manually below.  This is we can get all the optional args in 1 group
 parser = argparse.ArgumentParser(description='The VPD image creation tool', add_help=False, formatter_class=argparse.RawDescriptionHelpFormatter,
                                  epilog=textwrap.dedent('''\
                                  Examples:
@@ -370,7 +370,7 @@ clOutputPath = args.outpath
 if (os.path.exists(clOutputPath) != True):
     out.error("The given output path %s does not exist!" % clOutputPath)
     out.error("Please create the output directory and run again")
-    clErrors+=1
+    exit(1)
 
 # Look for input path
 clInputPath = args.inpath
