@@ -95,18 +95,12 @@ reqgroup.add_argument('-v', '--vpdfile', help='The valid vpd formatted input fil
 reqgroup.add_argument('-o', '--outpath', help='The output path for the files created by the tool', required=True)
 # Create our group of optional command line args
 optgroup = parser.add_argument_group('Optional Arguments')
-optgroup.add_argument('-h', '--help', help="Show this help message and exit", action="store_true")
+optgroup.add_argument('-h', '--help', action="help", help="Show this help message and exit")
 optgroup.add_argument('-d', '--debug', help="Enables debug printing",action="store_true")
 optgroup.add_argument('-r', '--create-records', help="Create tvpd files for each record in the vpd",action="store_true")
 
 # We've got everything we want loaded up, now look for it
 args = parser.parse_args()
-
-# Because we had to monkey with the groups above, we disabled the built in help handling so that all optional args were grouped together
-# So, if help was given, check that first then call it and bail
-if (args.help):
-    parser.print_help()
-    exit(0)
 
 # Get the manifest file and get this party started
 clVpdFile = args.vpdfile
