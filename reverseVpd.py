@@ -140,7 +140,7 @@ offset+=4
 
 # Skip the PT keyword and read the 1 byte length to loop over the VTOC contents and create our record list
 offset+=2 # PT skip
-tocLength = vpdContents[offset]
+tocLength = struct.unpack('<B', vpdContents[offset:(offset + 1)])[0]
 offset+=1
 
 # Keep a dictionary of the record names we come across
@@ -169,7 +169,7 @@ while (tocOffset < tocLength):
     # eccLength
     recordNames[recordName].eccLength = struct.unpack('<H', vpdContents[(tocOffset + offset):(tocOffset + offset + 2)])[0]
     tocOffset+=2
-    
+
 # We have all the record offsets in memory along with the entire VPD image.
 # Go onto our next step and create XML in memory
 
@@ -209,7 +209,7 @@ for recordItem in (sorted(recordNames.values(), key=operator.attrgetter('recordO
 
     # Create our record
     record = ET.SubElement(vpd, "record", {'name':recordName})
-    
+
     # Create the record description
     ET.SubElement(record, "rdesc").text = "The " + recordName + " record"
 
@@ -238,7 +238,7 @@ for recordItem in (sorted(recordNames.values(), key=operator.attrgetter('recordO
             keywordLength = struct.unpack('<H', vpdContents[recordOffset:(recordOffset + 2)])[0]
             recordOffset+=2
         else:
-            keywordLength = vpdContents[recordOffset]
+            keywordLength = struct.unpack('<B', vpdContents[recordOffset:(recordOffset + 1)])[0]
             recordOffset+=1
 
         # Get the keyword data out
@@ -295,7 +295,7 @@ for recordItem in (sorted(recordNames.values(), key=operator.attrgetter('recordO
         out.msg("Keyword: %s Type: %5s Length: %s" % (keywordName, ("ascii" if (asciiState) else "hex"), str(keywordLength)))
 
     # We should be done with all the keywords, which means it's pointing to the SR tag
-    if (vpdContents[recordOffset] != 0x78):
+    if (struct.unpack('<B', vpdContents[recordOffset:(recordOffset + 1)])[0] != 0x78):
         out.error("Small resource tag not found!")
         exit(1)
 
