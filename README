@@ -20,8 +20,15 @@ Desc: Takes a binary VPD image and creates template XML files from it
 Input: Binary VPD image
 Output: Template XML files that can be modified and used to create a new image
 
+Dependencies
+============
 Python 2.7 is required.
 NOTE: RHEL6 is python 2.6 and this tool will not run there
+
+reverseVpd.py requires cmldline xmllint to cleanup the formatting of the output xml
+
+On Ubuntu/Debian: 'apt-get install libxml2-utils'
+On Redhat/Fedora: 'yum install libxml2'
 
 Examples
 ========
