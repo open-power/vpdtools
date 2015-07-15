@@ -22,6 +22,8 @@ reverseVpd.py
 Desc: Takes a binary VPD image and creates template XML files from it
 Input: Binary VPD image
 Output: Template XML files that can be modified and used to create a new image
+Note: Since data format (ascii vs hex) is not stored in VPD, the tool simply
+      makes a best guess by examining the data within the keyword
 
 Dependencies
 ============
@@ -29,13 +31,12 @@ Python 2.7 is required.
 NOTE: RHEL6 is python 2.6 and this tool will not run there
 
 reverseVpd.py requires cmdline xmllint to cleanup the formatting of the output xml
-
 On Ubuntu/Debian: 'apt-get install libxml2-utils'
 On Redhat/Fedora: 'yum install libxml2'
 
 Examples
 ========
-The tool comes with a number of example input files
+The tool comes with a set of example input files
 A number of the files describe specific syntax features of the tool
 Also included are examples of complete memcard and sysplanar templates
 
