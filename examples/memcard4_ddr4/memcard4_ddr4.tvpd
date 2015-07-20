@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
 <vpd>
+   <!-- OpenPower DDR4 Memory Riser Card with 2 to 4 memory buffers -->
+
   <name>FILENAME</name>
   <size>16kb</size>
   <VD>01</VD>
@@ -17,7 +19,7 @@
   </record>
 
   <record name="SPDX">
-    <rtvpdfile>openPower_spdx_membuf4_sample.xml</rtvpdfile>
+    <rtvpdfile>openPower_spdx_membuf4_ddr4_sample.xml</rtvpdfile>
   </record>
 
   <record name="VEIR">

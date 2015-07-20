@@ -29,7 +29,7 @@
       <kwdesc>FRU Description</kwdesc>
       <kwformat>ascii</kwformat>
       <kwlen>16</kwlen>
-      <kwdata>SYSTEM PLANAR   </kwdata>
+      <kwdata>xxxGB DDR4 MEMCD</kwdata>
     </keyword>
 
     <keyword name="VP">

@@ -1,15 +1,13 @@
 <?xml version="1.0"?>
 <vpd>
+ <!-- OpenPower DDR3 memory riser card with one memory buffer  -->
+
   <name>FILENAME</name>
   <size>16kb</size>
   <VD>01</VD>
 
   <record name="VINI">
     <rtvpdfile>openPower_vini_sample.xml</rtvpdfile>
-  </record>
-
-  <record name="OSYS">
-    <rtvpdfile>openPower_osys_sample.xml</rtvpdfile>
   </record>
 
   <record name="OPFR">
@@ -21,19 +19,19 @@
   </record>
 
   <record name="SPDX">
-    <rtvpdfile>openPower_spdx_membuf32_sample.xml</rtvpdfile>
+    <rtvpdfile>openPower_spdx_membuf1_sample.xml</rtvpdfile>
   </record>
 
   <record name="VEIR">
-    <rtvpdfile>openPower_veir_sample.xml</rtvpdfile>
+    <rtvpdfile>openPower_veir_MCsample.xml</rtvpdfile>
   </record>
 
   <record name="VER0">
-    <rtvpdfile>openPower_ver0_sample.xml</rtvpdfile>
+    <rtvpdfile>openPower_ver0_MCsample.xml</rtvpdfile>
   </record>
 
   <record name="MER0">
-    <rtvpdfile>openPower_mer0_sample.xml</rtvpdfile>
+    <rtvpdfile>openPower_mer0_MCsample.xml</rtvpdfile>
   </record>
 
   <record name="VMSC">
@@ -43,5 +41,4 @@
   <record name="VRTN">
     <rtvpdfile>openPower_vrtn_sample.xml</rtvpdfile>
   </record>
-
 </vpd>

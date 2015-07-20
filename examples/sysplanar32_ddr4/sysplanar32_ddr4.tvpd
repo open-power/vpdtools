@@ -1,8 +1,7 @@
 <?xml version="1.0"?>
 <vpd>
-  <!-- OpenPower system Planar with no memory buffer -->
-  <!-- This card will be using with  memory riser card -->
-  <!-- and memory buffer/buffers are on the riser card -->
+  <!-- OpenPower system Planar with upto 32 memory buffers on the card -->
+  <!-- DDR4 ISDIMMs are plugged onto this system board -->
 
   <name>FILENAME</name>
   <size>16kb</size>
@@ -24,6 +23,10 @@
     <rtvpdfile>openPower_vndr_sample.xml</rtvpdfile>
   </record>
 
+  <record name="SPDX">
+    <rtvpdfile>openPower_spdx_membuf32_ddr4_sample.xml</rtvpdfile>
+  </record>
+
   <record name="VEIR">
     <rtvpdfile>openPower_veir_sample.xml</rtvpdfile>
   </record>
@@ -43,4 +46,5 @@
   <record name="VRTN">
     <rtvpdfile>openPower_vrtn_sample.xml</rtvpdfile>
   </record>
+
 </vpd>

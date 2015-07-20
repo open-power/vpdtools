@@ -29,7 +29,7 @@
       <kwdesc>FRU Description</kwdesc>
       <kwformat>ascii</kwformat>
       <kwlen>16</kwlen>
-      <kwdata>0000000000000000</kwdata>
+      <kwdata>SYSTEM PLANAR   </kwdata>
     </keyword>
 
     <keyword name="VP">

@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<vpd>
+
+  <record name="MER0">
+    <rdesc>The Manufacturing repair data record</rdesc>
+
+    <keyword name="RT">
+      <kwdesc>The Record Type keyword</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>4</kwlen>
+      <kwdata>MER0</kwdata>
+    </keyword>
+
+    <keyword name="#I">
+      <kwdesc>Repair Data </kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>320</kwlen>
+      <kwdata>01044E00</kwdata>
+    </keyword>
+
+  </record>
+
+</vpd>

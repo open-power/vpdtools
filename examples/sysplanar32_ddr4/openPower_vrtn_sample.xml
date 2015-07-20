@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<vpd>
+
+  <record name="VRTN">
+    <rdesc>The VRTN record</rdesc>
+
+    <keyword name="RT">
+      <kwdesc>The Record Type keyword</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>4</kwlen>
+      <kwdata>VRTN</kwdata>
+    </keyword>
+
+    <keyword name="SO">
+      <kwdesc>The SO keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>2</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="IN">
+      <kwdesc>Free Space for Sofware Data</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>254</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="I2">
+      <kwdesc>Additional Free Space for Sofware Data</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>254</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+  </record>
+
+</vpd>

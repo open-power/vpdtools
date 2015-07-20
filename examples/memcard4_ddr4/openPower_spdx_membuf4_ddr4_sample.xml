@@ -1,0 +1,200 @@
+<?xml version="1.0"?>
+<vpd>
+
+
+  <record name="SPDX">
+    <rdesc>DDR4 Memory data record for 2-4 Centaurs</rdesc>
+
+    <keyword name="RT">
+      <kwdesc>The Record Type keyword</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>4</kwlen>
+      <kwdata>SPDX</kwdata>
+    </keyword>
+
+    <keyword name="VD">
+      <kwdesc>Record Version keyword</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>2</kwlen>
+      <kwdata>05</kwdata>
+    </keyword>
+
+    <keyword name="VM">
+      <kwdesc>Memory data version keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>4</kwlen>
+      <kwdata>00000000</kwdata>
+    </keyword>
+
+    <keyword name="DW">
+      <kwdesc>Memory Buffer Voltage keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>2</kwlen>
+      <kwdata>0000</kwdata>
+    </keyword>
+
+    <keyword name="MX">
+      <kwdesc>Bank Delete keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>64</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="M0">
+      <kwdesc>MR Centaur Mappter (Centaur MRUID)Delete keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>32</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="M1">
+      <kwdesc>First set of MR data keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="M2">
+      <kwdesc>Second set of MR data keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="M3">
+      <kwdesc>Third set of MR data keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="M4">
+      <kwdesc>Fourth set of MR data keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="#1">
+      <kwdesc>First set of MT data keyword (1 dimm 1 rank)</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>384</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="#Z">
+      <kwdesc>Second set of MT data (1 dimm 2 ranks)</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>384</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="#4">
+      <kwdesc>Third set of MT data (1 dimm 4 ranks)</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>384</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="#5">
+      <kwdesc>Fourth set of MT data keyword (2 dimms 1 rank)</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>384</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="#6">
+      <kwdesc>Fifth set of MT data keyword (2 dimms 2 ranks)</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>384</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="#8">
+      <kwdesc>Sixth set of MT data keyword (2 dimms 4 ranks)</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>384</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="Q0">
+      <kwdesc>DQ Data mapper-Memory Buffer MRUID</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>32</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="Q1">
+      <kwdesc>First set of DQ</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>96</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="Q2">
+      <kwdesc>Second set of DQ</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>96</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="Q3">
+      <kwdesc>Third set of DQ</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>96</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="Q4">
+      <kwdesc>Fourth set of DQ</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>96</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="K0">
+      <kwdesc>DQS Data mapper-Memory Buffer MRUID</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>32</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="K1">
+      <kwdesc>First set of DQS</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>32</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="K2">
+      <kwdesc>Second set of DQS</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>32</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="K3">
+      <kwdesc>Third set of DQS</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>32</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="K4">
+      <kwdesc>Fourth set of DQS</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>32</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="LR">
+      <kwdesc>LR memory Attributions</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+  </record>
+
+</vpd>
+

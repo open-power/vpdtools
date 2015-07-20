@@ -1,0 +1,44 @@
+Full Image Examples
+===================
+
+memcard1_ddr3:    This is an example of a VPD template for a DDR3 memory riser
+                  card with a single memory buffer(Centaur).
+
+memcard4_ddr3:    This is an example of a VPD template for a DDR3 memory riser
+                  card with 2 to 4 memory buffer (Centaurs).
+
+memcard1_ddr4:    This is an example of a VPD template for a DDR4 memory riser
+                  card with a single memory buffer(Centaur).
+
+memcard4_ddr4:    This is an example of a VPD template for a DDR4 memory riser
+                  card with 2 to 4 memory buffer (Centaurs).
+
+sysplanar:        This is an example of a VPD template for an OpenPower system
+                  planar (aka mother board) that does not have any memory
+                  buffer on the card.  A memory riser card will be plugged
+                  onto this system planar.
+
+sysplanar32_ddr3: This is an example of a VPD template for an OpenPower system
+                  planar (aka mother board) that has upto 32 memory buffers
+                  (Centaurs) on the card.  DDR3 ISDIMMs are plugged onto this
+                  system planar.                 
+
+sysplanar32_ddr4: This is an example of a VPD template for an OpenPower system
+                  planar (aka mother board) that has upto 32 memory buffers
+                  (Centaurs) on the card.   DDR3 ISDIMMs are plugged onto this
+                  system planar.
+
+Syntax Examples
+===============
+bindatainput:     Shows the syntax to have a binary input file for the keyword
+                  data
+
+hexwithcomments:  Shows inclusion of comments within hex data for easier reading
+
+rbinfile:         Shows how to include a binary file that contains an entire
+                  record.  Can be created using the -r option on createVpd.py
+
+simple:           Most basic syntax example
+
+tworecords:       Shows how to define multiple records within one top level
+                  input file
