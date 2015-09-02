@@ -325,11 +325,6 @@ def calcPadFill(record):
 ############################################################
 rc = 0
 
-# We could possibly run in two different modes
-# 1) manifest mode - the user passes in one xml file that gives all the required input args
-# 2) cmdline mode - the user passes in multiple command line args that recreate what would be in the manifest
-# 1 is the easiest option to start with, and maybe all that is needed.  We start with manifest mode!
-
 ################################################
 # Command line options
 # Create the argparser object
@@ -388,7 +383,7 @@ clBinaryKeywords = args.binary_keywords
 # We are going to do this in 3 stages
 # 1 - Read in the manifest and any other referenced files.  This will create a complete XML description of the VPD
 #     We will also check to make sure that all required tags are given and no extra tags exist
-# 2 - Parse thru the tvpd description and make sure the data with in the tags is valid.  This is checks like data not greater than length, etc..
+# 2 - Parse thru the tvpd description and make sure the data with in the tags is valid.  These are checks like data not greater than length, etc..
 # 3 - With the XML and contents verified correct, loop thru it again and write out the VPD data
 # Note: Looping thru the XML twice between stage 1 and 2 makes it easier to surface multiple errors to the user at once.
 #       If we were trying to both validate the xml and data at once, it would be harder to continue and gather multiple errors like we do now
