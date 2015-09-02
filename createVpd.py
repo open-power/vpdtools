@@ -328,7 +328,7 @@ rc = 0
 ################################################
 # Command line options
 # Create the argparser object
-# We disable auto help options here and add them manually below.  This is we can get all the optional args in 1 group
+# We disable auto help options here and add them manually below.  This is so we can get all the optional args in 1 group
 parser = argparse.ArgumentParser(description='The VPD image creation tool', add_help=False, formatter_class=argparse.RawDescriptionHelpFormatter,
                                  epilog=textwrap.dedent('''\
                                  Examples:
@@ -651,7 +651,7 @@ for record in manifest.iter("record"):
 
             # --------
             # Verify that the data isn't longer than the length given
-            # Future checks could include making sure hex data is hex
+            # Future checks could include making sure bin data is hex
             if (kwformat == "ascii" or kwformat == "bin"):
                 if (len(kwdata) > kwlen):
                     out.error("The length of the value is longer than the given <kwlen> for keyword %s in record %s" % (keywordName, recordName))
@@ -978,9 +978,11 @@ out.msg("Wrote vpd file: %s" % vpdFileName)
 if (imageSize > maxSizeBytes):
     out.error("The generated binary image (%s) is too large for the size given (%s)"%(imageSize, maxSizeBytes))
     errorsFound += 1
+    
 # Catch the errors
 if (errorsFound):
     out.msg("")
     out.error("%d error%s found while creating the binary image.  Please review the above errors and correct them." % (errorsFound, "s" if (errorsFound > 1) else ""))
+    
 # Return the number of errors found as the return code
 exit (errorsFound)
