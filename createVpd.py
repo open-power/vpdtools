@@ -39,6 +39,7 @@ import struct
 import re
 import argparse
 import textwrap
+import os
 
 ############################################################
 # Classes - Classes - Classes - Classes - Classes - Classes
@@ -371,7 +372,7 @@ clInputPath = args.inpath
 # Make sure the path exists
 if (clInputPath != None):
     # Add the CWD onto the path so the local directory is always looked at
-    clInputPath += ":."
+    clInputPath +=  os.pathsep + "."
 else:
     # Set it the CWD since it will be used throughout the program and having it set to None breaks things
     clInputPath = "."
