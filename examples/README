@@ -1,32 +1,42 @@
 Full Image Examples
 ===================
 
-memcard1_ddr3:    This is an example of a VPD template for a DDR3 memory riser
+Power8 FRU VPD example:
+======================
+
+p8/memcard1_ddr3:    This is an example of a VPD template for a DDR3 memory riser
                   card with a single memory buffer(Centaur).
 
-memcard4_ddr3:    This is an example of a VPD template for a DDR3 memory riser
+p8/memcard4_ddr3:    This is an example of a VPD template for a DDR3 memory riser
                   card with 2 to 4 memory buffer (Centaurs).
 
-memcard1_ddr4:    This is an example of a VPD template for a DDR4 memory riser
+p8/memcard1_ddr4:    This is an example of a VPD template for a DDR4 memory riser
                   card with a single memory buffer(Centaur).
 
-memcard4_ddr4:    This is an example of a VPD template for a DDR4 memory riser
+p8/memcard4_ddr4:    This is an example of a VPD template for a DDR4 memory riser
                   card with 2 to 4 memory buffer (Centaurs).
 
-sysplanar:        This is an example of a VPD template for an OpenPower system
+p8/sysplanar:        This is an example of a VPD template for an OpenPower system
                   planar (aka mother board) that does not have any memory
                   buffer on the card.  A memory riser card will be plugged
                   onto this system planar.
 
-sysplanar32_ddr3: This is an example of a VPD template for an OpenPower system
+p8/sysplanar32_ddr3: This is an example of a VPD template for an OpenPower system
                   planar (aka mother board) that has upto 32 memory buffers
                   (Centaurs) on the card.  DDR3 ISDIMMs are plugged onto this
                   system planar.                 
 
-sysplanar32_ddr4: This is an example of a VPD template for an OpenPower system
+p8/sysplanar32_ddr4: This is an example of a VPD template for an OpenPower system
                   planar (aka mother board) that has upto 32 memory buffers
                   (Centaurs) on the card.   DDR3 ISDIMMs are plugged onto this
                   system planar.
+
+Power9 FRU VPD example:
+======================
+p9/sysplanar32_ddr4: This is an example of a VPD template for an OpenPower P9 system
+                  planar (aka mother board) that has DDR4 ISDIMMs direct attach to
+                  the processor on the same card that the ISDIMM are plugged onto.
+
 
 Syntax Examples
 ===============

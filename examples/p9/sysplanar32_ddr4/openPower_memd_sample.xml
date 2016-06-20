@@ -1,0 +1,549 @@
+<?xml version="1.0"?>
+<vpd>
+
+  <record name="MEMD">
+    <rdesc>Memory data record</rdesc>
+
+    <keyword name="RT">
+      <kwdesc>The Record Type keyword</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>4</kwlen>
+      <kwdata>MEMD</kwdata>
+    </keyword>
+
+    <keyword name="VD">
+      <kwdesc>Record Version keyword</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>2</kwlen>
+      <kwdata>01</kwdata>
+    </keyword>
+
+    <keyword name="VM">
+      <kwdesc>Memory data version keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>4</kwlen>
+      <kwdata>00000000</kwdata>
+    </keyword>
+
+    <keyword name="MR">
+      <kwdesc>Memory Rotator Mapper keyword </kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="J0">
+      <kwdesc>Memory Rotator Data keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="J1">
+      <kwdesc>Memory Rotator Data keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="J2">
+      <kwdesc>Memory Rotator Data keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="J3">
+      <kwdesc>Memory Rotator Data keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="J4">
+      <kwdesc>Memory Rotator Data keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="J5">
+      <kwdesc>Memory Rotator Data keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="J6">
+      <kwdesc>Memory Rotator Data keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="J7">
+      <kwdesc>Memory Rotator Data keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="J8">
+      <kwdesc>Memory Rotator Data keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="J9">
+      <kwdesc>Memory Rotator Data keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="JA">
+      <kwdesc>Memory Rotator Data keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="JB">
+      <kwdesc>Memory Rotator Data keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="JC">
+      <kwdesc>Memory Rotator Data keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="JD">
+      <kwdesc>Memory Rotator Data keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="JE">
+      <kwdesc>Memory Rotator Data keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="JF">
+      <kwdesc>Memory Rotator Data keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="JG">
+      <kwdesc>Memory Rotator Data keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="JH">
+      <kwdesc>Memory Rotator Data keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="JI">
+      <kwdesc>Memory Rotator Data keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="JJ">
+      <kwdesc>Memory Rotator Data keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="JK">
+      <kwdesc>Memory Rotator Data keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="JL">
+      <kwdesc>Memory Rotator Data keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="JM">
+      <kwdesc>Memory Rotator Data keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="JN">
+      <kwdesc>Memory Rotator Data keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="JO">
+      <kwdesc>Memory Rotator Data keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="JP">
+      <kwdesc>Memory Rotator Data keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="JQ">
+      <kwdesc>Memory Rotator Data keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="JR">
+      <kwdesc>Memory Rotator Data keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="JS">
+      <kwdesc>Memory Rotator Data keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="JT">
+      <kwdesc>Memory Rotator Data keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="JU">
+      <kwdesc>Memory Rotator Data keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="JV">
+      <kwdesc>Memory Rotator Data keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="JW">
+      <kwdesc>Memory Rotator Data keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="JX">
+      <kwdesc>Memory Rotator Data keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="JY">
+      <kwdesc>Memory Rotator Data keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="JZ">
+      <kwdesc>Memory Rotator Data keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="MT">
+      <kwdesc>Memory Terminator Mapper keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="X0">
+      <kwdesc>Memory Terminator Mapper keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="X1">
+      <kwdesc>Memory Terminator Mapper keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="X2">
+      <kwdesc>Memory Terminator Mapper keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="X3">
+      <kwdesc>Memory Terminator Mapper keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="X4">
+      <kwdesc>Memory Terminator Mapper keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="X5">
+      <kwdesc>Memory Terminator Mapper keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="X6">
+      <kwdesc>Memory Terminator Mapper keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="X7">
+      <kwdesc>Memory Terminator Mapper keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="X8">
+      <kwdesc>Memory Terminator Mapper keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="X9">
+      <kwdesc>Memory Terminator Mapper keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="XA">
+      <kwdesc>Memory Terminator Mapper keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="XB">
+      <kwdesc>Memory Terminator Mapper keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="XC">
+      <kwdesc>Memory Terminator Mapper keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="XD">
+      <kwdesc>Memory Terminator Mapper keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="XE">
+      <kwdesc>Memory Terminator Mapper keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="XF">
+      <kwdesc>Memory Terminator Mapper keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="XG">
+      <kwdesc>Memory Terminator Mapper keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="XH">
+      <kwdesc>Memory Terminator Mapper keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="XI">
+      <kwdesc>Memory Terminator Mapper keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="XJ">
+      <kwdesc>Memory Terminator Mapper keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="XK">
+      <kwdesc>Memory Terminator Mapper keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="XL">
+      <kwdesc>Memory Terminator Mapper keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="XM">
+      <kwdesc>Memory Terminator Mapper keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="XN">
+      <kwdesc>Memory Terminator Mapper keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="XO">
+      <kwdesc>Memory Terminator Mapper keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="XP">
+      <kwdesc>Memory Terminator Mapper keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="XQ">
+      <kwdesc>Memory Terminator Mapper keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="XR">
+      <kwdesc>Memory Terminator Mapper keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="XS">
+      <kwdesc>Memory Terminator Mapper keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="XT">
+      <kwdesc>Memory Terminator Mapper keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="XU">
+      <kwdesc>Memory Terminator Mapper keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="XV">
+      <kwdesc>Memory Terminator Mapper keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="XW">
+      <kwdesc>Memory Terminator Mapper keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="XX">
+      <kwdesc>Memory Terminator Mapper keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="XY">
+      <kwdesc>Memory Terminator Mapper keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="XZ">
+      <kwdesc>Memory Terminator Mapper keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+  </record>
+
+</vpd>
+

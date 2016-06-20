@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<vpd>
+
+  <record name="OPFR">
+    <rdesc>The OPFR record</rdesc>
+
+    <keyword name="RT">
+      <kwdesc>The Record Type keyword</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>4</kwlen>
+      <kwdata>OPFR</kwdata>
+    </keyword>
+
+    <keyword name="VD">
+      <kwdesc>Record Version</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>2</kwlen>
+      <kwdata>02</kwdata>
+    </keyword>
+
+    <keyword name="VN">
+      <kwdesc>Vendor Name</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>16</kwlen>
+      <kwdata>0000000000000000</kwdata>
+    </keyword>
+
+    <keyword name="DR">
+      <kwdesc>FRU Description</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>16</kwlen>
+      <kwdata>SYSTEM PLANAR   </kwdata>
+    </keyword>
+
+    <keyword name="VP">
+      <kwdesc>Card Part Number</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>16</kwlen>
+      <kwdata>0000000000000000</kwdata>
+    </keyword>
+
+    <keyword name="VS">
+      <kwdesc>Card Serial Number</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>16</kwlen>
+      <kwdata>0000000000000000</kwdata>
+    </keyword>
+
+    <keyword name="MB">
+      <kwdesc>Manufacturing Build Date</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>8</kwlen>
+      <kwdata>0000000000000000</kwdata>
+    </keyword>
+
+  </record>
+
+</vpd>
