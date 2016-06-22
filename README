@@ -42,18 +42,18 @@ Also included are examples of complete memcard and sysplanar templates
 
 sysplanar creation example
 --------------------------
-$ ~/vpdtools/createVpd.py -m ~/vpdtools/examples/sysplanar/sysplanar.tvpd -i ~/vpdtools/examples/sysplanar -o /tmp/vpdout 
+$ ~/vpdtools/createVpd.py -m ~/vpdtools/examples/p8/sysplanar/sysplanar.tvpd -i ~/vpdtools/examples/p8/sysplanar -o /tmp/vpdout 
 ==== Stage 1: Parsing tvpd XML
-  Parsing tvpd ~/vpdtools/examples/sysplanar/sysplanar.tvpd
-  Parsing tvpd ~/vpdtools/examples/sysplanar/openPower_vini_sample.xml
-  Parsing tvpd ~/vpdtools/examples/sysplanar/openPower_osys_sample.xml
-  Parsing tvpd ~/vpdtools/examples/sysplanar/openPower_opfr_sample.xml
-  Parsing tvpd ~/vpdtools/examples/sysplanar/openPower_vndr_sample.xml
-  Parsing tvpd ~/vpdtools/examples/sysplanar/openPower_veir_sample.xml
-  Parsing tvpd ~/vpdtools/examples/sysplanar/openPower_ver0_sample.xml
-  Parsing tvpd ~/vpdtools/examples/sysplanar/openPower_mer0_sample.xml
-  Parsing tvpd ~/vpdtools/examples/sysplanar/openPower_vmsc_sample.xml
-  Parsing tvpd ~/vpdtools/examples/sysplanar/openPower_vrtn_sample.xml
+  Parsing tvpd ~/vpdtools/examples/p8/sysplanar/sysplanar.tvpd
+  Parsing tvpd ~/vpdtools/examples/p8/sysplanar/openPower_vini_sample.xml
+  Parsing tvpd ~/vpdtools/examples/p8/sysplanar/openPower_osys_sample.xml
+  Parsing tvpd ~/vpdtools/examples/p8/sysplanar/openPower_opfr_sample.xml
+  Parsing tvpd ~/vpdtools/examples/p8/sysplanar/openPower_vndr_sample.xml
+  Parsing tvpd ~/vpdtools/examples/p8/sysplanar/openPower_veir_sample.xml
+  Parsing tvpd ~/vpdtools/examples/p8/sysplanar/openPower_ver0_sample.xml
+  Parsing tvpd ~/vpdtools/examples/p8/sysplanar/openPower_mer0_sample.xml
+  Parsing tvpd ~/vpdtools/examples/p8/sysplanar/openPower_vmsc_sample.xml
+  Parsing tvpd ~/vpdtools/examples/p8/sysplanar/openPower_vrtn_sample.xml
 ==== Stage 2: Verifying tvpd syntax
   Checking record VINI
   Checking record OSYS
