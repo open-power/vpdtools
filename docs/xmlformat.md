@@ -75,3 +75,59 @@ A sample `<vpd>` section would look like this:
   <record ..>
 </vpd>
 ```
+
+## `<record>`
+The record tag is used to describe the information that will go into a VPD record.  You can specify this information 3 different ways.
+ * By defining the keywords to go in the record using the `<keyword>` tag
+ * By pointing to a different file with the `<rtvpdfile>` tag.  That file contains the record definition that uses the `<keyword>` tag
+ * By pointing to a fully created binary representation of the record using the `<rbinfile>` tag
+One 1 of these 3 tags can be given at a time and the creation program checks to make sure that is the case.
+
+``` xml
+<record name=”NAME”>
+</record>
+```
+The name attribute is required in a ```<record>``` and must be 4 characters long. 
+
+### Tags included in the `<record>`  
+`<rdesc></rdesc>`
+A text description of the contents/purpose of a record.  Only 1 `<rdesc>` is allowed per record
+
+``` xml
+<keyword>
+  ..
+</keyword>
+```
+Defines a keyword within a record.  Please see the `<keyword>` section of the document for further descriptions.
+
+`<rtvpdfile></rtvpdfile>`
+Contains the name or path and name to a file describing the record
+
+`<rbinfile></rbinfile>`
+Contains the name or path and name to the binary version of a record.  It is assumed that this file is correctly formatted and only minimally checked to make sure the record names match.
+
+A sample `<record>` section would look like this:
+
+``` xml
+<record name=”NAME”>
+  <rdesc> The NAME record</rdesc>
+  <keyword..>
+</record>
+```
+
+The inclusion of a record tvpd file would look like this:
+``` xml
+<record name=”NAME”>
+  <rtvdfile>record-NAME.tvpd</rtvpdfile>
+</record>
+```
+
+The inclusion of a record binary file would look like this:
+``` xml
+<record name=”NAME”>
+  <rbinfile>record-NAME.bin</rbinfile>
+</record>
+```
+
+## Examples
+Please see the examples dir in this repo for complete representations multiple types of template files
