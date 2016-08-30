@@ -44,6 +44,20 @@ import os
 ############################################################
 # Classes - Classes - Classes - Classes - Classes - Classes
 ############################################################
+# This parser extension is necessary to save comments and write them back out in the final file
+# By default, element tree doesn't preserve comments
+# http://stackoverflow.com/questions/4474754/how-to-keep-comments-while-parsing-xml-using-python-elementtree
+class PCParser(ET.XMLTreeBuilder):
+   def __init__(self):
+       ET.XMLTreeBuilder.__init__(self)
+       # assumes ElementTree 1.2.X
+       self._parser.CommentHandler = self.handle_comment
+
+   def handle_comment(self, data):
+       self._target.start(ET.Comment, {})
+       self._target.data(data)
+       self._target.end(ET.Comment)
+       
 class RecordInfo:
     """Stores the info about each vpd record"""
     def __init__(self):
@@ -100,7 +114,9 @@ def parseTvpd(tvpdFile, topLevel):
     # Read in the file
     # If there are tag mismatch errors or other general gross format problems, it will get caught here
     # Once we return from this function, then we'll check to make sure only supported tags were given, etc..
-    tvpdRoot = ET.parse(tvpdFile).getroot()
+    # Invoke the extended PCParser, which will handle preserving comments in the output file
+    parser = PCParser()
+    tvpdRoot = ET.parse(tvpdFile, parser=parser).getroot()
 
     # Print the top level tags from the parsing
     if (clDebug):
@@ -124,6 +140,10 @@ def parseTvpd(tvpdFile, topLevel):
 
     # Go thru the tags at this level
     for vpd in tvpdRoot:
+        # Comments aren't basestring tags
+        if not isinstance(vpd.tag, basestring):
+            continue
+            
         # See if this is a tag we even expect
         if vpd.tag not in vpdTags:
             out.error("Unsupported tag <%s> found while parsing the <vpd> level" % vpd.tag)
@@ -148,12 +168,17 @@ def parseTvpd(tvpdFile, topLevel):
 
             # Loop thru the tags defined for this record
             for record in vpd:
+                # Comments aren't basestring tags
+                if not isinstance(record.tag, basestring):
+                    continue
+
                 # See if this is a tag we even expect
                 if record.tag not in recordTags:
                     out.error("Unsupported tag <%s> found while parsing the <record> level for record %s" % (record.tag, recordName))
                     errorsFound+=1
                     # We continue here because we don't want to parse down this hierarcy path when we don't know what it is
                     continue
+                
                 # It was a supported tag
                 else:
                     recordTags[record.tag]+=1
@@ -172,6 +197,10 @@ def parseTvpd(tvpdFile, topLevel):
 
                     # Loop thru the tags defined for this keyword
                     for keyword in record:
+                        # Comments aren't basestring tags
+                        if not isinstance(keyword.tag, basestring):
+                            continue
+
                         # See if this is a tag we even expect
                         if keyword.tag not in keywordTags:
                             out.error("Unsupported tag <%s> found while parsing the <keyword> level for keyword %s in record %s" % (keyword.tag, keywordName, recordName))
@@ -180,7 +209,7 @@ def parseTvpd(tvpdFile, topLevel):
                             continue
                         # It was a supported tag
                         else:
-                            keywordTags[keyword.tag] +=1
+                            keywordTags[keyword.tag] += 1
 
                     # We've checked for unknown keyword tags, now make sure we have the right number of each
                     # This is a simple one, we can only have 1 of each
@@ -574,16 +603,20 @@ for record in manifest.iter("record"):
             # --------
             # We'll loop through all the tags found in this keyword and check for all required and any extra ones
             for kw in keyword.iter():
+                # Comments aren't basestring tags
+                if not isinstance(kw.tag, basestring):
+                    continue
+
                 if kw.tag in kwTags:
                     # Mark that we found a required tag
                     kwTags[kw.tag] = True
                     # Save the values we'll need into variables for ease of use
                     if (kw.tag == "kwformat"):
                         kwformat = kw.text.lower() # lower() for ease of compare
-
+                        
                     if (kw.tag == "kwlen"):
                         kwlen = int(kw.text)
-
+                        
                     if (kw.tag == "kwdata"):
                         kwdata = kw.text
 

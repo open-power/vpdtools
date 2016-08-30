@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!-- top level comment -->
+<vpd>
+  <!-- vpd level comment -->
+  <name>FILENAME</name>
+  <size>16kb</size>
+  <VD>01</VD>
+  <record name="VINI">
+    <!-- record level comment -->
+    <rdesc>The VINI record</rdesc>
+    <keyword name="RT">
+      <!-- keyword level comment -->
+      <kwdesc>The Record Type keyword</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>4</kwlen>
+      <kwdata>VINI</kwdata>
+    </keyword>
+    <keyword name="BD">
+      <kwdesc>The Big Data keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>128</kwlen>
+      <kwdata>
+        <!-- kwdata level comment-->
+        FEEDB0B0DEADBEEF
+      </kwdata>
+    </keyword>
+  </record>
+</vpd>
