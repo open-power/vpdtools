@@ -282,8 +282,9 @@ def packKeyword(keyword, length, data, format):
         # Write it
         keywordPack += bytearray(data.encode())
     elif (format == "hex"):
-        # fromhex will deal with spacing in the data, but not carriage returns
-        # Remove those before we get to fromhex
+        # Remove white space and carriage returns from the data before we get to fromhex
+        # If we don't, it throws off the ljust logic below to set the field to proper length
+        data = data.replace(" ","")
         data = data.replace("\n","")
         # Pad if necessary (* 2 to convert nibble data to byte length)
         data = data.ljust((length * 2), '0')
@@ -320,6 +321,18 @@ def calcPadFill(record):
         pfLength = (4 - (len(record) % 4))
 
     return pfLength
+
+# Check input hex data for proper formatting
+def checkHexDataFormat(kwdata):
+    # Remove white space and carriage returns from the kwdata
+    kwdata = kwdata.replace(" ","")
+    kwdata = kwdata.replace("\n","")
+    # Now look to see if there are any characters other than 0-9 & a-f
+    match = re.search("([^0-9a-fA-F]+)", kwdata)
+    if (match):
+        out.error("A non hex character \"%s\" was found at %s in the kwdata" % (match.group(), match.span()))
+    return (match, kwdata)
+
 
 ############################################################
 # Main - Main - Main - Main - Main - Main - Main - Main
@@ -562,6 +575,8 @@ for record in manifest.iter("record"):
 
             # Setup a dictionary of the supported tags
             kwTags = {"keyword" : False, "kwdesc" : False, "kwformat" : False, "kwlen" : False, "kwdata" : False}
+            # Setup a dictionary of the supported tags in the kwdata tag
+            kwdTags = {"ascii" : False, "hex" : False}
 
             # --------
             # Make sure we aren't finding a record we haven't already seen
@@ -585,8 +600,17 @@ for record in manifest.iter("record"):
                         kwlen = int(kw.text)
 
                     if (kw.tag == "kwdata"):
-                        kwdata = kw.text
+                        # If it's mixed format, we want kwdata to actually hold all the xml tags contained in this kwdata
+                        # Otherwise, grab the plain text so we can treat it like data later
+                        if (kwformat == "mixed"):
+                            kwdata = kw
+                        else:
+                            kwdata = kw.text
 
+                elif kw.tag in kwdTags:
+                    # Ignore the kwdTags for now, we'll check them later
+                    next
+                    
                 else:
                     # Flag that we found an unsupported tag.  This may help catch typos, etc..
                     out.error("The unsupported tag \"<%s>\" was found in keyword %s in record %s" % (kw.tag, keywordName, recordName))
@@ -641,13 +665,42 @@ for record in manifest.iter("record"):
             # --------
             # If the input format is hex, make sure the input data is hex only
             if (kwformat == "hex"):
-                # Remove white space and carriage returns from the kwdata
-                kwdata = kwdata.replace(" ","")
-                kwdata = kwdata.replace("\n","")
-                # Now look to see if there are any characters other than 0-9 & a-f
-                match = re.search("([^0-9a-fA-F]+)", kwdata)
-                if (match):
-                    out.error("A non hex character \"%s\" was found at %s in the kwdata for keyword %s in record %s" % (match.group(), match.span(), keywordName, recordName))
+                (rc, kwdata) = checkHexDataFormat(kwdata)
+                if (rc):
+                    out.error("checkHexDataFormat return an error for for keyword %s in record %s" % (keywordName, recordName))
+                    errorsFound+=1
+
+            # --------
+            # If the input format is mixed, loop over the kwdata and verify it is formatted properly
+            if (kwformat == "mixed"):
+                # We can't use the length check code below for the mixed case, so track it here and check below
+                kwdatalen = 0
+                # We need to verify the format and length of the ascii or hex keywords embedded in here
+                for kwd in kwdata.iter():
+                    # Make sure it only contains the two keywords we expect
+                    if kwd.tag.lower() in kwdTags:
+                        if (kwd.tag.lower() == "ascii"):
+                            kwdatalen += len(kwd.text)
+
+                        if (kwd.tag.lower() == "hex"):
+                            (rc, kwdata) = checkHexDataFormat(kwd.text)
+                            if (rc):
+                                out.error("checkHexDataFormat return an error for for keyword %s in record %s" % (keywordName, recordName))
+                                errorsFound+=1
+                            # Nibbles to bytes
+                            kwdatalen += (len(kwdata)/2)
+
+                    elif (kwd.tag.lower() == "kwdata"):
+                        next # Ignore this tag at this level
+                        
+                    else:
+                        # Flag that we found an unsupported tag.  This may help catch typos, etc..
+                        out.error("The unsupported tag \"<%s>\" was found in kwdata for keyword %s in record %s" % (kwd.tag, keywordName, recordName))
+                        errorsFound+=1
+
+                # Done looping through the tags we found, now check that the length isn't too long
+                if (kwdatalen > kwlen):
+                    out.error("The total length of the mixed data is longer than the given <kwlen> for keyword %s in record %s" % (keywordName, recordName))
                     errorsFound+=1
 
             # --------
@@ -662,6 +715,9 @@ for record in manifest.iter("record"):
                 if ((len(kwdata)/2) > kwlen):
                     out.error("The length of the value is longer than the given <kwlen> for keyword %s in record %s" % (keywordName, recordName))
                     errorsFound+=1
+            elif (kwformat == "mixed"):
+                # The mixed tag length checking was handled above
+                next
             else:
                 out.error("Unknown keyword format \"%s\" given for keyword %s in record %s" % (kwformat, keywordName, recordName))
                 errorsFound+=1
@@ -865,6 +921,16 @@ for record in manifest.iter("record"):
                 # Get the full path to the file given, error checked before
                 databinfile = findFile(kwdata, clInputPath)
                 kwdata = open(databinfile, mode='rb').read()
+            # If the input format is mixed, we need to concat the data together before packing
+            # We'll force all the data to hex and tell it to pack as hex
+            if (kwformat == "mixed"):
+                kwdata = "" # Reset
+                for kwd in keyword.find("kwdata"):
+                    if (kwd.tag == "hex"):
+                        kwdata += kwd.text
+                    if (kwd.tag == "ascii"):
+                        kwdata += kwd.text.encode("hex")
+                kwformat = "hex"
 
             keywordPack = packKeyword(keywordName,  kwlen, kwdata, kwformat)
             recordInfo[recordName].record += keywordPack
