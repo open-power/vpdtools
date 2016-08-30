@@ -129,5 +129,65 @@ The inclusion of a record binary file would look like this:
 </record>
 ```
 
+## `<keyword>`
+The `<keyword>` tag is used to describe the contents of a keyword within a record.
+
+``` xml
+<keyword NAME=”NM”>
+  ..
+</keyword>
+```
+The name attribute is required and only 2 characters long
+
+### Tags included in the `<keyword>`
+
+`<kwdesc></kwdesc>`
+A description of the contents of the keyword.  Only 1 tag allowed per keyword.
+
+`<kwformat></kwformat>`
+The  format of the data in the `<kwdata>` tag.  It can be three different values
+ * hex
+ * ascii
+ * bin
+hex and ascii data are both specified within the `<kwdata>` tag.  When using the bin type, the `<kwdata>` tag is a reference to a binary file that contains just data for the keyword
+
+`<kwlen></kwlen>`
+The length of the keyword.  If the data given is shorter than the keyword, the data will be right padded with zeros.  If the data is longer than the `<kwlen>`, then an error is generated.
+
+`<kwdata></kwdata>`
+The data to go into the keyword.  It is checked to make sure it matches the format specified.  For example, that hex data has only valid hex characters.
+
+Sample keyword sections would look like this:
+
+For hex data:
+``` xml
+<keyword name="NM">
+  <kwdesc>The name keyword</kwdesc>
+  <kwformat>hex</kwformat>
+  <kwlen>4</kwlen>
+  <kwdata>01AEF78DB</kwdata>
+</keyword>
+```
+
+For ascii data:
+``` xml
+<keyword name="NM">
+  <kwdesc>The name keyword</kwdesc>
+  <kwformat>ascii</kwformat>
+  <kwlen>4</kwlen>
+  <kwdata>NAME</kwdata>
+</keyword>
+```
+
+For bin data:
+``` xml
+<keyword name="NM">
+  <kwdesc>The name keyword</kwdesc>
+  <kwformat>bin</kwformat>
+  <kwlen>4</kwlen>
+  <kwdata>name.bin</kwdata>
+</keyword>
+```
+
 ## Examples
 Please see the examples dir in this repo for complete representations multiple types of template files
