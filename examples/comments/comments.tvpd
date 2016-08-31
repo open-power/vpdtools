@@ -15,13 +15,17 @@
       <kwlen>4</kwlen>
       <kwdata>VINI</kwdata>
     </keyword>
-    <keyword name="BD">
-      <kwdesc>The Big Data keyword</kwdesc>
-      <kwformat>hex</kwformat>
+    <keyword name="MX">
+      <kwdesc>The Mixed Data keyword</kwdesc>
+      <kwformat>mixed</kwformat>
       <kwlen>128</kwlen>
       <kwdata>
-        <!-- kwdata level comment-->
-        FEEDB0B0DEADBEEF
+        <!-- kwdata level comment -->
+        <hex>
+          <!-- mixed level comment -->
+          FEEDB0B0DEADBEEF
+        </hex>
+        <ascii>STRING</ascii>
       </kwdata>
     </keyword>
   </record>

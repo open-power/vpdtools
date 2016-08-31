@@ -706,35 +706,39 @@ for record in manifest.iter("record"):
             # --------
             # If the input format is mixed, loop over the kwdata and verify it is formatted properly
             if (kwformat == "mixed"):
-                # We can't use the length check code below for the mixed case, so track it here and check below
-                kwdatalen = 0
-                # We need to verify the format and length of the ascii or hex keywords embedded in here
-                for kwd in kwdata.iter():
-                    # Make sure it only contains the two keywords we expect
-                    if kwd.tag.lower() in kwdTags:
-                        if (kwd.tag.lower() == "ascii"):
-                            kwdatalen += len(kwd.text)
+               # We can't use the length check code below for the mixed case, so track it here and check below
+               kwdatalen = 0
+               # We need to verify the format and length of the ascii or hex keywords embedded in here
+               for kwd in kwdata.iter():
+                  # Comments aren't basestring tags
+                  if not isinstance(kwd.tag, basestring):
+                     continue
 
-                        if (kwd.tag.lower() == "hex"):
-                            (rc, kwdata) = checkHexDataFormat(kwd.text)
-                            if (rc):
-                                out.error("checkHexDataFormat return an error for for keyword %s in record %s" % (keywordName, recordName))
-                                errorsFound+=1
-                            # Nibbles to bytes
-                            kwdatalen += (len(kwdata)/2)
-
-                    elif (kwd.tag.lower() == "kwdata"):
-                        next # Ignore this tag at this level
+                  # Make sure it only contains the two keywords we expect
+                  if kwd.tag.lower() in kwdTags:
+                     if (kwd.tag.lower() == "ascii"):
+                        kwdatalen += len(kwd.text)
                         
-                    else:
-                        # Flag that we found an unsupported tag.  This may help catch typos, etc..
-                        out.error("The unsupported tag \"<%s>\" was found in kwdata for keyword %s in record %s" % (kwd.tag, keywordName, recordName))
-                        errorsFound+=1
+                     if (kwd.tag.lower() == "hex"):
+                        (rc, kwdata) = checkHexDataFormat(kwd.text)
+                        if (rc):
+                           out.error("checkHexDataFormat return an error for for keyword %s in record %s" % (keywordName, recordName))
+                           errorsFound+=1
+                        # Nibbles to bytes
+                        kwdatalen += (len(kwdata)/2)
 
-                # Done looping through the tags we found, now check that the length isn't too long
-                if (kwdatalen > kwlen):
-                    out.error("The total length of the mixed data is longer than the given <kwlen> for keyword %s in record %s" % (keywordName, recordName))
-                    errorsFound+=1
+                  elif (kwd.tag.lower() == "kwdata"):
+                     next # Ignore this tag at this level
+                        
+                  else:
+                     # Flag that we found an unsupported tag.  This may help catch typos, etc..
+                     out.error("The unsupported tag \"<%s>\" was found in kwdata for keyword %s in record %s" % (kwd.tag, keywordName, recordName))
+                     errorsFound+=1
+
+               # Done looping through the tags we found, now check that the length isn't too long
+               if (kwdatalen > kwlen):
+                  out.error("The total length of the mixed data is longer than the given <kwlen> for keyword %s in record %s" % (keywordName, recordName))
+                  errorsFound+=1
 
             # --------
             # Verify that the data isn't longer than the length given
