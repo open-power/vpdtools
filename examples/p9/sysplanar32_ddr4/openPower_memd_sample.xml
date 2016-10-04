@@ -15,7 +15,7 @@
       <kwdesc>Record Version keyword</kwdesc>
       <kwformat>ascii</kwformat>
       <kwlen>2</kwlen>
-      <kwdata>01</kwdata>
+      <kwdata>03</kwdata>
     </keyword>
 
     <keyword name="VM">
@@ -541,6 +541,83 @@
       <kwformat>hex</kwformat>
       <kwlen>255</kwlen>
       <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="CK">
+       <kwdesc>Memory Clock Enable keyword</kwdesc>
+       <kwformat>hex</kwformat>
+       <kwlen>136</kwlen>
+       <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="Q0">
+       <kwdesc>Memory DQ Data Mapper keyword</kwdesc>
+       <kwformat>hex</kwformat>
+       <kwlen>36</kwlen>
+       <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="Q1">
+       <kwdesc>Memory DQ Data1 keyword</kwdesc>
+       <kwformat>hex</kwformat>
+       <kwlen>160</kwlen>
+       <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="Q2">
+       <kwdesc>Memory DQ Data2 keyword</kwdesc>
+       <kwformat>hex</kwformat>
+       <kwlen>160</kwlen>
+       <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="Q3">
+       <kwdesc>Memory DQ Data3 keyword</kwdesc>
+       <kwformat>hex</kwformat>
+       <kwlen>160</kwlen>
+       <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="Q4">
+       <kwdesc>Memory DQ Data4 keyword</kwdesc>
+       <kwformat>hex</kwformat>
+       <kwlen>160</kwlen>
+       <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="Q5">
+       <kwdesc>Memory DQ Data5 keyword</kwdesc>
+       <kwformat>hex</kwformat>
+       <kwlen>160</kwlen>
+       <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="Q6">
+       <kwdesc>Memory DQ Data6 keyword</kwdesc>
+       <kwformat>hex</kwformat>
+       <kwlen>160</kwlen>
+       <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="Q7">
+       <kwdesc>Memory DQ Data7 keyword</kwdesc>
+       <kwformat>hex</kwformat>
+       <kwlen>160</kwlen>
+       <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="Q8">
+       <kwdesc>Memory DQ Data8 keyword</kwdesc>
+       <kwformat>hex</kwformat>
+       <kwlen>160</kwlen>
+       <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="Q9">
+       <kwdesc>Memory DQ Data9 keyword</kwdesc>
+       <kwformat>hex</kwformat>
+       <kwlen>160</kwlen>
+       <kwdata>00</kwdata>
     </keyword>
 
   </record>
