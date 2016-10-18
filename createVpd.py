@@ -117,8 +117,13 @@ def parseXml(xmlFile):
     # Once we return from this function, then we'll check to make sure only supported tags were given, etc..
     # Invoke the extended PCParser, which will handle preserving comments in the output file
     parser = PCParser()
-    root = ET.parse(fullPathFile, parser=parser).getroot()
-
+    try:
+        root = ET.parse(fullPathFile, parser=parser).getroot()
+    except:
+        out.error("Unable to parse %s!" % fullPathFile)
+        out.error("Check your file for basic XML formatting issues, or missing toplevel <vpd> tag")
+        return (1, None)
+        
     # Print the top level tags from the parsing
     if (clDebug):
         out.debug("Top level tag/attrib found")
