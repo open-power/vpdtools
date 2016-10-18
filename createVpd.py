@@ -94,18 +94,52 @@ def findFile(filename, searchPath):
     else:
         return None
 
-# Function to write out the resultant tvpd xml file
-def writeTvpd(manifest, outputFile):
+# Parses a vpd xml file using ET.  ET will generate errors for bad xml syntax
+# Actual checking/validation of the xml contents will be done elsewhere
+def parseXml(xmlFile):
+    # Accumulate errors and return the total at the end
+    # This allows the user to see all mistakes at once instead of iteratively running
+    errorsFound = 0
+
+    # Get the full path to the file given
+    fullPathFile = findFile(xmlFile, clInputPath)
+    if (fullPathFile == None):
+        out.error("The xml file %s could not be found!" % (xmlFile))
+        # If we can't open the file, we can't do anything else in this function.  Bail..
+        return (1, None)
+
+    # Let the user know what file we are reading
+    # We could make this optional with a new function param in the future
+    out.msg("Parsing file %s" % fullPathFile)
+
+    # Read in the file
+    # If there are tag mismatch errors or other general gross format problems, it will get caught here
+    # Once we return from this function, then we'll check to make sure only supported tags were given, etc..
+    # Invoke the extended PCParser, which will handle preserving comments in the output file
+    parser = PCParser()
+    root = ET.parse(fullPathFile, parser=parser).getroot()
+
+    # Print the top level tags from the parsing
+    if (clDebug):
+        out.debug("Top level tag/attrib found")
+        for child in root:
+            out.debug("%s %s" % (child.tag, child.attrib))
+
+    ######
+    # All done, vary our return based upon the errorsFound
+    if (errorsFound):
+        return (errorsFound, None)
+    else:
+        return(0, root)
+
+# Function to write out the resultant xml file
+def writeXml(manifest, outputFile):
     tree = ET.ElementTree(manifest)
     tree.write(outputFile, encoding="utf-8", xml_declaration=True)
     return None
 
-def parseRtvpd():
-    return 0
-def parseKtvpd():
-    return 0
-
-def processKeyword(keyword, recordName):
+# Check the <keyword> XML to make sure the required elements are found
+def checkElementsKeyword(keyword, recordName):
     errorsFound = 0
    
     # Define the expected tags at this level
@@ -119,27 +153,29 @@ def processKeyword(keyword, recordName):
         keywordName = "INVALID" # Set the invalid name so the code below can use it without issue
 
     # Loop thru the tags defined for this keyword
-    for keywordEntries in keyword:
+    for child in keyword:
         # Comments aren't basestring tags
-        if not isinstance(keywordEntries.tag, basestring):
+        if not isinstance(child.tag, basestring):
             continue
 
         # See if this is a tag we even expect
-        if keywordEntries.tag not in keywordTags:
-            out.error("Unsupported tag <%s> found while parsing the <keyword> level for keyword %s in record %s" % (keywordEntries.tag, keywordName, recordName))
+        if child.tag not in keywordTags:
+            out.error("Unsupported tag <%s> found while parsing the <keyword> level for keyword %s in record %s" %
+                      (child.tag, keywordName, recordName))
             errorsFound += 1
             # We continue here because we don't want to parse down this hierarcy path when we don't know what it is
             continue
         # It was a supported tag
         else:
-            keywordTags[keywordEntries.tag] += 1
+            keywordTags[child.tag] += 1
 
     # We've checked for unknown keyword tags, now make sure we have the right number of each
     # This is a simple one, we can only have 1 of each
     keywordTagCount = 1
     if (keywordTags["ktvpdfile"] != 0):
         if (keywordTags["ktvpdfile"] > 1):
-            out.error("The tag <ktvpdfile> is only allowed to be used once for keyword %s in record %s" % (keywordName, recordName))
+            out.error("The tag <ktvpdfile> is only allowed to be used once for keyword %s in record %s" %
+                      (keywordName, recordName))
             errorsFound += 1
         # Only had one ktvpfile, so set our expected to the rest to 0
         keywordTagCount = 0
@@ -147,13 +183,15 @@ def processKeyword(keyword, recordName):
     # Depending upon the state of ktvpdfile, check to ensure we have only 1 of each tag or 0 of each tag
     for tag in ["kwdesc", "kwformat", "kwlen", "kwdata"]:
         if (keywordTags[tag] != keywordTagCount):
-            out.error("The tag <%s> was expected to have a count of %d, but was found with a count of %d for keyword %s in record %s" % (tag, keywordTagCount, keywordTags[tag], keywordName, recordName))
+            out.error("The tag <%s> was expected to have a count of %d, but was found with a count of %d for keyword %s in record %s" %
+                      (tag, keywordTagCount, keywordTags[tag], keywordName, recordName))
             errorsFound += 1
 
     # All done
-    return errorsFound
-   
-def processRecord(record):
+    return (errorsFound, keywordName)
+
+# Check the <record> XML to make sure the required elements are found
+def checkElementsRecord(record):
     errorsFound = 0
    
     # Define the expected tags at this level
@@ -167,28 +205,21 @@ def processRecord(record):
         recordName = "INVALID" # Set the invalid name so the code below can use it without issue
 
     # Loop thru the tags defined for this record
-    for recordEntries in record:
-
+    for child in record:
         # Comments aren't basestring tags
-        if not isinstance(recordEntries.tag, basestring):
+        if not isinstance(child.tag, basestring):
             continue
 
         # See if this is a tag we even expect
-        if recordEntries.tag not in recordTags:
-            out.error("Unsupported tag <%s> found while parsing the <record> level for record %s" % (recordEntries.tag, recordName))
+        if child.tag not in recordTags:
+            out.error("Unsupported tag <%s> found while parsing the <record> level for record %s" % (child.tag, recordName))
             errorsFound += 1
             # We continue here because we don't want to parse down this hierarcy path when we don't know what it is
             continue
                 
         # It was a supported tag
         else:
-            recordTags[recordEntries.tag] += 1
-
-        # Do the keyword level checks
-        if (recordEntries.tag == "keyword"):
-
-            # Call the dedicated function to process keyword tags
-            errorsFound += processKeyword(recordEntries, recordName)
+            recordTags[child.tag] += 1
          
     # We've checked for unknown record tags, now make sure we've got the right number, they don't conflict, etc..
     recordTagTotal = bool(recordTags["keyword"]) + bool(recordTags["rbinfile"]) + bool(recordTags["rtvpdfile"])
@@ -204,53 +235,15 @@ def processRecord(record):
         errorsFound += 1
     # Make sure the rdesc is available
     if (recordTags["keyword"] and recordTags["rdesc"] != 1):
-        out.error("The tag <rdesc> was expected to have a count of 1, but was found with a count of %d for record %s" % (recordTags["rdesc"], recordName))
+        out.error("The tag <rdesc> was expected to have a count of 1, but was found with a count of %d for record %s" %
+                  (recordTags["rdesc"], recordName))
         errorsFound += 1
 
     # All done
-    return errorsFound
-
-# Parses a vpd xml file using ET.  That will generate errors for bad xml formatting
-def parseVpdXml(vpdXmlFile):
-    # Accumulate errors and return the total at the end
-    # This allows the user to see all mistakes at once instead of iteratively running
-    errorsFound = 0
-
-    # Get the full path to the file given
-    fullPathFile = findFile(vpdXmlFile, clInputPath)
-    if (fullPathFile == None):
-        out.error("The xml file %s could not be found!  Please check your -m or -i cmdline options for typos" % (vpdXmlFile))
-        exit(1)
-
-    # Let the user know what file we are reading
-    # We could make this optional with a new function param in the future
-    out.msg("Parsing file %s" % fullPathFile)
-
-    # Read in the file
-    # If there are tag mismatch errors or other general gross format problems, it will get caught here
-    # Once we return from this function, then we'll check to make sure only supported tags were given, etc..
-    # Invoke the extended PCParser, which will handle preserving comments in the output file
-    parser = PCParser()
-    vpdTree = ET.parse(fullPathFile, parser=parser).getroot()
-
-    # Print the top level tags from the parsing
-    if (clDebug):
-        out.debug("Top level tag/attrib found")
-        for child in vpdTree:
-            out.debug("%s %s" % (child.tag, child.attrib))
-
-    ######
-    # All done, vary our return based upon the errorsFound
-    if (errorsFound):
-        return (errorsFound, None)
-    else:
-        return(0, vpdTree)
-
+    return (errorsFound, recordName)
             
-# Parse the <vpd> XML to make sure the required tags are found
-def parseVpd(vpdTree):
-    # Accumulate errors and return the total at the end
-    # This allows the user to see all mistakes at once instead of iteratively running
+# Check the <vpd> XML to make sure the required elements are found
+def checkElementsVpd(vpdTree):
     errorsFound = 0
 
     # Do some basic error checking of what we've read in
@@ -267,31 +260,27 @@ def parseVpd(vpdTree):
     # Define the expected tags at this level
     vpdTags = {"name" : 0, "size" : 0, "VD" : 0, "record" : 0}
 
-    # Go thru the tags at this level
-    for vpd in vpdTree:
+    # Go thru the children at this level
+    for child in vpdTree:
         # Comments aren't basestring tags
-        if not isinstance(vpd.tag, basestring):
+        if not isinstance(child.tag, basestring):
             continue
             
         # See if this is a tag we even expect
-        if vpd.tag not in vpdTags:
-            out.error("Unsupported tag <%s> found while parsing the <vpd> level" % vpd.tag)
+        if child.tag not in vpdTags:
+            out.error("Unsupported tag <%s> found while parsing the <vpd> level" % child.tag)
             errorsFound += 1
             # We continue here because we don't want to parse down this hierarcy path when we don't know what it is
             continue
         # It was a supported tag
         else:
-            vpdTags[vpd.tag] += 1
+            vpdTags[child.tag] += 1
 
-        # Do the record level checks
-        if (vpd.tag == "record"):
-           # Call the dedicated function to process a <record>
-           errorsFound += processRecord(vpd)
-           
     # Do some checking of what we found at the vpd level
     for tag in ["name", "size", "VD"]:
         if (vpdTags[tag] != 1):
-            out.error("The tag <%s> was expected to have a count of 1, but was found with a count of %d" % (tag, vpdTags[tag]))
+            out.error("The tag <%s> was expected to have a count of 1, but was found with a count of %d" %
+                      (tag, vpdTags[tag]))
             errorsFound += 1
 
     # Make sure at least one record tag was found
@@ -473,128 +462,125 @@ clBinaryKeywords = args.binary_keywords
 out.setIndent(0)
 out.msg("==== Stage 1: Parsing VPD XML files")
 out.setIndent(2)
+# Accumulate errors and return the total at the end
+# This allows the user to see all mistakes at once instead of iteratively running
 errorsFound = 0
 
-# Read in the top level manifest file and create the vpdTree
-(rc, manifest) = parseVpdXml(clManifestFile)
+# Read in the top level manifest file and create the xml manifest tree
+# If this parse gets an error, it's a hard stop since the rest of the code would do nothing
+(rc, manifest) = parseXml(clManifestFile)
 if (rc):
-    out.error("Problem reading in the manifest! - %s" % clManifestFile)
+    out.error("Please check your -m or -i cmdline options for typos")
     exit(rc)
 
-# Now check the top level VPD syntax
-rc = parseVpd(manifest)
-if (rc):
-    exit(rc)
-    
-# Stash away some variables for use later
-vpdName = manifest.find("name").text
-# If the user passed in the special name of FILENAME, we'll use in the input file name, minus the extension, as the output
-if (vpdName == "FILENAME"):
-    vpdName = os.path.splitext(os.path.basename(clManifestFile))[0]
+# We have the top level manifest tree.  Make sure we have all the required elements in the <vpd> section
+# Accumulate errors for this checking
+errorsFound += checkElementsVpd(manifest)
 
-# Determining the size given
-vpdSize = manifest.find("size").text
-# Make a new string with only the number
-maxSizeBytes = re.match('[0-9]*', vpdSize).group()
-# Check to see if the number is even there
-if (maxSizeBytes == ''):
-    maxSizeBytes = '0'
-    out.error("No number detected in the size string.  Format of string must be number first, then units, e.g. 16KB. Remove any characters or white space from in front of the number.")
-    errorsFound += 1
-# Make a new string with the number removed
-sizeUnits = vpdSize[len(maxSizeBytes):]
-# Remove a space, if one was inserted between the number and units
-whitespace = re.match(' *', sizeUnits).group()
-sizeUnits = sizeUnits[len(whitespace):]
-# Check the units to see if they are okay
-if (sizeUnits == "kB" or sizeUnits == "kb" or sizeUnits == "Kb" or sizeUnits == "KB"):
-    maxSizeBytes = int(maxSizeBytes) * 1024
-elif (sizeUnits == "b" or sizeUnits == "B"):
-    maxSizeBytes = int(maxSizeBytes)
-elif (sizeUnits == "Mb" or sizeUnits == "MB"):
-    maxSizeBytes = int(maxSizeBytes) * 1024 * 1024
-elif (sizeUnits == ""):
-    out.error("Please specify units at the end of the size string. Acceptable units: B; KB; MB.")
-    errorsFound += 1
-else:
-    out.error("Unexpected units in the size string. Expected: B; KB; MB. Yours: %s" % sizeUnits)
-    errorsFound += 1
-
-# Look for rtvpdfile lines
+# We've parsed and check the <vpd> section, now do the same to all <records> children
 for record in manifest.iter("record"):
-    recordName = record.attrib.get("name")
+
+    # Accumulate errors for this checking
+    # This returning non 0 would indicate a problem at the base record level the user will have to fix
+    # However, we'll still continue to try and parse any rtvpdfile and keyword entries contained in this record
+    # This is so we can expose as many errors to the user all at once
+    (rc, recordName) = checkElementsRecord(record)
+    errorsFound += rc
 
     # See if a rtvpdfile was given and if so, load it in
     rtvpdfile = record.find("rtvpdfile")
     if (rtvpdfile != None):
 
         # Read in the rtvpdfile
-        (rc, recordTvpd) = parseVpdXml(rtvpdfile.text)
+        (rc, recordTvpd) = parseXml(rtvpdfile.text)
         if (rc):
-            out.error("Error occurred reading in %s" % rtvpdfile.text)
+            out.error("The <rtvpdfile> given could not be found.")
             errorsFound += 1
             break
 
-        # Since the referenced file also starts with <vpd> tag, you need to get one level down and find the start of the record element, hence the find
-        # We know this will contain a record because the parse validates that.  No need to check for find errors.
-        replRecord = recordTvpd.find("record")
+        # Early versions of these files could start with <vpd> tag, handle that by getting down a level to the record
+        # If it's already the top level entry, this will return the whole thing
+        newRecord = recordTvpd.find("record")
+
+        # --------
+        # Check the contents read in from the rtvpdfile
+        (rc, newRecordName) = checkElementsRecord(newRecord)
+        errorsFound += rc
 
         # --------
         # Make sure the record found in rtvpdfile is the same as the record in the manifiest
         # We have to do this error check here because the recordName doesn't exist in parseTvpd
-        if (replRecord.attrib.get("name") != recordName):
-            out.error("The record (%s) found in %s doesn't match the record name in the manifest (%s)" % (replRecord.attrib.get("name"), rtvpdfile.text, recordName))
+        if (newRecordName != recordName):
+            out.error("The record (%s) found in %s doesn't match the record name in the manifest (%s)" %
+                      (newRecordName, rtvpdfile.text, recordName))
             errorsFound += 1
             break
 
     else:
-        # It's not a rtvpdfile record, so hold onto it for replacement below
-        replRecord = record
-      
+        # It's not a rtvpdfile record.  Set newRecord to record for all the remaining code below
+        newRecord = record
+        newRecordName = recordName
+
+    # All done handling record level stuff
+    # We can now loop through the keywords in the records and check them
+        
     # Look for ktvpdfile lines
-    for keyword in replRecord.iter("keyword"):
-        keywordName = keyword.attrib.get("name")
+    for keyword in newRecord.iter("keyword"):
+        
+        # Accumulate errors for this checking
+        # This returning non 0 would indicate a problem at the base keyword level the user will have to fix
+        # However, we'll still continue to try and parse any ktvpdfile entries contained in this record
+        # This is so we can expose as many errors to the user all at once
+        (rc, keywordName) = checkElementsKeyword(keyword, newRecordName)
+        errorsFound += rc
 
         # See if a ktvpdfile was given and if so, load it in
         ktvpdfile = keyword.find("ktvpdfile")
         if (ktvpdfile != None):
             # Read in the ktvpdfile
-            (rc, replKeyword) = parseVpdXml(ktvpdfile.text)
+            (rc, newKeyword) = parseXml(ktvpdfile.text)
             if (rc):
-                out.error("Error occurred reading in %s" % ktvpdfile.text)
+                out.error("The <ktvpdfile> given could not be found.")
                 errorsFound += 1
                 break
 
             # --------
+            # Check the contents read in from the ktvpdfile
+            (rc, newKeywordName) = checkElementsKeyword(newKeyword, newRecordName)
+            errorsFound += rc
+
+            # --------
             # Make sure the keyword found in ktvpdfile is the same as the keyword in the manifiest
             # We have to do this error check here because the keywordName doesn't exist in parseTvpd
-            if (replKeyword.attrib.get("name") != keywordName):
-                out.error("The keyword (%s) found in %s doesn't match the keyword name in the manifest (%s)" % (replKeyword.attrib.get("name"), ktvpdfile.text, keywordName))
+            if (newKeywordName != keywordName):
+                out.error("The keyword (%s) found in %s doesn't match the keyword name in the manifest (%s)" %
+                          (newKeywordName, ktvpdfile.text, keywordName))
                 errorsFound += 1
                 break
 
-            # Merge the new record into the main manifest
+            # Merge the new keyword into the main manifest
             # ET doesn't have a replace function.  You can do an extend/remove, but that changes the order of the file
-            # The goal is to preserve record & keyword order, so that method doesn't work
-            # The below code will insert the rtvpdfile record in the list above the current matching record definition
-            # Then remove the original record definition, preserving order
-            replRecord.insert(list(record).index(keyword), replKeyword)
-            replRecord.remove(keyword)
+            # The goal is to preserve order, so that method doesn't work
+            # The below code will insert the newKeyword in the list above the current matching keyword definition
+            # Then remove the original keyword definition, preserving order
+            newRecord.insert(list(record).index(keyword), newKeyword)
+            newRecord.remove(keyword)
 
          
     # Merge the new record into the main manifest
     # ET doesn't have a replace function.  You can do an extend/remove, but that changes the order of the file
-    # The goal is to preserve record & keyword order, so that method doesn't work
-    # The below code will insert the rtvpdfile record in the list above the current matching record definition
+    # The goal is to preserve order, so that method doesn't work
+    # The below code will insert the newRecord in the list above the current matching record definition
     # Then remove the original record definition, preserving order
-    manifest.insert(list(manifest).index(record), replRecord)
+    manifest.insert(list(manifest).index(record), newRecord)
     manifest.remove(record)
 
         
 # All done with error checks, bailout if we hit something
 if (errorsFound):
     out.msg("")
-    out.error("%d error%s found in the tvpd xml.  Please review the above errors and correct them." % (errorsFound, "s" if (errorsFound > 1) else ""))
+    out.error("%d error%s found in the xml.  Please review the above errors and correct them." %
+              (errorsFound, "s" if (errorsFound > 1) else ""))
     exit(errorsFound)
 
 ################################################
@@ -606,6 +592,47 @@ out.setIndent(2)
 errorsFound = 0
 # Keep a dictionary of the record names we come across, will let us find duplicates
 recordNames = dict()
+
+# Do our top level <vpd> validation of tag contents
+
+# Nothing to validate for the name, however grab it for use in later operations
+vpdName = manifest.find("name").text
+# If the user passed in the special name of FILENAME, we'll use in the input file name, minus the extension, as the output
+if (vpdName == "FILENAME"):
+    vpdName = os.path.splitext(os.path.basename(clManifestFile))[0]
+
+# Validate the <size> is given in proper syntax
+vpdSize = manifest.find("size").text
+# Make a new string with only the number
+maxSizeBytes = re.match('[0-9]*', vpdSize).group()
+
+# --------
+# Check to see if the number is even there
+if (maxSizeBytes == ''):
+    maxSizeBytes = '0'
+    out.error("No number detected in the size string.  Format of string must be number first, then units, e.g. 16KB.")
+    out.error("Remove any characters or white space from in front of the number.")
+    errorsFound += 1
+    
+# --------
+# Make a new string with the number removed
+sizeUnits = vpdSize[len(maxSizeBytes):]
+# Remove a space, if one was inserted between the number and units
+whitespace = re.match(' *', sizeUnits).group()
+sizeUnits = sizeUnits[len(whitespace):]
+# Check the units to see if they are okay
+if (sizeUnits.lower() == "kb"):
+    maxSizeBytes = int(maxSizeBytes) * 1024
+elif (sizeUnits.lower() == "b"):
+    maxSizeBytes = int(maxSizeBytes)
+elif (sizeUnits.lower() == "mb"):
+    maxSizeBytes = int(maxSizeBytes) * 1024 * 1024
+elif (sizeUnits == ""):
+    out.error("Please specify units at the end of the size string. Acceptable units: B/KB/MB")
+    errorsFound += 1
+else:
+    out.error("Unexpected units in the size string. Expected: B/KB/MB. Yours: %s" % sizeUnits)
+    errorsFound += 1
 
 # Loop thru our records and then thru the keywords in each record
 for record in manifest.iter("record"):
@@ -652,7 +679,8 @@ for record in manifest.iter("record"):
         # Check the record name
         # This is just the hard coded offset into any record where the contents of the RT keyword would be found
         if (recordName != rbinfileContents[6:10].decode()):
-            out.error("The record name found %s in %s, does not match the name of the record %s in the tvpd" % (rbinfileContents[6:10].decode(), rbinfile, recordName))
+            out.error("The record name found %s in %s, does not match the name of the record %s in the tvpd" %
+                      (rbinfileContents[6:10].decode(), rbinfile, recordName))
             clErrors+=1
 
     # --------
@@ -709,14 +737,16 @@ for record in manifest.iter("record"):
                     
                 else:
                     # Flag that we found an unsupported tag.  This may help catch typos, etc..
-                    out.error("The unsupported tag \"<%s>\" was found in keyword %s in record %s" % (kw.tag, keywordName, recordName))
+                    out.error("The unsupported tag \"<%s>\" was found in keyword %s in record %s" %
+                              (kw.tag, keywordName, recordName))
                     errorsFound += 1
                 
             # --------
             # Make sure all the required kwTags were found
             for kw in kwTags:
                 if (kwTags[kw] == False):
-                    out.error("Required tag \"<%s>\" was not found in keyword %s in record %s" % (kw, keywordName, recordName))
+                    out.error("Required tag \"<%s>\" was not found in keyword %s in record %s" %
+                              (kw, keywordName, recordName))
                     errorsFound += 1
 
             # Now we know the basics of the template are correct, now do more indepth checking of length, etc..
@@ -724,13 +754,15 @@ for record in manifest.iter("record"):
             # --------
             # Make sure the keyword is two characters long
             if (len(keywordName) != 2):
-                out.error("The length of the keyword %s in record %s is not 2 characters long" % (keywordName, recordName))
+                out.error("The length of the keyword %s in record %s is not 2 characters long" %
+                          (keywordName, recordName))
                 errorsFound += 1
 
             # --------
             # A check to make sure the RT keyword kwdata matches the name of the record we are in
             if ((keywordName == "RT") and (recordName != kwdata)):
-                out.error("The value of the RT keyword \"%s\" does not match the record name \"%s\"" % (kwdata, recordName))
+                out.error("The value of the RT keyword \"%s\" does not match the record name \"%s\"" %
+                          (kwdata, recordName))
                 errorsFound += 1
 
             # --------
@@ -741,7 +773,8 @@ for record in manifest.iter("record"):
             else:
                 maxlen = 255
             if (kwlen > maxlen):
-                out.error("The specified length %d is bigger than the max length %d for keyword %s in record %s" % (kwlen, maxlen, keywordName, recordName))
+                out.error("The specified length %d is bigger than the max length %d for keyword %s in record %s" %
+                          (kwlen, maxlen, keywordName, recordName))
                 errorsFound += 1
 
             # --------
@@ -763,7 +796,8 @@ for record in manifest.iter("record"):
             if (kwformat == "hex"):
                 (rc, kwdata) = checkHexDataFormat(kwdata)
                 if (rc):
-                    out.error("checkHexDataFormat return an error for for keyword %s in record %s" % (keywordName, recordName))
+                    out.error("checkHexDataFormat return an error for for keyword %s in record %s" %
+                              (keywordName, recordName))
                     errorsFound += 1
 
             # --------
@@ -785,7 +819,8 @@ for record in manifest.iter("record"):
                      if (kwd.tag.lower() == "hex"):
                         (rc, kwdata) = checkHexDataFormat(kwd.text)
                         if (rc):
-                           out.error("checkHexDataFormat return an error for for keyword %s in record %s" % (keywordName, recordName))
+                           out.error("checkHexDataFormat return an error for for keyword %s in record %s" %
+                                     (keywordName, recordName))
                            errorsFound += 1
                         # Nibbles to bytes
                         kwdatalen += (len(kwdata)/2)
@@ -795,12 +830,14 @@ for record in manifest.iter("record"):
                         
                   else:
                      # Flag that we found an unsupported tag.  This may help catch typos, etc..
-                     out.error("The unsupported tag \"<%s>\" was found in kwdata for keyword %s in record %s" % (kwd.tag, keywordName, recordName))
+                     out.error("The unsupported tag \"<%s>\" was found in kwdata for keyword %s in record %s" %
+                               (kwd.tag, keywordName, recordName))
                      errorsFound += 1
 
                # Done looping through the tags we found, now check that the length isn't too long
                if (kwdatalen > kwlen):
-                  out.error("The total length of the mixed data is longer than the given <kwlen> for keyword %s in record %s" % (keywordName, recordName))
+                  out.error("The total length of the mixed data is longer than the given <kwlen> for keyword %s in record %s" %
+                            (keywordName, recordName))
                   errorsFound += 1
 
             # --------
@@ -808,18 +845,21 @@ for record in manifest.iter("record"):
             # Future checks could include making sure bin data is hex
             if (kwformat == "ascii" or kwformat == "bin"):
                 if (len(kwdata) > kwlen):
-                    out.error("The length of the value is longer than the given <kwlen> for keyword %s in record %s" % (keywordName, recordName))
+                    out.error("The length of the value is longer than the given <kwlen> for keyword %s in record %s" %
+                              (keywordName, recordName))
                     errorsFound += 1
             elif (kwformat == "hex"):
                 # Convert hex nibbles to bytes for len compare
                 if ((len(kwdata)/2) > kwlen):
-                    out.error("The length of the value is longer than the given <kwlen> for keyword %s in record %s" % (keywordName, recordName))
+                    out.error("The length of the value is longer than the given <kwlen> for keyword %s in record %s" %
+                              (keywordName, recordName))
                     errorsFound += 1
             elif (kwformat == "mixed"):
                 # The mixed tag length checking was handled above
                 next
             else:
-                out.error("Unknown keyword format \"%s\" given for keyword %s in record %s" % (kwformat, keywordName, recordName))
+                out.error("Unknown keyword format \"%s\" given for keyword %s in record %s" %
+                          (kwformat, keywordName, recordName))
                 errorsFound += 1
 
     # Done with the record, reset the output
@@ -828,9 +868,10 @@ for record in manifest.iter("record"):
 # All done with error checks, bailout if we hit something
 if (errorsFound):
     out.msg("")
-    out.error("%d error%s found in the tvpd data.  Please review the above errors and correct them." % (errorsFound, "s" if (errorsFound > 1) else ""))
+    out.error("%d error%s found in the tvpd data.  Please review the above errors and correct them." %
+              (errorsFound, "s" if (errorsFound > 1) else ""))
     tvpdFileName = os.path.join(clOutputPath, vpdName + "-err.tvpd")
-    writeTvpd(manifest, tvpdFileName)
+    writeXml(manifest, tvpdFileName)
     out.msg("Wrote tvpd file to help in debug: %s" % tvpdFileName)
     exit(errorsFound)
 
@@ -844,7 +885,7 @@ vpdFileName = os.path.join(clOutputPath, vpdName + ".vpd")
 
 # This is our easy one, write the XML back out
 # Write out the full template vpd representing the data contained in our image
-writeTvpd(manifest, tvpdFileName)
+writeXml(manifest, tvpdFileName)
 out.msg("Wrote tvpd file: %s" % tvpdFileName)
 
 # Now the hard part, write out the binary file
@@ -1143,13 +1184,14 @@ out.msg("Wrote vpd file: %s" % vpdFileName)
 
 # Check if the image size is larger than the maxSizeBytes
 if (imageSize > maxSizeBytes):
-    out.error("The generated binary image (%s) is too large for the size given (%s)"%(imageSize, maxSizeBytes))
+    out.error("The generated binary image (%s) is too large for the size given (%s)" % (imageSize, maxSizeBytes))
     errorsFound += 1
     
 # Catch the errors
 if (errorsFound):
     out.msg("")
-    out.error("%d error%s found while creating the binary image.  Please review the above errors and correct them." % (errorsFound, "s" if (errorsFound > 1) else ""))
+    out.error("%d error%s found while creating the binary image.  Please review the above errors and correct them." %
+              (errorsFound, "s" if (errorsFound > 1) else ""))
     
 # Return the number of errors found as the return code
-exit (errorsFound)
+exit(errorsFound)
