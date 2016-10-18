@@ -130,8 +130,7 @@ def parseXml(xmlFile):
         for child in root:
             out.debug("%s %s" % (child.tag, child.attrib))
 
-    ######
-    # All done, vary our return based upon the errorsFound
+    # Vary our return based upon the errorsFound
     if (errorsFound):
         return (errorsFound, None)
     else:
@@ -192,7 +191,6 @@ def checkElementsKeyword(keyword, recordName):
                       (tag, keywordTagCount, keywordTags[tag], keywordName, recordName))
             errorsFound += 1
 
-    # All done
     return (errorsFound, keywordName)
 
 # Check the <record> XML to make sure the required elements are found
@@ -244,7 +242,6 @@ def checkElementsRecord(record):
                   (recordTags["rdesc"], recordName))
         errorsFound += 1
 
-    # All done
     return (errorsFound, recordName)
             
 # Check the <vpd> XML to make sure the required elements are found
@@ -293,8 +290,6 @@ def checkElementsVpd(vpdTree):
         out.error("At least one <record> must be defined for the file to be valid!")
         errorsFound += 1
 
-    ######
-    # All done
     return errorsFound
     
 # Function to write properly packed/encoded data to the vpdFile
