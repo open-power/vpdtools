@@ -80,12 +80,11 @@ class RecordInfo:
 # Function - Functions - Functions - Functions - Functions
 ############################################################
 # Find file in a given path or paths
-# searchPath comes from the --inpath option
+# searchPath comes from the -i/--inpath option
 def findFile(filename, searchPath):
     found = False
     paths = searchPath.split(os.path.pathsep)
     for path in paths:
-        #print("Trying %s" % (os.path.join(path,filename)))
         if os.path.exists(os.path.join(path, filename)):
             found = 1
             break
@@ -97,8 +96,6 @@ def findFile(filename, searchPath):
 # Parses a vpd xml file using ET.  ET will generate errors for bad xml syntax
 # Actual checking/validation of the xml contents will be done elsewhere
 def parseXml(xmlFile):
-    # Accumulate errors and return the total at the end
-    # This allows the user to see all mistakes at once instead of iteratively running
     errorsFound = 0
 
     # Get the full path to the file given
@@ -109,10 +106,9 @@ def parseXml(xmlFile):
         return (1, None)
 
     # Let the user know what file we are reading
-    # We could make this optional with a new function param in the future
     out.msg("Parsing file %s" % fullPathFile)
 
-    # Read in the file
+    # Read in the file with ET
     # If there are tag mismatch errors or other general gross format problems, it will get caught here
     # Once we return from this function, then we'll check to make sure only supported tags were given, etc..
     # Invoke the extended PCParser, which will handle preserving comments in the output file
@@ -142,56 +138,52 @@ def writeXml(manifest, outputFile):
     tree.write(outputFile, encoding="utf-8", xml_declaration=True)
     return None
 
-# Check the <keyword> XML to make sure the required elements are found
-def checkElementsKeyword(keyword, recordName):
+# Check the <vpd> XML to make sure the required elements are found
+def checkElementsVpd(root):
     errorsFound = 0
-   
-    # Define the expected tags at this level
-    keywordTags = {"kwdesc" : 0, "kwformat" : 0, "kwlen" : 0, "kwdata" : 0, "ktvpdfile" : 0}
-         
-    # Make sure the keyword has a name attrib, save for later use
-    keywordName = keyword.attrib.get("name")
-    if (keywordName == None):
-        out.error("<keyword> tag in record %s is missing the name attribute" % (recordName))
-        errorsFound += 1
-        keywordName = "INVALID" # Set the invalid name so the code below can use it without issue
 
-    # Loop thru the tags defined for this keyword
-    for child in keyword:
+    # Do some basic error checking of what we've read in
+    # Make sure the root starts with the vpd tag
+    # If it doesn't, it's not worth syntax checking any further
+    # This is the only time we'll just bail instead of accumulating
+    if (root.tag != "vpd"):
+        out.error("%s does not start with a <vpd> tag.  No further checking will be done until fixed!" % tvpdFile)
+        exit(1)
+
+    # We at least have a proper top level vpd tag, so loop thru the rest of the levels and check for any unknown tags
+    # This will also be a good place to check for the required tags
+
+    # Define the expected tags at this level
+    vpdTags = {"name" : 0, "size" : 0, "VD" : 0, "record" : 0}
+
+    # Go thru the children at this level
+    for child in root:
         # Comments aren't basestring tags
         if not isinstance(child.tag, basestring):
             continue
-
+            
         # See if this is a tag we even expect
-        if child.tag not in keywordTags:
-            out.error("Unsupported tag <%s> found while parsing the <keyword> level for keyword %s in record %s" %
-                      (child.tag, keywordName, recordName))
+        if child.tag not in vpdTags:
+            out.error("Unsupported tag <%s> found while parsing the <vpd> level" % child.tag)
             errorsFound += 1
-            # We continue here because we don't want to parse down this hierarcy path when we don't know what it is
-            continue
+
         # It was a supported tag
         else:
-            keywordTags[child.tag] += 1
+            vpdTags[child.tag] += 1
 
-    # We've checked for unknown keyword tags, now make sure we have the right number of each
-    # This is a simple one, we can only have 1 of each
-    keywordTagCount = 1
-    if (keywordTags["ktvpdfile"] != 0):
-        if (keywordTags["ktvpdfile"] > 1):
-            out.error("The tag <ktvpdfile> is only allowed to be used once for keyword %s in record %s" %
-                      (keywordName, recordName))
-            errorsFound += 1
-        # Only had one ktvpfile, so set our expected to the rest to 0
-        keywordTagCount = 0
-
-    # Depending upon the state of ktvpdfile, check to ensure we have only 1 of each tag or 0 of each tag
-    for tag in ["kwdesc", "kwformat", "kwlen", "kwdata"]:
-        if (keywordTags[tag] != keywordTagCount):
-            out.error("The tag <%s> was expected to have a count of %d, but was found with a count of %d for keyword %s in record %s" %
-                      (tag, keywordTagCount, keywordTags[tag], keywordName, recordName))
+    # Done looping through tags, do checking of what we found at the vpd level
+    for tag in ["name", "size", "VD"]:
+        if (vpdTags[tag] != 1):
+            out.error("The tag <%s> was expected to have a count of 1, but was found with a count of %d" %
+                      (tag, vpdTags[tag]))
             errorsFound += 1
 
-    return (errorsFound, keywordName)
+    # Make sure at least one record tag was found
+    if (vpdTags["record"] == 0):
+        out.error("At least one <record> must be defined for the file to be valid!")
+        errorsFound += 1
+
+    return errorsFound
 
 # Check the <record> XML to make sure the required elements are found
 def checkElementsRecord(record):
@@ -217,13 +209,12 @@ def checkElementsRecord(record):
         if child.tag not in recordTags:
             out.error("Unsupported tag <%s> found while parsing the <record> level for record %s" % (child.tag, recordName))
             errorsFound += 1
-            # We continue here because we don't want to parse down this hierarcy path when we don't know what it is
-            continue
                 
         # It was a supported tag
         else:
             recordTags[child.tag] += 1
-         
+
+    # Done looping through tags
     # We've checked for unknown record tags, now make sure we've got the right number, they don't conflict, etc..
     recordTagTotal = bool(recordTags["keyword"]) + bool(recordTags["rbinfile"]) + bool(recordTags["rtvpdfile"])
     # keyword, rbinfile and rtvpdfile are mutually exclusive.  Make sure we have only one
@@ -243,55 +234,59 @@ def checkElementsRecord(record):
         errorsFound += 1
 
     return (errorsFound, recordName)
-            
-# Check the <vpd> XML to make sure the required elements are found
-def checkElementsVpd(vpdTree):
+                
+# Check the <keyword> XML to make sure the required elements are found
+def checkElementsKeyword(keyword, recordName):
     errorsFound = 0
-
-    # Do some basic error checking of what we've read in
-    # Make sure the root starts with the vpd tag
-    # If it doesn't, it's not worth syntax checking any further
-    # This is the only time we'll just bail instead of accumulating
-    if (vpdTree.tag != "vpd"):
-        out.error("%s does not start with a <vpd> tag.  No further checking will be done until fixed!" % tvpdFile)
-        exit(1)
-
-    # We at least have a proper top level vpd tag, so loop thru the rest of the levels and check for any unknown tags
-    # This will also be a good place to check for the required tags
-
+   
     # Define the expected tags at this level
-    vpdTags = {"name" : 0, "size" : 0, "VD" : 0, "record" : 0}
+    keywordTags = {"kwdesc" : 0, "kwformat" : 0, "kwlen" : 0, "kwdata" : 0, "ktvpdfile" : 0}
+         
+    # Make sure the keyword has a name attrib, save for later use
+    keywordName = keyword.attrib.get("name")
+    if (keywordName == None):
+        out.error("<keyword> tag in record %s is missing the name attribute" % (recordName))
+        errorsFound += 1
+        keywordName = "INVALID" # Set the invalid name so the code below can use it without issue
 
-    # Go thru the children at this level
-    for child in vpdTree:
+    # Loop thru the tags defined for this keyword
+    for child in keyword:
         # Comments aren't basestring tags
         if not isinstance(child.tag, basestring):
             continue
-            
+
         # See if this is a tag we even expect
-        if child.tag not in vpdTags:
-            out.error("Unsupported tag <%s> found while parsing the <vpd> level" % child.tag)
+        if child.tag not in keywordTags:
+            out.error("Unsupported tag <%s> found while parsing the <keyword> level for keyword %s in record %s" %
+                      (child.tag, keywordName, recordName))
             errorsFound += 1
-            # We continue here because we don't want to parse down this hierarcy path when we don't know what it is
-            continue
+            
         # It was a supported tag
         else:
-            vpdTags[child.tag] += 1
+            keywordTags[child.tag] += 1
 
-    # Do some checking of what we found at the vpd level
-    for tag in ["name", "size", "VD"]:
-        if (vpdTags[tag] != 1):
-            out.error("The tag <%s> was expected to have a count of 1, but was found with a count of %d" %
-                      (tag, vpdTags[tag]))
+    # Done looping through tags
+    # We've checked for unknown keyword tags, now make sure we have the right number of each
+    # The default is we expect the regular keyword tags to be there, so default to 1
+    keywordTagCount = 1
+    # If we found a ktvpdfile tag, make sure we only had one of them
+    if (keywordTags["ktvpdfile"] != 0):
+        if (keywordTags["ktvpdfile"] > 1):
+            out.error("The tag <ktvpdfile> is only allowed to be used once for keyword %s in record %s" %
+                      (keywordName, recordName))
+            errorsFound += 1
+        # We had a ktvpdfile, now we don't want any of the regular keyword tags
+        keywordTagCount = 0
+
+    # Depending upon the state of ktvpdfile, check to ensure we are in the right state
+    for tag in ["kwdesc", "kwformat", "kwlen", "kwdata"]:
+        if (keywordTags[tag] != keywordTagCount):
+            out.error("The tag <%s> was expected to have a count of %d, but was found with a count of %d for keyword %s in record %s" %
+                      (tag, keywordTagCount, keywordTags[tag], keywordName, recordName))
             errorsFound += 1
 
-    # Make sure at least one record tag was found
-    if (vpdTags["record"] == 0):
-        out.error("At least one <record> must be defined for the file to be valid!")
-        errorsFound += 1
+    return (errorsFound, keywordName)
 
-    return errorsFound
-    
 # Function to write properly packed/encoded data to the vpdFile
 def writeDataToVPD(vpdFile, data, offset = None):
     rc = 0
@@ -385,6 +380,7 @@ def checkHexDataFormat(kwdata):
     match = re.search("([^0-9a-fA-F]+)", kwdata)
     if (match):
         out.error("A non hex character \"%s\" was found at %s in the kwdata" % (match.group(), match.span()))
+        
     return (match, kwdata)
 
 
@@ -397,7 +393,8 @@ rc = 0
 # Command line options
 # Create the argparser object
 # We disable auto help options here and add them manually below.  This is so we can get all the optional args in 1 group
-parser = argparse.ArgumentParser(description='The VPD image creation tool', add_help=False, formatter_class=argparse.RawDescriptionHelpFormatter,
+parser = argparse.ArgumentParser(description='The VPD image creation tool', add_help=False,
+                                 formatter_class=argparse.RawDescriptionHelpFormatter,
                                  epilog=textwrap.dedent('''\
                                  Examples:
                                    ./createVpd.py -m examples/simple/simple.tvpd -o /tmp
@@ -434,7 +431,7 @@ clInputPath = args.inpath
 # Make sure the path exists
 if (clInputPath != None):
     # Add the CWD onto the path so the local directory is always looked at
-    clInputPath +=  os.pathsep + "."
+    clInputPath += os.pathsep + "."
 else:
     # Set it the CWD since it will be used throughout the program and having it set to None breaks things
     clInputPath = "."
@@ -451,7 +448,8 @@ clBinaryKeywords = args.binary_keywords
 # We are going to do this in 3 stages
 # 1 - Read in the manifest and any other referenced files.  This will create a complete XML description of the VPD
 #     We will also check to make sure that all required tags are given and no extra tags exist
-# 2 - Parse thru the now complete vpd tree and make sure the data within the tags is valid.  These are checks like data not greater than length, etc..
+# 2 - Parse thru the now complete vpd tree and make sure the data within the tags is valid.
+#     These are checks like data not greater than length, etc..
 # 3 - With the XML and contents verified correct, loop thru it again and write out the VPD data
 #
 # Note: Looping thru the XML twice between stage 1 and 2 makes it easier to surface multiple errors to the user at once.
@@ -496,11 +494,14 @@ for record in manifest.iter("record"):
         if (rc):
             out.error("The <rtvpdfile> given could not be found.")
             errorsFound += 1
-            break
+            continue
 
         # Early versions of these files could start with <vpd> tag, handle that by getting down a level to the record
-        # If it's already the top level entry, this will return the whole thing
-        newRecord = recordTvpd.find("record")
+        # If it's already the top level entry, then just assign over
+        if (recordTvpd.tag == "vpd"):
+            newRecord = recordTvpd.find("record")
+        else:
+            newRecord = recordTvpd
 
         # --------
         # Check the contents read in from the rtvpdfile
@@ -514,14 +515,17 @@ for record in manifest.iter("record"):
             out.error("The record (%s) found in %s doesn't match the record name in the manifest (%s)" %
                       (newRecordName, rtvpdfile.text, recordName))
             errorsFound += 1
-            break
+            continue
 
     else:
         # It's not a rtvpdfile record.  Set newRecord to record for all the remaining code below
+        # This is done so that any ktvpdfile references that are read in get merged into the containing record
+        # That containing record then gets merged into the main manifest in the 2nd merge below
+        # The end result is a manifest that contains no references to external files and can be second stage processed
         newRecord = record
         newRecordName = recordName
 
-    # All done handling record level stuff
+    # Done handling the record level
     # We can now loop through the keywords in the records and check them
         
     # Look for ktvpdfile lines
@@ -542,7 +546,7 @@ for record in manifest.iter("record"):
             if (rc):
                 out.error("The <ktvpdfile> given could not be found.")
                 errorsFound += 1
-                break
+                continue
 
             # --------
             # Check the contents read in from the ktvpdfile
@@ -556,17 +560,17 @@ for record in manifest.iter("record"):
                 out.error("The keyword (%s) found in %s doesn't match the keyword name in the manifest (%s)" %
                           (newKeywordName, ktvpdfile.text, keywordName))
                 errorsFound += 1
-                break
+                continue
 
-            # Merge the new keyword into the main manifest
+            # Merge the new keyword into the record
             # ET doesn't have a replace function.  You can do an extend/remove, but that changes the order of the file
             # The goal is to preserve order, so that method doesn't work
             # The below code will insert the newKeyword in the list above the current matching keyword definition
             # Then remove the original keyword definition, preserving order
-            newRecord.insert(list(record).index(keyword), newKeyword)
+            newRecord.insert(list(newRecord).index(keyword), newKeyword)
             newRecord.remove(keyword)
 
-         
+    # End of the record loop    
     # Merge the new record into the main manifest
     # ET doesn't have a replace function.  You can do an extend/remove, but that changes the order of the file
     # The goal is to preserve order, so that method doesn't work
@@ -575,7 +579,6 @@ for record in manifest.iter("record"):
     manifest.insert(list(manifest).index(record), newRecord)
     manifest.remove(record)
 
-        
 # All done with error checks, bailout if we hit something
 if (errorsFound):
     out.msg("")

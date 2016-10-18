@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='utf-8'?>
+<record name="VSMC">
+  <rdesc>The VINI record</rdesc>
+  <keyword name="RT">
+    <kwdesc>The Record Type keyword</kwdesc>
+    <kwformat>ascii</kwformat>
+    <kwlen>4</kwlen>
+    <kwdata>VSMC</kwdata>
+  </keyword>
+  <keyword name="AS">
+    <ktvpdfile>vsmc-as.xml</ktvpdfile>
+  </keyword>
+  <keyword name="HX">
+    <kwdesc>The Hex keyword</kwdesc>
+    <kwformat>hex</kwformat>
+    <kwlen>4</kwlen>
+    <kwdata>00000000</kwdata>
+  </keyword>
+</record>
