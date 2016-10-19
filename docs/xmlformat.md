@@ -143,7 +143,7 @@ The name attribute is required and only 2 characters long
 
 `<ktvpdfile></ktvpdfile>`
 Contains the name or path and name to a file describing the keyword
-This tag is mutually exclusive from the '<kwdesc>', '<kwformat>', '<kwlen>' and '<kwdata>' below
+This tag is mutually exclusive from the `<kwdesc>`, `<kwformat>`, `<kwlen>` and `<kwdata>` below
 
 `<kwdesc></kwdesc>`
 A description of the contents of the keyword.  Only 1 tag allowed per keyword.
