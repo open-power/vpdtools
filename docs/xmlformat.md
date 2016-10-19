@@ -141,6 +141,10 @@ The name attribute is required and only 2 characters long
 
 ### Tags included in the `<keyword>`
 
+`<ktvpdfile></ktvpdfile>`
+Contains the name or path and name to a file describing the keyword
+This tag is mutually exclusive from the `<kwdesc>`, `<kwformat>`, `<kwlen>` and `<kwdata>` below
+
 `<kwdesc></kwdesc>`
 A description of the contents of the keyword.  Only 1 tag allowed per keyword.
 
@@ -186,6 +190,13 @@ For bin data:
   <kwformat>bin</kwformat>
   <kwlen>4</kwlen>
   <kwdata>name.bin</kwdata>
+</keyword>
+```
+
+The inclusion of a keyword ktvpdfile would look like this:
+``` xml
+<keyword name=”NM”>
+  <ktvpdfile>vini-nm.xml</ktvpdfile>
 </keyword>
 ```
 

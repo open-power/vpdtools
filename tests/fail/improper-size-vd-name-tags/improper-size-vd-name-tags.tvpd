@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <vpd>
   <name>FILENAME</name>
-  <size>16kb</size>
+  <size> 16kb</size>
   <VD>01</VD>
   <record name="VINI">
     <rtvpdfile>record.tvpd</rtvpdfile>

@@ -1,0 +1,6 @@
+<keyword name="AS">
+  <kwdesc>The ascii keyword</kwdesc>
+  <kwformat>ascii</kwformat>
+  <kwlen>20</kwlen>
+  <kwdata>This is text data</kwdata>
+</keyword>
