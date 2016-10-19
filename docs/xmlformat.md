@@ -193,10 +193,10 @@ For bin data:
 </keyword>
 ```
 
-The inclusion of a keyword kvpd file would look like this:
+The inclusion of a keyword ktvpdfile would look like this:
 ``` xml
 <keyword name=”NM”>
-  <ktvdfile>vini-nm.xml</ktvpdfile>
+  <ktvpdfile>vini-nm.xml</ktvpdfile>
 </keyword>
 ```
 
