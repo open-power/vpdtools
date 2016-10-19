@@ -642,7 +642,7 @@ for record in manifest.iter("record"):
     # Pull the record name out for use throughout
     recordName = record.attrib.get("name")
 
-    out.msg("Checking record %s" % recordName)
+    out.msg("Verifying record %s" % recordName)
     out.setIndent(4)
     
     # --------
