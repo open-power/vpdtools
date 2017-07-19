@@ -184,7 +184,7 @@ vpd = ET.Element("vpd")
 
 # Stick in our required tags
 ET.SubElement(vpd, "name").text = vpdName
-ET.SubElement(vpd, "size").text = "16 kB"
+ET.SubElement(vpd, "size").text = "32 kB"
 # VD is in a fixed location in VHDR, just rip it out instead of reading teh VPD to find it
 ET.SubElement(vpd, "VD").text = ("%02X" % struct.unpack('<H', vpdContents[24:26])[0])
 
