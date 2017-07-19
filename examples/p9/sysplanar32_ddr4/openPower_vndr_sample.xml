@@ -15,13 +15,20 @@
       <kwdesc>Record Version</kwdesc>
       <kwformat>ascii</kwformat>
       <kwlen>2</kwlen>
-      <kwdata>01</kwdata>
+      <kwdata>02</kwdata>
     </keyword>
 
     <keyword name="IN">
       <kwdesc>Vendor Specific Data</kwdesc>
       <kwformat>hex</kwformat>
       <kwlen>128</kwlen>
+      <kwdata>00</kwdata>
+    </keyword>
+
+    <keyword name="NV">
+      <kwdesc>NVLINK Configuration Data</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
       <kwdata>00</kwdata>
     </keyword>
 
