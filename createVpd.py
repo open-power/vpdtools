@@ -36,6 +36,7 @@ sys.path.insert(0,scriptPath + "/pymod");
 import out
 import xml.etree.ElementTree as ET
 import struct
+import binascii
 import re
 import argparse
 import textwrap
@@ -339,13 +340,6 @@ def packKeyword(keyword, length, data, format):
         data = data.ljust((length * 2), '0')
         # Write it
         keywordPack += bytearray.fromhex(data)
-    elif (format == "bin"):
-        # Pad if necessary
-        data = bytearray(data)
-        for i in range (len(data), length):
-            data.append(0)
-        # Stick the binary data we have right back into the record
-        keywordPack += data
     else:
         out.error("Unknown format type %s passed into packKeyword" % format)
         return None
@@ -538,6 +532,9 @@ for record in manifest.iter("record"):
         (rc, keywordName) = checkElementsKeyword(keyword, newRecordName)
         errorsFound += rc
 
+        # Track if we hit the conditionals that cause a newKeyword replacement to be needed
+        newKeywordReplace = False
+
         # See if a ktvpdfile was given and if so, load it in
         ktvpdfile = keyword.find("ktvpdfile")
         if (ktvpdfile != None):
@@ -562,6 +559,39 @@ for record in manifest.iter("record"):
                 errorsFound += 1
                 continue
 
+            # We were successful, make our replacement active
+            newKeywordReplace = True
+
+        # See if the kwformat is a binary file ("bin")
+        # If it is, load it in and turn it into a hex data keyword for the rest of the run
+        # This is necessary so when the output tvpd is written, we write out the actual data instead of a reference to the file
+        if (keyword.find("kwformat").text == "bin"):
+            # Get the name of the file out of the kwdata
+            databinfileName = keyword.find("kwdata").text
+            # Check to make sure the file can be found
+            databinfile = findFile(databinfileName, clInputPath)
+            if (databinfile == None):
+                out.error("The input binary data file %s could not be found!  Please check your tvpd or input path." % databinfileName)
+                errorsFound += 1
+                continue
+
+            # We were able to read the file in successfully
+            # - Create our newKeyword for the replacement
+            newKeyword = keyword
+            # - Set our data type
+            newKeyword.find("kwformat").text = "hex"
+            # - Read in our bin data & store it as hex ascii data
+            kwdata = open(databinfile, mode='rb').read()
+            newKeyword.find("kwdata").text = binascii.hexlify(kwdata)
+            # Insert a comment with a name of the file the data came from
+            elem = ET.Comment(" Imported bin contents of file as hex - %s " % databinfileName)
+            elem.tail = "\n      "
+            newKeyword.insert(list(newKeyword).index(newKeyword.find("kwdata")), elem)
+
+            # We were successful, make our replacement active
+            newKeywordReplace = True
+
+        if (newKeywordReplace):
             # Merge the new keyword into the record
             # ET doesn't have a replace function.  You can do an extend/remove, but that changes the order of the file
             # The goal is to preserve order, so that method doesn't work
@@ -781,20 +811,6 @@ for record in manifest.iter("record"):
                 errorsFound += 1
 
             # --------
-            # If the input format is bin, make sure the file exists and then read in the data
-            if (kwformat == "bin"):
-                # Get the full path to the file given
-                databinfile = findFile(kwdata, clInputPath)
-                if (databinfile == None):
-                    out.error("The databinfile %s could not be found!  Please check your tvpd or input path" % (kwdata))
-                    errorsFound += 1
-                    break
-
-                # It does, read it in so we can check the record name
-                # We'll replace the kwdata with the actual data instead of the file name for the rest of the checks
-                kwdata = open(databinfile, mode='rb').read()
-
-            # --------
             # If the input format is hex, make sure the input data is hex only
             if (kwformat == "hex"):
                 (rc, kwdata) = checkHexDataFormat(kwdata)
@@ -846,7 +862,7 @@ for record in manifest.iter("record"):
             # --------
             # Verify that the data isn't longer than the length given
             # Future checks could include making sure bin data is hex
-            if (kwformat == "ascii" or kwformat == "bin"):
+            if (kwformat == "ascii"):
                 if (len(kwdata) > kwlen):
                     out.error("The length of the value is longer than the given <kwlen> for keyword %s in record %s" %
                               (keywordName, recordName))
@@ -1059,12 +1075,7 @@ for record in manifest.iter("record"):
             kwlen = int(keyword.find("kwlen").text)
             kwdata = keyword.find("kwdata").text
             kwformat = keyword.find("kwformat").text
-            # If the input format is bin, we need to pull the data in from the file
-            # We know the file exists from the check in step 2
-            if (kwformat == "bin"):
-                # Get the full path to the file given, error checked before
-                databinfile = findFile(kwdata, clInputPath)
-                kwdata = open(databinfile, mode='rb').read()
+
             # If the input format is mixed, we need to concat the data together before packing
             # We'll force all the data to hex and tell it to pack as hex
             if (kwformat == "mixed"):
