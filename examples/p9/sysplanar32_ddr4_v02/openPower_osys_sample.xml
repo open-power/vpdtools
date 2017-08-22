@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<vpd>
+  <!-- 2017/08-14 myl:  Adding UD keyword for UUID per story 178386 -->
+  <!--                  Change VD value to 02                       -->
+
+  <record name="OSYS">
+    <rdesc>The OpenPower System Record</rdesc>
+
+    <keyword name="RT">
+      <kwdesc>The Record Type keyword</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>4</kwlen>
+      <kwdata>OSYS</kwdata>
+    </keyword>
+
+    <keyword name="VD">
+      <kwdesc>Record Version</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>2</kwlen>
+      <kwdata>02</kwdata>
+    </keyword>
+
+    <keyword name="DR">
+      <kwdesc>FRU Description</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>16</kwlen>
+      <kwdata>SYSTEM          </kwdata>
+    </keyword>
+
+    <keyword name="MM">
+      <kwdesc>Machine Type Model</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>16</kwlen>
+      <kwdata>0000000000000000</kwdata>
+    </keyword>
+
+    <keyword name="SS">
+      <kwdesc>System Serial Number</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>16</kwlen>
+      <kwdata>0000000000000000</kwdata>
+    </keyword>
+
+    <keyword name="ET">
+      <kwdesc>Enclosure Type</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>1</kwlen>
+      <kwdata>02</kwdata>
+    </keyword>
+
+    <keyword name="UD">
+      <kwdesc>UUID</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>17</kwlen>
+      <kwdata>0100000000000000000000000000000000</kwdata>
+    </keyword>
+
+  </record>
+
+</vpd>

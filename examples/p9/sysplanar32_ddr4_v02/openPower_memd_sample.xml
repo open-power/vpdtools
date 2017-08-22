@@ -1,0 +1,366 @@
+<?xml version="1.0"?>
+<record name="MEMD">
+    <rdesc>Memory data record</rdesc>
+
+    <keyword name="RT">
+      <kwdesc>The Record Type keyword</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>4</kwlen>
+      <kwdata>MEMD</kwdata>
+    </keyword>
+
+    <keyword name="VD">
+      <kwdesc>Record Version keyword</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>2</kwlen>
+      <kwdata>03</kwdata>
+    </keyword>
+
+    <keyword name="VM">
+      <ktvpdfile>openPower_memd_vm_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="MR">
+      <ktvpdfile>openPower_memd_mr_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="J0">
+      <ktvpdfile>openPower_memd_j0_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="J1">
+      <ktvpdfile>openPower_memd_j1_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="J2">
+      <ktvpdfile>openPower_memd_j2_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="J3">
+      <ktvpdfile>openPower_memd_j3_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="J4">
+      <ktvpdfile>openPower_memd_j4_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="J5">
+      <ktvpdfile>openPower_memd_j5_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="J6">
+      <ktvpdfile>openPower_memd_j6_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="J7">
+      <ktvpdfile>openPower_memd_j7_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="J8">
+      <ktvpdfile>openPower_memd_j8_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="J9">
+      <ktvpdfile>openPower_memd_j9_sample.xml</ktvpdfile>
+    </keyword>
+
+
+    <keyword name="JA">
+      <ktvpdfile>openPower_memd_ja_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="JB">
+      <ktvpdfile>openPower_memd_jb_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="JC">
+      <ktvpdfile>openPower_memd_jc_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="JD">
+      <ktvpdfile>openPower_memd_jd_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="JE">
+      <ktvpdfile>openPower_memd_je_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="JF">
+      <ktvpdfile>openPower_memd_jf_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="JG">
+      <ktvpdfile>openPower_memd_jg_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="JH">
+      <ktvpdfile>openPower_memd_jh_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="JI">
+      <ktvpdfile>openPower_memd_ji_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="JJ">
+      <ktvpdfile>openPower_memd_jj_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="JK">
+      <ktvpdfile>openPower_memd_jk_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="JL">
+      <ktvpdfile>openPower_memd_jl_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="JM">
+      <ktvpdfile>openPower_memd_jm_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="JN">
+      <ktvpdfile>openPower_memd_jn_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="JO">
+      <ktvpdfile>openPower_memd_jo_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="JP">
+      <ktvpdfile>openPower_memd_jp_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="JQ">
+      <ktvpdfile>openPower_memd_jq_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="JR">
+      <ktvpdfile>openPower_memd_jr_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="JS">
+      <ktvpdfile>openPower_memd_js_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="JT">
+      <ktvpdfile>openPower_memd_jt_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="JU">
+      <ktvpdfile>openPower_memd_ju_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="JV">
+      <ktvpdfile>openPower_memd_jv_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="JW">
+      <ktvpdfile>openPower_memd_jw_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="JX">
+      <ktvpdfile>openPower_memd_jx_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="JY">
+      <ktvpdfile>openPower_memd_jy_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="JZ">
+      <ktvpdfile>openPower_memd_jz_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="MT">
+      <ktvpdfile>openPower_memd_mt_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="X0">
+      <ktvpdfile>openPower_memd_x0_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="X1">
+      <ktvpdfile>openPower_memd_x1_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="X2">
+      <ktvpdfile>openPower_memd_x2_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="X3">
+      <ktvpdfile>openPower_memd_x3_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="X4">
+      <ktvpdfile>openPower_memd_x4_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="X5">
+      <ktvpdfile>openPower_memd_x5_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="X6">
+      <ktvpdfile>openPower_memd_x6_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="X7">
+      <ktvpdfile>openPower_memd_x7_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="X8">
+      <ktvpdfile>openPower_memd_x8_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="X9">
+      <ktvpdfile>openPower_memd_x9_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="XA">
+      <ktvpdfile>openPower_memd_xa_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="XB">
+      <ktvpdfile>openPower_memd_xb_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="XC">
+      <ktvpdfile>openPower_memd_xc_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="XD">
+      <ktvpdfile>openPower_memd_xd_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="XE">
+      <ktvpdfile>openPower_memd_xe_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="XF">
+      <ktvpdfile>openPower_memd_xf_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="XG">
+      <ktvpdfile>openPower_memd_xg_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="XH">
+      <ktvpdfile>openPower_memd_xh_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="XI">
+      <ktvpdfile>openPower_memd_xi_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="XJ">
+      <ktvpdfile>openPower_memd_xj_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="XK">
+      <ktvpdfile>openPower_memd_xk_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="XL">
+      <ktvpdfile>openPower_memd_xl_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="XM">
+      <ktvpdfile>openPower_memd_xm_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="XN">
+      <ktvpdfile>openPower_memd_xn_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="XO">
+      <ktvpdfile>openPower_memd_xo_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="XP">
+      <ktvpdfile>openPower_memd_xp_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="XQ">
+      <ktvpdfile>openPower_memd_xq_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="XR">
+      <ktvpdfile>openPower_memd_xr_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="XS">
+      <ktvpdfile>openPower_memd_xs_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="XT">
+      <ktvpdfile>openPower_memd_xt_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="XU">
+      <ktvpdfile>openPower_memd_xu_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="XV">
+      <ktvpdfile>openPower_memd_xv_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="XW">
+      <ktvpdfile>openPower_memd_xw_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="XX">
+      <ktvpdfile>openPower_memd_xx_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="XY">
+      <ktvpdfile>openPower_memd_xy_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="XZ">
+      <ktvpdfile>openPower_memd_xz_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="CK">
+      <ktvpdfile>openPower_memd_ck_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="Q0">
+      <ktvpdfile>openPower_memd_q0_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="Q1">
+      <ktvpdfile>openPower_memd_q1_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="Q2">
+      <ktvpdfile>openPower_memd_q2_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="Q3">
+      <ktvpdfile>openPower_memd_q3_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="Q4">
+      <ktvpdfile>openPower_memd_q4_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="Q5">
+      <ktvpdfile>openPower_memd_q5_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="Q6">
+      <ktvpdfile>openPower_memd_q6_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="Q7">
+      <ktvpdfile>openPower_memd_q7_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="Q8">
+      <ktvpdfile>openPower_memd_q8_sample.xml</ktvpdfile>
+    </keyword>
+
+    <keyword name="Q9">
+      <ktvpdfile>openPower_memd_q9_sample.xml</ktvpdfile>
+    </keyword>
+
+</record>
+
+

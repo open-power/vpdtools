@@ -1,0 +1,6 @@
+<keyword name="Q1">
+   <kwdesc>Memory DQ Data1 keyword</kwdesc>
+   <kwformat>hex</kwformat>
+   <kwlen>160</kwlen>
+   <kwdata>00</kwdata>
+</keyword>

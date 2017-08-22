@@ -1,0 +1,117 @@
+This is a P9 system planar VPD template version 2.
+This version is created on August 22, 2017
+
+This template version, a user would create a top layer of the vpd template.
+This top layer template then pulls records data from different files,
+record files.
+
+Each record file, except memd record,  contains keywords and data for each keyowrd within the file.
+
+The memd record pull keyword data from different keywords files.  This make it easy to update
+each keyword data without impacting one another.
+
+
+Top layer VPD template:
+openPower_sysplanar32_ddr4.tvpd
+
+
+Record Templates:
+openPower_memd_sample.xml
+openPower_mer0_sample.xml
+openPower_opfr_sample.xml
+openPower_osys_sample.xml
+openPower_ver0_sample.xml
+openPower_vini_sample.xml
+openPower_vmsc_sample.xml
+openPower_vndr_sample.xml
+openPower_vrtn_sample.xml
+
+Keyword Templates
+openPower_memd_ck_sample.xml
+openPower_memd_j0_sample.xml
+openPower_memd_j1_sample.xml
+openPower_memd_j2_sample.xml
+openPower_memd_j3_sample.xml
+openPower_memd_j4_sample.xml
+openPower_memd_j5_sample.xml
+openPower_memd_j6_sample.xml
+openPower_memd_j7_sample.xml
+openPower_memd_j8_sample.xml
+openPower_memd_j9_sample.xml
+openPower_memd_ja_sample.xml
+openPower_memd_jb_sample.xml
+openPower_memd_jc_sample.xml
+openPower_memd_jd_sample.xml
+openPower_memd_je_sample.xml
+openPower_memd_jf_sample.xml
+openPower_memd_jg_sample.xml
+openPower_memd_jh_sample.xml
+openPower_memd_ji_sample.xml
+openPower_memd_jj_sample.xml
+openPower_memd_jk_sample.xml
+openPower_memd_jl_sample.xml
+openPower_memd_jm_sample.xml
+openPower_memd_jn_sample.xml
+openPower_memd_jo_sample.xml
+openPower_memd_jp_sample.xml
+openPower_memd_jq_sample.xml
+openPower_memd_jr_sample.xml
+openPower_memd_js_sample.xml
+openPower_memd_jt_sample.xml
+openPower_memd_ju_sample.xml
+openPower_memd_jv_sample.xml
+openPower_memd_jw_sample.xml
+openPower_memd_jx_sample.xml
+openPower_memd_jy_sample.xml
+openPower_memd_jz_sample.xml
+openPower_memd_mr_sample.xml
+openPower_memd_mt_sample.xml
+openPower_memd_q0_sample.xml
+openPower_memd_q1_sample.xml
+openPower_memd_q2_sample.xml
+openPower_memd_q3_sample.xml
+openPower_memd_q4_sample.xml
+openPower_memd_q5_sample.xml
+openPower_memd_q6_sample.xml
+openPower_memd_q7_sample.xml
+openPower_memd_q8_sample.xml
+openPower_memd_q9_sample.xml
+openPower_memd_vm_sample.xml
+openPower_memd_x0_sample.xml
+openPower_memd_x1_sample.xml
+openPower_memd_x2_sample.xml
+openPower_memd_x3_sample.xml
+openPower_memd_x4_sample.xml
+openPower_memd_x5_sample.xml
+openPower_memd_x6_sample.xml
+openPower_memd_x7_sample.xml
+openPower_memd_x8_sample.xml
+openPower_memd_x9_sample.xml
+openPower_memd_xa_sample.xml
+openPower_memd_xb_sample.xml
+openPower_memd_xc_sample.xml
+openPower_memd_xd_sample.xml
+openPower_memd_xe_sample.xml
+openPower_memd_xf_sample.xml
+openPower_memd_xg_sample.xml
+openPower_memd_xh_sample.xml
+openPower_memd_xi_sample.xml
+openPower_memd_xj_sample.xml
+openPower_memd_xk_sample.xml
+openPower_memd_xl_sample.xml
+openPower_memd_xm_sample.xml
+openPower_memd_xn_sample.xml
+openPower_memd_xo_sample.xml
+openPower_memd_xp_sample.xml
+openPower_memd_xq_sample.xml
+openPower_memd_xr_sample.xml
+openPower_memd_xs_sample.xml
+openPower_memd_xt_sample.xml
+openPower_memd_xu_sample.xml
+openPower_memd_xv_sample.xml
+openPower_memd_xw_sample.xml
+openPower_memd_xx_sample.xml
+openPower_memd_xy_sample.xml
+openPower_memd_xz_sample.xml
+
+

@@ -1,0 +1,6 @@
+<keyword name="CK">
+   <kwdesc>Memory Clock Enable keyword</kwdesc>
+   <kwformat>hex</kwformat>
+   <kwlen>136</kwlen>
+   <kwdata>00</kwdata>
+</keyword>

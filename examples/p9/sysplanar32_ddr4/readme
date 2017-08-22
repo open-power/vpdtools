@@ -1,0 +1,24 @@
+This is a P9 system planar VPD template version 1.
+
+This template version, a user would create a top layer of the vpd template.
+This top layer template then pulls records data from different files,
+record files.
+
+Each record file contains keywords and data for each keyowrd within the file.
+
+
+Top layer VPD template:
+sysplanar32_ddr4.tvpd
+
+
+Record Templates:
+openPower_memd_sample.xml
+openPower_mer0_sample.xml
+openPower_opfr_sample.xml
+openPower_osys_sample.xml
+openPower_ver0_sample.xml
+openPower_vini_sample.xml
+openPower_vmsc_sample.xml
+openPower_vndr_sample.xml
+openPower_vrtn_sample.xml
+
