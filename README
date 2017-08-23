@@ -30,7 +30,7 @@ Dependencies
 Python 2.7 is required.
 NOTE: RHEL6 is python 2.6 and this tool will not run there
 
-reverseVpd.py requires cmdline xmllint to cleanup the formatting of the output xml
+xmllint, if installed, is used to cleanup the formatting of the output xml
 On Ubuntu/Debian: 'apt-get install libxml2-utils'
 On Redhat/Fedora: 'yum install libxml2'
 

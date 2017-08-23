@@ -320,10 +320,13 @@ writeTvpd(vpd, tvpdFileName)
 out.msg("Wrote tvpd file: %s" % tvpdFileName)
 
 # Now rip it through xmllint quick to cleanup formatting problems from the ET print
-rc = os.system("xmllint --format %s -o %s" % (tvpdFileName, tvpdFileName))
-if (rc):
-    out.error("Unable to call xmllint to fixing xml formatting")
-    exit(rc)
+if (os.path.isfile("/usr/bin/xmllint")):
+    rc = os.system("/usr/bin/xmllint --format %s -o %s" % (tvpdFileName, tvpdFileName))
+    if (rc):
+        out.error("Error occurred calling xmllint to fix xml formatting")
+        exit(rc)
+else:
+    out.warn("xmllint not installed - no formatting cleanup done!")
 
 # Write the sub files
 if (clCreateRecords):
