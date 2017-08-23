@@ -137,6 +137,12 @@ def parseXml(xmlFile):
 def writeXml(manifest, outputFile):
     tree = ET.ElementTree(manifest)
     tree.write(outputFile, encoding="utf-8", xml_declaration=True)
+    # Now rip it through xmllint quick to cleanup formatting problems from the ET print
+    rc = os.system("xmllint --format %s -o %s" % (outputFile, outputFile))
+    if (rc):
+        out.error("Unable to call xmllint to fixing xml formatting")
+        return(rc)
+
     return None
 
 # Check the <vpd> XML to make sure the required elements are found
@@ -484,6 +490,7 @@ for record in manifest.iter("record"):
     if (rtvpdfile != None):
 
         # Read in the rtvpdfile
+        rtvpdfileName = rtvpdfile.text
         (rc, recordTvpd) = parseXml(rtvpdfile.text)
         if (rc):
             out.error("The <rtvpdfile> given could not be found.")
@@ -510,6 +517,12 @@ for record in manifest.iter("record"):
                       (newRecordName, rtvpdfile.text, recordName))
             errorsFound += 1
             continue
+
+        # Insert a comment with a name of the file the record came from
+        comment = ET.Comment(" Imported rtvpdfile contents - %s " % rtvpdfileName)
+        comment.tail = "\n"
+        newRecord.insert(0, comment)
+
 
     else:
         # It's not a rtvpdfile record.  Set newRecord to record for all the remaining code below
@@ -539,6 +552,7 @@ for record in manifest.iter("record"):
         ktvpdfile = keyword.find("ktvpdfile")
         if (ktvpdfile != None):
             # Read in the ktvpdfile
+            ktvpdfileName = ktvpdfile.text
             (rc, newKeyword) = parseXml(ktvpdfile.text)
             if (rc):
                 out.error("The <ktvpdfile> given could not be found.")
@@ -559,13 +573,18 @@ for record in manifest.iter("record"):
                 errorsFound += 1
                 continue
 
+            # Insert a comment with a name of the file the record came from
+            comment = ET.Comment(" Imported ktvpdfile contents - %s " % ktvpdfileName)
+            comment.tail = "\n"
+            newKeyword.insert(0, comment)
+
             # We were successful, make our replacement active
             newKeywordReplace = True
 
         # See if the kwformat is a binary file ("bin")
         # If it is, load it in and turn it into a hex data keyword for the rest of the run
         # This is necessary so when the output tvpd is written, we write out the actual data instead of a reference to the file
-        if (keyword.find("kwformat").text == "bin"):
+        elif (keyword.find("kwformat").text == "bin"):
             # Get the name of the file out of the kwdata
             databinfileName = keyword.find("kwdata").text
             # Check to make sure the file can be found
@@ -584,9 +603,9 @@ for record in manifest.iter("record"):
             kwdata = open(databinfile, mode='rb').read()
             newKeyword.find("kwdata").text = binascii.hexlify(kwdata)
             # Insert a comment with a name of the file the data came from
-            elem = ET.Comment(" Imported bin contents of file as hex - %s " % databinfileName)
-            elem.tail = "\n      "
-            newKeyword.insert(list(newKeyword).index(newKeyword.find("kwdata")), elem)
+            comment = ET.Comment(" Imported bin contents of file as hex - %s " % databinfileName)
+            comment.tail = "\n"
+            newKeyword.insert(list(newKeyword).index(newKeyword.find("kwdata")), comment)
 
             # We were successful, make our replacement active
             newKeywordReplace = True
@@ -890,7 +909,9 @@ if (errorsFound):
     out.error("%d error%s found in the tvpd data.  Please review the above errors and correct them." %
               (errorsFound, "s" if (errorsFound > 1) else ""))
     tvpdFileName = os.path.join(clOutputPath, vpdName + "-err.tvpd")
-    writeXml(manifest, tvpdFileName)
+    rc = writeXml(manifest, tvpdFileName)
+    if (rc):
+        exit(rc)
     out.msg("Wrote tvpd file to help in debug: %s" % tvpdFileName)
     exit(errorsFound)
 
@@ -904,7 +925,9 @@ vpdFileName = os.path.join(clOutputPath, vpdName + ".vpd")
 
 # This is our easy one, write the XML back out
 # Write out the full template vpd representing the data contained in our image
-writeXml(manifest, tvpdFileName)
+rc = writeXml(manifest, tvpdFileName)
+if (rc):
+    exit(rc)
 out.msg("Wrote tvpd file: %s" % tvpdFileName)
 
 # Now the hard part, write out the binary file
