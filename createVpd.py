@@ -138,10 +138,13 @@ def writeXml(manifest, outputFile):
     tree = ET.ElementTree(manifest)
     tree.write(outputFile, encoding="utf-8", xml_declaration=True)
     # Now rip it through xmllint quick to cleanup formatting problems from the ET print
-    rc = os.system("xmllint --format %s -o %s" % (outputFile, outputFile))
-    if (rc):
-        out.error("Unable to call xmllint to fixing xml formatting")
-        return(rc)
+    if (os.path.isfile("/usr/bin/xmllint")):
+        rc = os.system("/usr/bin/xmllint --format %s -o %s" % (outputFile, outputFile))
+        if (rc):
+            out.error("Unable to call xmllint to fix xml formatting")
+            return(rc)
+    else:
+        out.warn("xmllint not installed - no formatting cleanup done!")
 
     return None
 
