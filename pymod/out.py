@@ -22,6 +22,9 @@ __m.indent = 0
 def error(message):
     print((' ' * __m.indent) + ("ERROR: %s" % message))
 
+def warn(message):
+    print((' ' * __m.indent) + ("WARNING: %s" % message))
+
 # Common function for debug printing
 def debug(message):
     print((' ' * __m.indent) + ("DEBUG: %s" % message))
