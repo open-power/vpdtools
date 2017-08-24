@@ -42,18 +42,18 @@ Also included are examples of complete memcard and sysplanar templates
 
 sysplanar creation example
 --------------------------
-$ ~/vpdtools/createVpd.py -m ~/vpdtools/examples/p8/sysplanar/sysplanar.tvpd -i ~/vpdtools/examples/p8/sysplanar -o /tmp/vpdout 
+$ ./createVpd.py -m examples/p8/sysplanar/sysplanar.tvpd -i examples/p8/sysplanar -o /tmp/vpdout
 ==== Stage 1: Parsing tvpd XML
-  Parsing tvpd ~/vpdtools/examples/p8/sysplanar/sysplanar.tvpd
-  Parsing tvpd ~/vpdtools/examples/p8/sysplanar/openPower_vini_sample.xml
-  Parsing tvpd ~/vpdtools/examples/p8/sysplanar/openPower_osys_sample.xml
-  Parsing tvpd ~/vpdtools/examples/p8/sysplanar/openPower_opfr_sample.xml
-  Parsing tvpd ~/vpdtools/examples/p8/sysplanar/openPower_vndr_sample.xml
-  Parsing tvpd ~/vpdtools/examples/p8/sysplanar/openPower_veir_sample.xml
-  Parsing tvpd ~/vpdtools/examples/p8/sysplanar/openPower_ver0_sample.xml
-  Parsing tvpd ~/vpdtools/examples/p8/sysplanar/openPower_mer0_sample.xml
-  Parsing tvpd ~/vpdtools/examples/p8/sysplanar/openPower_vmsc_sample.xml
-  Parsing tvpd ~/vpdtools/examples/p8/sysplanar/openPower_vrtn_sample.xml
+  Parsing tvpd examples/p8/sysplanar/sysplanar.tvpd
+  Parsing tvpd examples/p8/sysplanar/openPower_vini_sample.xml
+  Parsing tvpd examples/p8/sysplanar/openPower_osys_sample.xml
+  Parsing tvpd examples/p8/sysplanar/openPower_opfr_sample.xml
+  Parsing tvpd examples/p8/sysplanar/openPower_vndr_sample.xml
+  Parsing tvpd examples/p8/sysplanar/openPower_veir_sample.xml
+  Parsing tvpd examples/p8/sysplanar/openPower_ver0_sample.xml
+  Parsing tvpd examples/p8/sysplanar/openPower_mer0_sample.xml
+  Parsing tvpd examples/p8/sysplanar/openPower_vmsc_sample.xml
+  Parsing tvpd examples/p8/sysplanar/openPower_vrtn_sample.xml
 ==== Stage 2: Verifying tvpd syntax
   Checking record VINI
   Checking record OSYS
@@ -64,9 +64,19 @@ $ ~/vpdtools/createVpd.py -m ~/vpdtools/examples/p8/sysplanar/sysplanar.tvpd -i 
   Checking record MER0
   Checking record VMSC
   Checking record VRTN
-==== Stage 3: Creating binary VPD image
+==== Stage 3: Creating VPD output files
   Wrote tvpd file: /tmp/vpdout/sysplanar.tvpd
   Wrote vpd file: /tmp/vpdout/sysplanar.vpd
+
+single record example
+---------------------
+$ ./createVpd.py -c -m examples/p9/sysplanar32_ddr4/openPower_vini_sample.xml -o /tmp
+==== Stage 1: Parsing VPD XML files
+  Parsing file examples/p9/sysplanar32_ddr4/openPower_vini_sample.xml
+==== Stage 2: Verifying tvpd syntax
+  Verifying record VINI
+==== Stage 3: Creating VPD output files
+  Wrote tvpd file: /tmp/openPower_vini_sample.xml
 
 License
 =======
