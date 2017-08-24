@@ -938,7 +938,7 @@ if (errorsFound):
 
 # We now have a correct tvpd, use it to create a binary VPD image
 out.setIndent(0)
-out.msg("==== Stage 3: Creating binary VPD image")
+out.msg("==== Stage 3: Creating VPD output files")
 out.setIndent(2)
 # Create our output file names
 if (clRecordMode):
