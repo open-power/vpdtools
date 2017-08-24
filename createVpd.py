@@ -182,17 +182,25 @@ def checkElementsVpd(root):
             vpdTags[child.tag] += 1
 
     # Done looping through tags, do checking of what we found at the vpd level
-    for tag in ["name", "size", "VD"]:
-        if (vpdTags[tag] != 1):
-            out.error("The tag <%s> was expected to have a count of 1, but was found with a count of %d" %
-                      (tag, vpdTags[tag]))
-            errorsFound += 1
+    # These tags are not required in record only mode
+    if (not clRecordMode):
+        for tag in ["name", "size", "VD"]:
+            if (vpdTags[tag] != 1):
+                out.error("The tag <%s> was expected to have a count of 1, but was found with a count of %d" %
+                        (tag, vpdTags[tag]))
+                errorsFound += 1
 
     # Make sure at least one record tag was found
     if (vpdTags["record"] == 0):
         out.error("At least one <record> must be defined for the file to be valid!")
         errorsFound += 1
 
+    # In record only mode, make sure there is only 1 record in the file
+    if (clRecordMode and vpdTags["record"] != 1):
+        out.error("Only one <record> definition per file is supported in record mode")
+        out.error("The number of <record> definitions found in your file: %d" % vpdTags["record"])
+        errorsFound += 1
+        
     return errorsFound
 
 # Check the <record> XML to make sure the required elements are found
@@ -410,9 +418,10 @@ reqgroup.add_argument('-o', '--outpath', help='The output path for the files cre
 # Create our group of optional command line args
 optgroup = parser.add_argument_group('Optional Arguments')
 optgroup.add_argument('-h', '--help', action="help", help="Show this help message and exit")
-optgroup.add_argument('-d', '--debug', help="Enables debug printing",action="store_true")
-optgroup.add_argument('-r', '--binary-records', help="Create binary files for each record in the template",action="store_true")
-optgroup.add_argument('-k', '--binary-keywords', help="Create binary files for each keyword in the template",action="store_true")
+optgroup.add_argument('-d', '--debug', help="Enables debug printing", action="store_true")
+optgroup.add_argument('-c', '--record-mode', help="The input is a record only file.  No output VPD binary created.", action="store_true")
+optgroup.add_argument('-r', '--binary-records', help="Create binary files for each record in the template", action="store_true")
+optgroup.add_argument('-k', '--binary-keywords', help="Create binary files for each keyword in the template", action="store_true")
 optgroup.add_argument('-i', '--inpath', help="The search path to use for the files referenced in the manifest")
 
 # We've got everything we want loaded up, now look for it
@@ -441,6 +450,9 @@ else:
 
 # Debug printing
 clDebug = args.debug
+
+# Record only mode
+clRecordMode = args.record_mode
 
 # Create separate binary files for each record
 clBinaryRecords = args.binary_records
@@ -651,43 +663,49 @@ recordNames = dict()
 # Do our top level <vpd> validation of tag contents
 
 # Nothing to validate for the name, however grab it for use in later operations
-vpdName = manifest.find("name").text
-# If the user passed in the special name of FILENAME, we'll use in the input file name, minus the extension, as the output
-if (vpdName == "FILENAME"):
-    vpdName = os.path.splitext(os.path.basename(clManifestFile))[0]
+# In normal mode, the user has to specify the output file name in the input
+# For record only mode, we only use the input filename as the output file name
+if (not clRecordMode):
+    vpdName = manifest.find("name").text
+    # If the user passed in the special name of FILENAME, we'll use in the input file name, minus the extension, as the output
+    if (vpdName == "FILENAME"):
+        vpdName = os.path.splitext(os.path.basename(clManifestFile))[0]
+else:
+    vpdName = os.path.basename(clManifestFile)
 
 # Validate the <size> is given in proper syntax
-vpdSize = manifest.find("size").text
-# Make a new string with only the number
-maxSizeBytes = re.match('[0-9]*', vpdSize).group()
+if (not clRecordMode):
+    vpdSize = manifest.find("size").text
+    # Make a new string with only the number
+    maxSizeBytes = re.match('[0-9]*', vpdSize).group()
 
-# --------
-# Check to see if the number is even there
-if (maxSizeBytes == ''):
-    maxSizeBytes = '0'
-    out.error("No number detected in the size string.  Format of string must be number first, then units, e.g. 16KB.")
-    out.error("Remove any characters or white space from in front of the number.")
-    errorsFound += 1
+    # --------
+    # Check to see if the number is even there
+    if (maxSizeBytes == ''):
+        maxSizeBytes = '0'
+        out.error("No number detected in the size string.  Format of string must be number first, then units, e.g. 16KB.")
+        out.error("Remove any characters or white space from in front of the number.")
+        errorsFound += 1
     
-# --------
-# Make a new string with the number removed
-sizeUnits = vpdSize[len(maxSizeBytes):]
-# Remove a space, if one was inserted between the number and units
-whitespace = re.match(' *', sizeUnits).group()
-sizeUnits = sizeUnits[len(whitespace):]
-# Check the units to see if they are okay
-if (sizeUnits.lower() == "kb"):
-    maxSizeBytes = int(maxSizeBytes) * 1024
-elif (sizeUnits.lower() == "b"):
-    maxSizeBytes = int(maxSizeBytes)
-elif (sizeUnits.lower() == "mb"):
-    maxSizeBytes = int(maxSizeBytes) * 1024 * 1024
-elif (sizeUnits == ""):
-    out.error("Please specify units at the end of the size string. Acceptable units: B/KB/MB")
-    errorsFound += 1
-else:
-    out.error("Unexpected units in the size string. Expected: B/KB/MB. Yours: %s" % sizeUnits)
-    errorsFound += 1
+    # --------
+    # Make a new string with the number removed
+    sizeUnits = vpdSize[len(maxSizeBytes):]
+    # Remove a space, if one was inserted between the number and units
+    whitespace = re.match(' *', sizeUnits).group()
+    sizeUnits = sizeUnits[len(whitespace):]
+    # Check the units to see if they are okay
+    if (sizeUnits.lower() == "kb"):
+        maxSizeBytes = int(maxSizeBytes) * 1024
+    elif (sizeUnits.lower() == "b"):
+        maxSizeBytes = int(maxSizeBytes)
+    elif (sizeUnits.lower() == "mb"):
+        maxSizeBytes = int(maxSizeBytes) * 1024 * 1024
+    elif (sizeUnits == ""):
+        out.error("Please specify units at the end of the size string. Acceptable units: B/KB/MB")
+        errorsFound += 1
+    else:
+        out.error("Unexpected units in the size string. Expected: B/KB/MB. Yours: %s" % sizeUnits)
+        errorsFound += 1
 
 # Loop thru our records and then thru the keywords in each record
 for record in manifest.iter("record"):
@@ -922,9 +940,12 @@ if (errorsFound):
 out.setIndent(0)
 out.msg("==== Stage 3: Creating binary VPD image")
 out.setIndent(2)
-# Create our output file names 
-tvpdFileName = os.path.join(clOutputPath, vpdName + ".tvpd")
-vpdFileName = os.path.join(clOutputPath, vpdName + ".vpd")
+# Create our output file names
+if (clRecordMode):
+    tvpdFileName = os.path.join(clOutputPath, vpdName)
+else:
+    tvpdFileName = os.path.join(clOutputPath, vpdName + ".tvpd")
+    vpdFileName = os.path.join(clOutputPath, vpdName + ".vpd")
 
 # This is our easy one, write the XML back out
 # Write out the full template vpd representing the data contained in our image
@@ -932,6 +953,10 @@ rc = writeXml(manifest, tvpdFileName)
 if (rc):
     exit(rc)
 out.msg("Wrote tvpd file: %s" % tvpdFileName)
+
+# In record only mode we don't want to write the binary file, so we bail from the program here
+if (clRecordMode):
+    exit(errorsFound)
 
 # Now the hard part, write out the binary file
 # Open up our file to write
