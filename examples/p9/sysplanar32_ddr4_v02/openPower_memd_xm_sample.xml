@@ -1,0 +1,6 @@
+<keyword name="XM">
+   <kwdesc>Memory Terminator Data keyword</kwdesc>
+   <kwformat>hex</kwformat>
+   <kwlen>255</kwlen>
+   <kwdata>00</kwdata>
+</keyword>

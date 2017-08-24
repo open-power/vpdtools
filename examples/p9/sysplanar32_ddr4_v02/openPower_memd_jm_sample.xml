@@ -1,0 +1,6 @@
+<keyword name="JM">
+   <kwdesc>Memory Rotator Data keyword</kwdesc>
+   <kwformat>hex</kwformat>
+   <kwlen>255</kwlen>
+   <kwdata>00</kwdata>
+</keyword>

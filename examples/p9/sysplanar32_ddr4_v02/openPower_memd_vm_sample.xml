@@ -1,0 +1,6 @@
+<keyword name="VM">
+   <kwdesc>Memory Data Version keyword</kwdesc>
+   <kwformat>hex</kwformat>
+   <kwlen>4</kwlen>
+   <kwdata>00000000</kwdata>
+</keyword>

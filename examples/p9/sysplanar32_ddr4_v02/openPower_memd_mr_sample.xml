@@ -1,0 +1,6 @@
+<keyword name="MR">
+   <kwdesc>Memory Rotator Mapper keyword</kwdesc>
+   <kwformat>hex</kwformat>
+   <kwlen>255</kwlen>
+   <kwdata>00</kwdata>
+</keyword>
