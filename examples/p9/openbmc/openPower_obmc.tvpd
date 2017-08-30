@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<vpd>
+  <!-- OpenBMC FRU VPD for P9 OpenPower Systems-->
+  <!-- Requires 4 Kbytes eeprom-->
+
+  <name>FILENAME</name>
+  <size>4kb</size>
+  <VD>01</VD>
+
+  <record name="VINI">
+    <rtvpdfile>openPower_obmc_vini_record.xml</rtvpdfile>
+  </record>
+
+  <record name="OPFR">
+    <rtvpdfile>openPower_obmc_opfr_record.xml</rtvpdfile>
+  </record>
+
+  <record name="VNDR">
+    <rtvpdfile>openPower_obmc_vndr_record.xml</rtvpdfile>
+  </record>
+
+  <record name="VMSC">
+    <rtvpdfile>openPower_obmc_vmsc_record.xml</rtvpdfile>
+  </record>
+
+  <record name="VRTN">
+    <rtvpdfile>openPower_obmc_vrtn_record.xml</rtvpdfile>
+  </record>
+
+</vpd>
