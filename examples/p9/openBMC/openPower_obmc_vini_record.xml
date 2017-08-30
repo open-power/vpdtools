@@ -1,0 +1,105 @@
+<?xml version="1.0"?>
+
+<record name="VINI">
+<rdesc>Initial VPD Record</rdesc>
+
+   <keyword name="RT">
+      <kwdesc>The Record Type keyword</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>4</kwlen>
+      <kwdata>VINI</kwdata>
+   </keyword>
+
+   <keyword name="DR">
+      <kwdesc>Description</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>16</kwlen>
+      <kwdata>OPENBMC CARD    </kwdata>
+   </keyword>
+    
+   <keyword name="CE">
+      <kwdesc>CCIN Extension</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>1</kwlen>
+      <kwdata>1</kwdata>
+   </keyword>
+
+   <keyword name="VZ">
+      <kwdesc>Overall VPD version</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>2</kwlen>
+      <kwdata>30</kwdata>
+   </keyword>
+
+   <keyword name="FN">
+      <kwdesc>FRU Number</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>7</kwlen>
+      <kwdata>0000000</kwdata>
+   </keyword>
+
+   <keyword name="PN">
+      <kwdesc>Card Part Number</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>7</kwlen>
+      <kwdata>0000000</kwdata>
+   </keyword>
+
+   <keyword name="SN">
+      <kwdesc>Card Serial Number</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>12</kwlen>
+      <kwdata>000000000000</kwdata>
+   </keyword>
+
+   <keyword name="CC">
+      <kwdesc>Card CCIN Number</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>4</kwlen>
+      <kwdata>P0XX</kwdata>
+   </keyword>
+
+   <keyword name="HE">
+      <kwdesc>Hardware EC</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>4</kwlen>
+      <kwdata>0001</kwdata>
+   </keyword>
+
+   <keyword name="CT">
+      <kwdesc>Card Type</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>4</kwlen>
+      <kwdata>00000000</kwdata>
+   </keyword>
+
+   <keyword name="HW">
+      <kwdesc>Hardware Level</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>2</kwlen>
+      <kwdata>0001</kwdata>
+   </keyword>
+
+   <keyword name="B3">
+      <kwdesc>Hardware Characteristics</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>6</kwlen>
+      <kwdata>00</kwdata>
+   </keyword>
+
+   <keyword name="B4">
+      <kwdesc>Manufacturing FRU Control</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>1</kwlen>
+      <kwdata>00</kwdata>
+   </keyword>
+
+   <keyword name="B7">
+      <kwdesc>Hardware Level</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>12</kwlen>
+      <kwdata>00</kwdata>
+   </keyword>
+
+</record>
+
