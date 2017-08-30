@@ -1,7 +1,8 @@
 <?xml version="1.0"?>
 <vpd>
-  <!-- 2017/08-14 myl:  Adding UD keyword for UUID per story 178386 -->
+  <!-- 2017-08-14 myl:  Adding UD keyword for UUID per story 178386 -->
   <!--                  Change VD value to 02                       -->
+  <!-- 2017-08-29 myl:  Revert the above changed on 8/14/17         -->
 
   <record name="OSYS">
     <rdesc>The OpenPower System Record</rdesc>
@@ -17,7 +18,7 @@
       <kwdesc>Record Version</kwdesc>
       <kwformat>ascii</kwformat>
       <kwlen>2</kwlen>
-      <kwdata>02</kwdata>
+      <kwdata>01</kwdata>
     </keyword>
 
     <keyword name="DR">
@@ -46,13 +47,6 @@
       <kwformat>hex</kwformat>
       <kwlen>1</kwlen>
       <kwdata>02</kwdata>
-    </keyword>
-
-    <keyword name="UD">
-      <kwdesc>UUID</kwdesc>
-      <kwformat>hex</kwformat>
-      <kwlen>17</kwlen>
-      <kwdata>0100000000000000000000000000000000</kwdata>
     </keyword>
 
   </record>
