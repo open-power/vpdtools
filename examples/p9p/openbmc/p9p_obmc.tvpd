@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!-- OpenBMC FRU VPD for P9 Prime OpenPower Systems-->
+<!-- myl:  2019-01-11:  Create-->
+
+<vpd>
+
+  <name>FILENAME</name>
+  <size>4kb</size>
+  <VD>01</VD>
+
+  <record name="OPFR">
+    <rtvpdfile>p9p_obmc_opfr_record.xml</rtvpdfile>
+  </record>
+
+  <record name="VNDR">
+    <rtvpdfile>p9p_obmc_vndr_record.xml</rtvpdfile>
+  </record>
+
+  <record name="VCFG">
+     <rtvpdfile>p9p_obmc_vcfg_record.xml</rtvpdfile>
+  </record>
+
+</vpd>

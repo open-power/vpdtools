@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<!-- OpenPower P9 Prime system Planar-->
+<!-- myl:  2019-01-11:  Create -->
+
+<vpd>
+
+  <name>FILENAME</name>
+  <size>64kb</size>
+  <VD>01</VD>
+
+  <record name="OSYS">
+    <rtvpdfile>p9p_sysplanar_osys_record.xml</rtvpdfile>
+  </record>
+
+  <record name="OPFR">
+    <rtvpdfile>p9p_sysplanar_opfr_record.xml</rtvpdfile>
+  </record>
+
+  <record name="VNDR">
+    <rtvpdfile>p9p_sysplanar_vndr_record.xml</rtvpdfile>
+  </record>
+
+  <record name="VER0">
+    <rtvpdfile>p9p_sysplanar_ver0_record.xml</rtvpdfile>
+  </record>
+
+  <record name="MER0">
+    <rtvpdfile>p9p_sysplanar_mer0_record.xml</rtvpdfile>
+  </record>
+
+  <record name="VCFG">
+    <rtvpdfile>p9p_sysplanar_vcfg_record.xml</rtvpdfile>
+  </record>
+
+</vpd>

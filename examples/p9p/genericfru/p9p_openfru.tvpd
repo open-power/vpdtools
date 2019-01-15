@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+  <!-- OpenBMC FRU VPD for P9 Prime OpenPower Systems-->
+  <!-- Requires 4 Kbytes eeprom-->
+  <!-- myl:  2019-01-11:  Create-->
+
+<vpd>
+
+  <name>FILENAME</name>
+  <size>4kb</size>
+  <VD>01</VD>
+
+  <record name="OPFR">
+    <rtvpdfile>p9p_openfru_opfr_record.xml</rtvpdfile>
+  </record>
+
+  <record name="VNDR">
+    <rtvpdfile>p9p_openfru_vndr_record.xml</rtvpdfile>
+  </record>
+
+</vpd>
