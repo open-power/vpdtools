@@ -1,7 +1,7 @@
 Full Image Examples
 ===================
 
-Power8 FRU VPD example:
+Power8 FRU VPD Example:
 ======================
 
 p8/memcard1_ddr3:    This is an example of a VPD template for a DDR3 memory riser
@@ -31,12 +31,23 @@ p8/sysplanar32_ddr4: This is an example of a VPD template for an OpenPower syste
                   (Centaurs) on the card.   DDR3 ISDIMMs are plugged onto this
                   system planar.
 
-Power9 FRU VPD example:
+Power9 FRU VPD Example:
 ======================
 p9/sysplanar32_ddr4: This is an example of a VPD template for an OpenPower P9 system
                   planar (aka mother board) that has DDR4 ISDIMMs direct attach to
                   the processor on the same card that the ISDIMM are plugged onto.
 
+
+Axone FRU VPD Example:
+=====================
+p9a/sysplanar:    This is an example of a system planar FRU VPD template for a system
+                  with the next generation IBM POWER chip, codenamed Axone.
+
+p9a/openbmc:      This is an example of an OpenBMC FRU VPD template for a system with
+                  Axone processor
+
+p9a/genericfru    This is an example of a generic FRU VPD template for a system with 
+                  Axone processor
 
 Syntax Examples
 ===============

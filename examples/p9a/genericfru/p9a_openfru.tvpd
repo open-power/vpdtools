@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <!-- OpenBMC FRU VPD for P9 Prime OpenPower Systems-->
+  <!-- Generic FRU VPD for a system with the next generation IBM POWER chip, codenamed Axone -->
   <!-- Requires 4 Kbytes eeprom-->
   <!-- myl:  2019-01-11:  Create-->
 
@@ -10,11 +10,11 @@
   <VD>01</VD>
 
   <record name="OPFR">
-    <rtvpdfile>p9p_openfru_opfr_record.xml</rtvpdfile>
+    <rtvpdfile>p9a_openfru_opfr_record.xml</rtvpdfile>
   </record>
 
   <record name="VNDR">
-    <rtvpdfile>p9p_openfru_vndr_record.xml</rtvpdfile>
+    <rtvpdfile>p9a_openfru_vndr_record.xml</rtvpdfile>
   </record>
 
 </vpd>

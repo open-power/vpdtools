@@ -29,7 +29,7 @@
       <kwdesc>FRU Description</kwdesc>
       <kwformat>ascii</kwformat>
       <kwlen>16</kwlen>
-      <kwdata>OpenBMC Card</kwdata>
+      <kwdata>OPENBMC CARD</kwdata>
    </keyword>
 
    <keyword name="VP">
@@ -50,7 +50,7 @@
       <kwdesc>Manufacturing Build Date</kwdesc>
       <kwformat>hex</kwformat>
       <kwlen>8</kwlen>
-      <kwdata>0120181225125959</kwdata>
+      <kwdata>0100000000000000</kwdata>
    </keyword>
 
    <keyword name="VZ">
