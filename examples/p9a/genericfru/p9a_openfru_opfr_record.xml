@@ -1,0 +1,78 @@
+<?xml version="1.0"?>
+<!-- myl:  2019-01-11:  Create-->
+
+<record name="OPFR">
+<rdesc>The OPFR record</rdesc>
+
+   <keyword name="RT">
+      <kwdesc>The Record Type keyword</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>4</kwlen>
+      <kwdata>OPFR</kwdata>
+   </keyword>
+
+   <keyword name="VD">
+      <kwdesc>Record Version</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>2</kwlen>
+      <kwdata>04</kwdata>
+   </keyword>
+
+   <keyword name="VN">
+      <kwdesc>Vendor Name</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>16</kwlen>
+      <kwdata>FRU Vendor</kwdata>
+   </keyword>
+
+   <keyword name="DR">
+      <kwdesc>FRU Description</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>16</kwlen>
+      <kwdata>FRU Description</kwdata>
+   </keyword>
+
+   <keyword name="VP">
+      <kwdesc>Card Part Number</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>16</kwlen>
+      <kwdata>0000000000000000</kwdata>
+   </keyword>
+
+   <keyword name="VS">
+      <kwdesc>Card Serial Number</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>16</kwlen>
+      <kwdata>0000000000000000</kwdata>
+   </keyword>
+
+   <keyword name="MB">
+      <kwdesc>Manufacturing Build Date</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>8</kwlen>
+      <kwdata>0100000000000000</kwdata>
+   </keyword>
+
+   <keyword name="VZ">
+      <kwdesc>Overall VPD version</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>2</kwlen>
+      <kwdata>01</kwdata>
+   </keyword>
+
+   <keyword name="HE">
+      <kwdesc>Hardware EC</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>4</kwlen>
+      <kwdata>0001</kwdata>
+   </keyword>
+
+   <keyword name="HW">
+      <kwdesc>Hardware Level</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>2</kwlen>
+      <kwdata>0001</kwdata>
+   </keyword>
+
+</record>
+

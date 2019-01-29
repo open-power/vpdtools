@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<!-- myl:  2019-01-11:  Create-->
+
+<record name="VCFG">
+<rdesc>The VNDR record</rdesc>
+
+   <keyword name="RT">
+      <kwdesc>The Record Type keyword</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>4</kwlen>
+      <kwdata>VCFG</kwdata>
+   </keyword>
+
+   <keyword name="VD">
+      <kwdesc>Record Version</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>2</kwlen>
+      <kwdata>01</kwdata>
+   </keyword>
+
+   <keyword name="B1">
+      <kwdesc>Base eMAC Address</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>64</kwlen>
+      <kwdata>00</kwdata>
+   </keyword>
+
+   <keyword name="NV">
+      <kwdesc>NVLink Configuration Data</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+   </keyword>
+
+</record>
+
