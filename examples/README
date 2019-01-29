@@ -41,7 +41,7 @@ p9/sysplanar32_ddr4: This is an example of a VPD template for an OpenPower P9 sy
 Axone FRU VPD Example:
 =====================
 p9a/sysplanar:    This is an example of a system planar FRU VPD template for a system
-                  with the next generation IBM POWER chip, codenamed Axone.
+                  with the next generation IBM POWER chip, Axone.
 
 p9a/openbmc:      This is an example of an OpenBMC FRU VPD template for a system with
                   Axone processor
