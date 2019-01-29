@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <!-- Generic FRU VPD for a system with the next generation IBM POWER chip, codenamed Axone -->
+  <!-- Generic FRU VPD for a system with the next generation IBM POWER chip, Axone -->
   <!-- Requires 4 Kbytes eeprom-->
   <!-- myl:  2019-01-11:  Create-->
 
