@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
 <!-- myl:  2019-01-11:  Create-->
+<!-- myl:  2019-02-12:  Add TS keyword. -->
+<!--       VD value is not changed because VPD image has not been released -->
 
 <record name="OPFR">
 <rdesc>The OPFR record</rdesc>
@@ -73,6 +75,13 @@
       <kwlen>2</kwlen>
       <kwdata>0001</kwdata>
     </keyword>
+
+   <keyword name="TS">
+      <kwdesc>Technology Source</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>1</kwlen>
+      <kwdata>00</kwdata>
+   </keyword>
 
 </record>
 

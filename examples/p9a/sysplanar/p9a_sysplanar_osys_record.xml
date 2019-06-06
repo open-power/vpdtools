@@ -67,5 +67,19 @@
       <kwdata>01000000</kwdata>
     </keyword>
 
+    <keyword name="ZZ">
+      <kwdesc>OEM System Serial Number</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>16</kwlen>
+      <kwdata>0000000000000000</kwdata>
+    </keyword>
+
+    <keyword name="D4">
+      <kwdesc>Reserved</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>4</kwlen>
+      <kwdata>00000000</kwdata>
+    </keyword>
+
 </record>
 

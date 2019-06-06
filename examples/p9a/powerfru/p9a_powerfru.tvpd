@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+  <!-- Power subsystem FRU VPD for a system with the next generation IBM POWER chip, Axone -->
+  <!-- Requires 16 Kbytes eeprom -->
+  <!-- myl:  2019-02-12:  Create -->
+
+<vpd>
+
+  <name>FILENAME</name>
+  <size>16kb</size>
+  <VD>01</VD>
+
+  <record name="OPFR">
+    <rtvpdfile>p9a_powerfru_opfr_record.xml</rtvpdfile>
+  </record>
+
+  <record name="VNDR">
+    <rtvpdfile>p9a_powerfru_vndr_record.xml</rtvpdfile>
+  </record>
+
+  <record name="VPRI">
+    <rtvpdfile>p9a_powerfru_vpri_record.xml</rtvpdfile>
+  </record>
+
+</vpd>

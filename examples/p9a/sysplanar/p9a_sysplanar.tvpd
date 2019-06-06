@@ -5,7 +5,7 @@
 <vpd>
 
   <name>FILENAME</name>
-  <size>64kb</size>
+  <size>16kb</size>
   <VD>01</VD>
 
   <record name="OSYS">
