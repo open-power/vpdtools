@@ -49,6 +49,9 @@ p9a/openbmc:      This is an example of an OpenBMC FRU VPD template for a system
 p9a/genericfru    This is an example of a generic FRU VPD template for a system with 
                   Axone processor
 
+p9a/powerfru      This is an example of a power, power supply or VRM card, FRU VPD 
+                  template for a system with Axone processor.
+
 Syntax Examples
 ===============
 bindatainput:     Shows the syntax to have a binary input file for the keyword

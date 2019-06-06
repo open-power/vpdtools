@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<!-- myl:  2019-02-12:  Create-->
+
+<record name="VPRI">
+<rdesc>The VNDR record</rdesc>
+
+   <keyword name="RT">
+      <kwdesc>The Record Type keyword</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>4</kwlen>
+      <kwdata>VPRI</kwdata>
+   </keyword>
+
+   <keyword name="VD">
+      <kwdesc>Record Version</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>2</kwlen>
+      <kwdata>01</kwdata>
+   </keyword>
+
+   <keyword name="CR">
+      <kwdesc>Calibration Data</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <kwdata>00</kwdata>
+   </keyword>
+
+   <keyword name="#D">
+      <kwdesc>Card Specific Data</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>8192</kwlen>
+      <kwdata>00</kwdata>
+   </keyword>
+
+</record>
+
