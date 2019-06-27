@@ -1,8 +1,7 @@
 <?xml version="1.0"?>
-<!-- myl:  2019-02-12:  Create-->
-
 <record name="VPRI">
-<rdesc>The VNDR record</rdesc>
+  <!-- myl:  2019-02-12:  Create-->
+  <rdesc>The VNDR record</rdesc>
 
    <keyword name="RT">
       <kwdesc>The Record Type keyword</kwdesc>

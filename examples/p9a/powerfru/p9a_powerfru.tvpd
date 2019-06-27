@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
+<vpd>
+
   <!-- Power subsystem FRU VPD for a system with the next generation IBM POWER chip, Axone -->
   <!-- Requires 16 Kbytes eeprom -->
   <!-- myl:  2019-02-12:  Create -->
-
-<vpd>
 
   <name>FILENAME</name>
   <size>16kb</size>

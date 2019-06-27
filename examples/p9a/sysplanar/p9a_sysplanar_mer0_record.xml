@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
-<!-- 2019-01-11 myl:  Create -->
-
 <record name="MER0">
+    <!-- 2019-01-11 myl:  Create -->
+
     <rdesc>The Manufacturing repair data record</rdesc>
 
     <keyword name="RT">

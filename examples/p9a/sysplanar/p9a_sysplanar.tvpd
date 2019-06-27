@@ -1,8 +1,7 @@
 <?xml version="1.0"?>
-<!-- System planar FRU VPD for a system with the next generation IBM POWER chip, Axone -->
-<!-- myl:  2019-01-11:  Create -->
-
 <vpd>
+  <!-- System planar FRU VPD for a system with the next generation IBM POWER chip, Axone -->
+  <!-- myl:  2019-01-11:  Create -->
 
   <name>FILENAME</name>
   <size>16kb</size>

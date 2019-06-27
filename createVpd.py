@@ -42,22 +42,23 @@ import argparse
 import textwrap
 import os
 
+# Define basestring for python3 compatibility
+if not hasattr(__builtins__, "basestring"): basestring = (str, bytes)
+
 ############################################################
 # Classes - Classes - Classes - Classes - Classes - Classes
 ############################################################
 # This parser extension is necessary to save comments and write them back out in the final file
 # By default, element tree doesn't preserve comments
-# http://stackoverflow.com/questions/4474754/how-to-keep-comments-while-parsing-xml-using-python-elementtree
-class PCParser(ET.XMLTreeBuilder):
-    def __init__(self):
-        ET.XMLTreeBuilder.__init__(self)
-        # assumes ElementTree 1.2.X
-        self._parser.CommentHandler = self.handle_comment
+# https://stackoverflow.com/questions/33573807/faithfully-preserve-comments-in-parsed-xml-python-2-7/
+class CommentedTreeBuilder(ET.TreeBuilder):
+    def __init__(self, *args, **kwargs):
+        super(CommentedTreeBuilder, self).__init__(*args, **kwargs)
 
-    def handle_comment(self, data):
-        self._target.start(ET.Comment, {})
-        self._target.data(data)
-        self._target.end(ET.Comment)
+    def comment(self, data):
+        self.start(ET.Comment, {})
+        self.data(data)
+        self.end(ET.Comment)
        
 class RecordInfo:
     """Stores the info about each vpd record"""
@@ -112,13 +113,14 @@ def parseXml(xmlFile):
     # Read in the file with ET
     # If there are tag mismatch errors or other general gross format problems, it will get caught here
     # Once we return from this function, then we'll check to make sure only supported tags were given, etc..
-    # Invoke the extended PCParser, which will handle preserving comments in the output file
-    parser = PCParser()
+    # Invoke the extended comment parser, which will handle preserving comments in the output file
+    parser = ET.XMLParser(target=CommentedTreeBuilder())
     try:
         root = ET.parse(fullPathFile, parser=parser).getroot()
-    except:
+    except Exception as e:
         out.error("Unable to parse %s!" % fullPathFile)
         out.error("Check your file for basic XML formatting issues, or missing toplevel <vpd> tag")
+        out.error("Python Exception: %s" % e)
         return (1, None)
         
     # Print the top level tags from the parsing

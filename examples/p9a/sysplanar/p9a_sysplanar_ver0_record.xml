@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
-<!-- 2019-01-11 myl:  Create -->
 
 <record name="VER0">
-    <rdesc>The Vendor repair data record</rdesc>
+  <!-- 2019-01-11 myl:  Create -->
+  <rdesc>The Vendor repair data record</rdesc>
 
     <keyword name="RT">
       <kwdesc>The Record Type keyword</kwdesc>
