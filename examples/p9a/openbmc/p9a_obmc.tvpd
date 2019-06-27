@@ -1,8 +1,7 @@
 <?xml version="1.0"?>
-<!-- OpenBMC FRU VPD for a system with the next generation IBM POWER chip, Axone -->
-<!-- myl:  2019-01-11:  Create-->
-
 <vpd>
+  <!-- OpenBMC FRU VPD for a system with the next generation IBM POWER chip, Axone -->
+  <!-- myl:  2019-01-11:  Create-->
 
   <name>FILENAME</name>
   <size>4kb</size>

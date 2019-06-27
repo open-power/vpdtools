@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
-<!-- 2019-01-11 myl:  Create -->
 
 <record name="OSYS">
-<rdesc>The OpenPower System Record</rdesc>
+  <!-- 2019-01-11 myl:  Create -->
+  <rdesc>The OpenPower System Record</rdesc>
 
     <keyword name="RT">
       <kwdesc>The Record Type keyword</kwdesc>
