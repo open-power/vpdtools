@@ -78,6 +78,13 @@ $ ./createVpd.py -c -m examples/p9/sysplanar32_ddr4/openPower_vini_sample.xml -o
 ==== Stage 3: Creating VPD output files
   Wrote tvpd file: /tmp/openPower_vini_sample.xml
 
+Memory VPD
+==========
+If you are looking to create memory keyword binaries from attribute override files, see this tool in hostboot:
+https://github.com/open-power/hostboot/blob/master/src/import/tools/genMemVpd.pl
+
+The output files can then be used as input binary keyword files for createVpd.py
+
 License
 =======
 See LICENSE
