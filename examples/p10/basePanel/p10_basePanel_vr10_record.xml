@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<!--myl:  2021-09-20:  Create.-->
+
+<record name="VR10">
+   <rdesc>VRxx:  VPD Record contains the slot maps and other VPD data, that is unique to a FRU.
+          There may be more than one of this VPD record within the VPD.</rdesc>
+
+   <keyword name="RT">
+      <kwdesc>The Record Type keyword</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>4</kwlen>
+      <kwdata>VR10</kwdata>
+   </keyword>
+
+   <keyword name="DR">
+      <kwdesc>Description</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>16</kwlen>
+      <kwdata>BASE PANEL VR10</kwdata>
+   </keyword>
+
+   <keyword name="DC">
+      <kwdesc>Build Date in the form "BD yyyyMMddhhmm".</kwdesc>
+       <!-- Date is in BCD format.  ie "BD 202109201259".-->
+      <kwformat>ascii</kwformat>
+      <kwlen>15</kwlen>
+      <kwdata>BD 202109201259</kwdata>
+   </keyword>
+
+   <keyword name="WA">
+      <kwdesc>Work Area</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>96</kwlen>
+      <kwdata>00</kwdata>
+   </keyword>
+
+</record>
+

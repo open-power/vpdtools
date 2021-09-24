@@ -1,0 +1,12 @@
+	FRU	                         VPD Type
+*. System Planar........................sysplanar
+*. eBmc Card............................bmc
+*. OpPanel Base.........................basePanel
+*. OpPanel LCD..........................genericfru
+*. TPM Card.............................genericfru
+*. NVMe.................................genericfru
+*. Cable Card IO Drawer.................cablecard
+*. Fan .................................fanfru
+*. VRM Cards............................powerfru
+*. Power Supply.........................powerfru
+

@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<!--myl:  2021-09-21:  Create.-->
+
+<record name="VCEN">
+   <rdesc>The VCEN record</rdesc>
+   <!-- Enclosure VPD Record. -->
+
+   <keyword name="RT">
+      <kwdesc>The Record Type keyword</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>4</kwlen>
+      <kwdata>VCEN</kwdata>
+   </keyword>
+
+   <keyword name="DR">
+      <kwdesc>FRU Description</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>6</kwlen>
+      <kwdata>CEC   </kwdata>
+   </keyword>
+
+   <keyword name="SE">
+      <kwdesc>Serial Number</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>7</kwlen>
+      <!-- Default value ascii blank -->
+      <kwdata>       </kwdata>
+   </keyword>
+
+   <keyword name="TM">
+      <kwdesc>Machine Type Model</kwdesc>
+      <kwformat>ascii</kwformat>
+      <!-- Default value ascii blank -->
+      <kwlen>8</kwlen>
+      <kwdata>        </kwdata>
+   </keyword>
+
+   <keyword name="FC">
+      <kwdesc>Feature/Enclosure CCIN</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>8</kwlen>
+      <!--The CCIN value to be provided by system architect-->
+      <kwdata>CCIN-001</kwdata>
+   </keyword>
+
+   <keyword name="RG">
+      <kwdesc>Field Core Override</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>4</kwlen>
+      <!-- Default value ascii blank -->
+      <kwdata>    </kwdata>
+   </keyword>
+
+   <keyword name="RB">
+      <kwdesc>For Synergy Brand Systems</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>4</kwlen>
+      <!-- Default value ascii blank -->
+      <kwdata>    </kwdata>
+   </keyword>
+
+</record>
+

@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<!-- System planar FRU VPD for a P10 system with BMC -->
+<!-- myl:  2021-09-21:  Create -->
+
+<vpd>
+
+  <name>FILENAME</name>
+  <size>16kb</size>
+  <VD>01</VD>
+
+  <record name="VINI">
+    <!-- Initial VPD Record -->
+    <rtvpdfile>p10_sysplanar_vini_record.xml</rtvpdfile>
+  </record>
+
+  <record name="LXR0">
+    <!-- Load ID VPD Record -->
+    <rtvpdfile>p10_sysplanar_lxr0_record.xml</rtvpdfile>
+  </record>
+
+  <record name="VCEN">
+    <!-- Enclosure VPD Record -->
+    <rtvpdfile>p10_sysplanar_vcen_record.xml</rtvpdfile>
+  </record>
+
+  <record name="VEIR">
+    <!-- Field EI Repair VPD Record -->
+    <rtvpdfile>p10_sysplanar_veir_record.xml</rtvpdfile>
+  </record>
+
+  <record name="VER0">
+    <!-- Vendor EI Repair VPD Record -->
+    <rtvpdfile>p10_sysplanar_ver0_record.xml</rtvpdfile>
+  </record>
+
+  <record name="MER0">
+    <!-- Manufacture EI Repair VPD Record -->
+    <rtvpdfile>p10_sysplanar_mer0_record.xml</rtvpdfile>
+  </record>
+
+  <record name="VMPU">
+    <!-- Multi-Purpose Usage VPD Record -->
+    <rtvpdfile>p10_sysplanar_vmpu_record.xml</rtvpdfile>
+  </record>
+
+  <record name="VSBP">
+    <!-- Root Node VPD Record -->
+    <rtvpdfile>p10_sysplanar_vsbp_record.xml</rtvpdfile>
+  </record>
+
+  <record name="VSYS">
+    <!-- System VPD Record -->
+    <rtvpdfile>p10_sysplanar_vsys_record.xml</rtvpdfile>
+  </record>
+
+  <record name="UTIL">
+    <!-- Utility VPD Record -->
+    <rtvpdfile>p10_sysplanar_util_record.xml</rtvpdfile>
+  </record>
+
+  <record name="DINF">
+    <!-- Drawer Information VPD Record -->
+    <rtvpdfile>p10_sysplanar_dinf_record.xml</rtvpdfile>
+  </record>
+
+</vpd>

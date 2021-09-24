@@ -1,0 +1,118 @@
+<?xml version="1.0"?>
+<!--myl:  2021-09-21:  Create.-->
+
+<record name="VINI">
+   <rdesc>VINI:  Initial VPD record</rdesc>
+   <!--This VPD record is used to identify the characteristics of a FRU.
+       It contains manufacturing information, like part numbers and serial numbers.-->
+
+   <keyword name="RT">
+      <kwdesc>The Record Type keyword</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>4</kwlen>
+      <kwdata>VINI</kwdata>
+   </keyword>
+
+   <keyword name="DR">
+      <kwdesc>FRU Description</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>16</kwlen>
+      <!--To be updated by Template owner with specific FRU description.-->
+      <kwdata>FRU DESCRIPTION</kwdata>
+   </keyword>
+
+   <keyword name="CE">
+      <kwdesc>CCIN Extension</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>1</kwlen>
+      <kwdata>1</kwdata>
+   </keyword>
+
+   <keyword name="VZ">
+      <kwdesc>Overall VPD version</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>2</kwlen>
+      <!--Increment the value any time there is an update to any VPD data -->
+      <kwdata>01</kwdata>
+   </keyword>
+
+   <keyword name="FN">
+      <kwdesc>FRU Number</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>7</kwlen>
+      <!--To be updated by mfg.-->
+      <kwdata>ABCDEFG</kwdata>
+   </keyword>
+
+   <keyword name="PN">
+      <kwdesc>Part Number</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>7</kwlen>
+      <!--To be updated by mfg.-->
+      <kwdata>ABCDEFG</kwdata>
+   </keyword>
+
+   <keyword name="SN">
+      <kwdesc>Serial Number</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>12</kwlen>
+      <!--To be updated by mfg.-->
+      <kwdata>000000000000</kwdata>
+   </keyword>
+
+   <keyword name="CC">
+      <kwdesc>FRU CCIN</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>4</kwlen>
+      <!--Template owner updates the value for the specific FRU.-->
+      <!--Value can be found in system workbook.-->
+      <kwdata>CCIN</kwdata>
+   </keyword>
+
+   <keyword name="HE">
+      <kwdesc>Hardware EC</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>4</kwlen>
+      <kwdata>0001</kwdata>
+   </keyword>
+
+   <keyword name="CT">
+      <kwdesc>CARD TYPE</kwdesc>
+      <!-- Not used.  But requires to be included -->
+      <kwformat>hex</kwformat>
+      <kwlen>4</kwlen>
+      <kwdata>00</kwdata>
+   </keyword>
+
+   <keyword name="HW">
+      <kwdesc>Hardware Level</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>2</kwlen>
+      <kwdata>0001</kwdata>
+   </keyword>
+
+   <keyword name="B3">
+      <kwdesc>Hardware Characteristics.  It is used to resolve the CCIN dependency of applications</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>6</kwlen>
+      <kwdata>00</kwdata>
+   </keyword>
+
+   <keyword name="B4">
+      <kwdesc>Manufacturing FRU Control.  The 0xFF value represents that this FRU is part of
+              manufacturing's GOLDEN TEST CARD SET. 0x00 is default. The value is modified by
+              Manufacturing.</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>1</kwlen>
+      <kwdata>00</kwdata>
+   </keyword>
+
+   <keyword name="B7">
+      <kwdesc>Reserved for future used.</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>12</kwlen>
+      <kwdata>00</kwdata>
+   </keyword>
+
+</record>
+

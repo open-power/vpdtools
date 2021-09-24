@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<!--Base Op-Panel FRU VPD template.-->
+<!--myl:  2021-09-20:  Create.-->
+
+<vpd>
+
+  <name>FILENAME</name>
+  <size>8kb</size>
+  <VD>01</VD>
+
+  <record name="VINI">
+    <rtvpdfile>p10_basePanel_vini_record.xml</rtvpdfile>
+  </record>
+
+  <record name="VR10">
+    <rtvpdfile>p10_basePanel_vr10_record.xml</rtvpdfile>
+  </record>
+
+  <record name="UTIL">
+    <rtvpdfile>p10_basePanel_util_record.xml</rtvpdfile>
+  </record>
+
+  <record name="VMPU">
+    <rtvpdfile>p10_basePanel_vmpu_record.xml</rtvpdfile>
+  </record>
+
+</vpd>

@@ -1,0 +1,136 @@
+<?xml version="1.0"?>
+<!--myl:  2021-09-21:  Create.-->
+
+<record name="VSYS">
+   <rdesc>The System VPD Record</rdesc>
+
+   <keyword name="RT">
+      <kwdesc>The Record Type keyword</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>4</kwlen>
+      <kwdata>VSYS</kwdata>
+   </keyword>
+
+   <keyword name="DR">
+      <kwdesc>FRU Description</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>6</kwlen>
+      <kwdata>SYSTEM</kwdata>
+   </keyword>
+
+   <keyword name="BR">
+      <kwdesc>Brand Information</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>2</kwlen>
+      <!--Default value is ascii blank -->
+      <!--Update by mfg -->
+      <kwdata>  </kwdata>
+   </keyword>
+
+   <keyword name="SE">
+      <kwdesc>ipSeries System serial number</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>7</kwlen>
+      <!--Default value is ascii blank -->
+      <!--Update by mfg -->
+      <kwdata>       </kwdata>
+   </keyword>
+
+   <keyword name="SG">
+      <kwdesc>Storage System serial number</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>7</kwlen>
+      <!--Default value is ascii blank -->
+      <!--Update by mfg -->
+      <kwdata>       </kwdata>
+   </keyword>
+
+   <keyword name="TM">
+      <kwdesc>ipSeries Machine Type Model</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>8</kwlen>
+      <!--Default value is ascii blank -->
+      <!--Update by mfg -->
+      <kwdata>        </kwdata>
+   </keyword>
+
+   <keyword name="TN">
+      <kwdesc>Storage Machine Type Model</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>8</kwlen>
+      <!--Default value is ascii blank -->
+      <!--Update by mfg -->
+      <kwdata>        </kwdata>
+   </keyword>
+
+   <keyword name="MN">
+      <kwdesc>Manufacturing ID, or storage facility three bytes
+              Julian Date followed by four bytes year.</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>7</kwlen>
+      <!--Default value is ascii blank -->
+      <!--Update by mfg -->
+      <kwdata>       </kwdata>
+   </keyword>
+
+   <keyword name="ID">
+      <kwdesc>SSD 2 character system ID</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>2</kwlen>
+      <!--Default value is ascii blank -->
+      <!--Update by mfg -->
+      <kwdata>  </kwdata>
+   </keyword>
+
+   <keyword name="SU">
+      <kwdesc>System Unique ID</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>6</kwlen>
+      <!--Default value is ascii blank -->
+      <kwdata>      </kwdata>
+   </keyword>
+
+   <keyword name="NN">
+      <kwdesc>World Wide Node Name</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>16</kwlen>
+      <!--Default value is ascii blank -->
+      <kwdata>                </kwdata>
+   </keyword>
+
+   <keyword name="RG">
+      <kwdesc>Field Core Override</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>4</kwlen>
+      <!--Default value is ascii blank -->
+      <kwdata>    </kwdata>
+   </keyword>
+
+   <keyword name="RB">
+      <kwdesc>For Synergy Brand systems</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>4</kwlen>
+      <!--Default value is ascii blank -->
+      <kwdata>    </kwdata>
+   </keyword>
+
+   <keyword name="WN">
+      <kwdesc>Fiber Channel NPIV WWPN root</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>12</kwlen>
+      <!--Default value is ascii blank -->
+      <kwdata>            </kwdata>
+   </keyword>
+
+   <keyword name="FV">
+      <kwdesc>Firmware version</kwdesc>
+      <!--Set by mfg -->
+      <kwformat>ascii</kwformat>
+      <kwlen>32</kwlen>
+      <!--Default value is ascii blank -->
+      <!--Update by mfg -->
+      <kwdata>                               </kwdata>
+   </keyword>
+
+</record>
+

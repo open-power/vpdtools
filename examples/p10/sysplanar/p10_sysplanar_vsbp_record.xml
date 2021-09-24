@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<!--myl:  2021-09-21:  Create.-->
+
+<record name="VSBP">
+   <rdesc>The VSBP record</rdesc>
+   <!--Root node VPD Record.  This record is used to identify the type of system.-->
+
+   <keyword name="RT">
+      <kwdesc>The Record Type keyword</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>4</kwlen>
+      <kwdata>VSBP</kwdata>
+   </keyword>
+
+   <keyword name="DR">
+      <kwdesc>FRU Description</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>16</kwlen>
+      <kwdata>VPD ROOT NODE</kwdata>
+   </keyword>
+
+   <keyword name="PA">
+      <kwdesc>Op-Panel Present status. N-no panel. Y-panel is installed.</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>1</kwlen>
+      <kwdata>Y</kwdata>
+   </keyword>
+
+   <keyword name="IM">
+      <kwdesc>Machine Type</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>4</kwlen>
+      <!-- To be provided by SVPD firmware team -->
+      <kwdata>00000000</kwdata>
+   </keyword>
+
+</record>
+
