@@ -1,0 +1,158 @@
+<?xml version="1.0"?>
+<!--myl:  2021-09-20:  Create.-->
+
+<record name="UTIL">
+   <rdesc>The UTIL record:  This record is reserved for future usage.
+          Each keyword is defined as needed.  Should be used for critical need
+          when a new VPD cannot be done.  Once defined, the template owner should 
+          document the usage of the keyword</rdesc>
+
+   <keyword name="RT">
+      <kwdesc>The Record Type keyword</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>4</kwlen>
+      <kwdata>UTIL</kwdata>
+   </keyword>
+
+   <keyword name="D0">
+      <kwdesc>Reserved</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>1</kwlen>
+      <kwdata>00</kwdata>
+   </keyword>
+
+   <keyword name="D1">
+      <kwdesc>Reserved</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>1</kwlen>
+      <kwdata>00</kwdata>
+   </keyword>
+
+   <keyword name="D2">
+      <kwdesc>Reserved</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>1</kwlen>
+      <kwdata>00</kwdata>
+   </keyword>
+
+   <keyword name="D3">
+      <kwdesc>Reserved</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>1</kwlen>
+      <kwdata>00</kwdata>
+   </keyword>
+
+   <keyword name="D4">
+      <kwdesc>Reserved</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>4</kwlen>
+      <kwdata>00</kwdata>
+   </keyword>
+
+   <keyword name="D5">
+      <kwdesc>Reserved</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>4</kwlen>
+      <kwdata>00</kwdata>
+   </keyword>
+
+   <keyword name="D6">
+      <kwdesc>Reserved</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>4</kwlen>
+      <kwdata>00</kwdata>
+   </keyword>
+
+   <keyword name="D7">
+      <kwdesc>Reserved</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>4</kwlen>
+      <kwdata>00</kwdata>
+   </keyword>
+
+   <keyword name="D8">
+      <kwdesc>Reserved</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>8</kwlen>
+      <kwdata>00</kwdata>
+   </keyword>
+
+   <keyword name="D9">
+      <kwdesc>Reserved</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>8</kwlen>
+      <kwdata>00</kwdata>
+   </keyword>
+
+   <keyword name="F0">
+      <kwdesc>Reserved</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>8</kwlen>
+      <kwdata>00</kwdata>
+   </keyword>
+
+   <keyword name="F1">
+      <kwdesc>Reserved</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>8</kwlen>
+      <kwdata>00</kwdata>
+   </keyword>
+
+   <keyword name="F2">
+      <kwdesc>Reserved</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>8</kwlen>
+      <kwdata>00</kwdata>
+   </keyword>
+
+   <keyword name="F3">
+      <kwdesc>Reserved</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>8</kwlen>
+      <kwdata>00</kwdata>
+   </keyword>
+
+   <keyword name="F4">
+      <kwdesc>Reserved</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>8</kwlen>
+      <kwdata>00</kwdata>
+   </keyword>
+
+   <keyword name="F5">
+      <kwdesc>Reserved</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>16</kwlen>
+      <kwdata>00</kwdata>
+   </keyword>
+
+   <keyword name="F6">
+      <kwdesc>Reserved</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>16</kwlen>
+      <kwdata>00</kwdata>
+   </keyword>
+
+   <keyword name="F7">
+      <kwdesc>Reserved</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>16</kwlen>
+      <kwdata>00</kwdata>
+   </keyword>
+
+   <keyword name="F8">
+      <kwdesc>Reserved</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>16</kwlen>
+      <kwdata>00</kwdata>
+   </keyword>
+
+   <keyword name="F9">
+      <kwdesc>Reserved</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>16</kwlen>
+      <kwdata>00</kwdata>
+   </keyword>
+
+</record>
+

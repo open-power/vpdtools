@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<!--myl:  2021-09-21:  Create.-->
+
+<record name="VPRI">
+   <rdesc>VPRI: Power Regulator Information record</rdesc>
+
+   <keyword name="RT">
+      <kwdesc>The Record Type keyword</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>4</kwlen>
+      <kwdata>VPRI</kwdata>
+   </keyword>
+
+   <keyword name="VZ">
+      <kwdesc>Record Version</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>2</kwlen>
+      <!--Increment the value when data in this record is changed.-->
+      <kwdata>01</kwdata>
+   </keyword>
+
+   <keyword name="CR">
+      <kwdesc>Calibration Data</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>255</kwlen>
+      <!--To be updated by card manufacture if needed.-->
+      <kwdata>00</kwdata>
+   </keyword>
+
+   <keyword name="#D">
+      <kwdesc>Card specific data.</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>8192</kwlen>
+      <!--To be updated by card manufacture if needed.-->
+      <kwdata>00</kwdata>
+   </keyword>
+
+</record>
+

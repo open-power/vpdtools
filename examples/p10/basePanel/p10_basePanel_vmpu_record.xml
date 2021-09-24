@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<!--myl:  2021-09-20:  Create.-->
+
+<record name="VMPU">
+   <rdesc>The VMPU record:  Multi-purpose usage for firmware </rdesc>
+
+   <keyword name="RT">
+      <kwdesc>The Record Type keyword</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>4</kwlen>
+      <kwdata>VMPU</kwdata>
+   </keyword>
+
+   <keyword name="VZ">
+      <kwdesc>Record Version</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>2</kwlen>
+      <!--Increment the value when data in this record is changed.-->
+      <kwdata>01</kwdata>
+   </keyword>
+
+   <keyword name="SO">
+      <kwdesc>Data Information.  Describe the IN keyword data format</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>2</kwlen>
+      <!--Set by firmware code.-->
+      <kwdata>0000</kwdata>
+   </keyword>
+
+   <keyword name="DI">
+      <kwdesc>Data Information.  Describe the IN keyword data format</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>4</kwlen>
+      <!--Set by firmware code.-->
+      <kwdata>00</kwdata>
+   </keyword>
+
+   <keyword name="IN">
+      <kwdesc>Data.  Firmware define the format described in DI keyword</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>128</kwlen>
+      <kwdata>00</kwdata>
+   </keyword>
+
+</record>
+

@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<!--myl:  2021-09-20:  Create.-->
+
+<record name="VW10">
+   <rdesc>VWxx:  A VPD Work Area is reserved space where software may write VPD information. Providing
+          a separate area reduces the risk of destroying the static manufacturing VPD. There may be
+          more than one VPD Work Area contained within the VPD.</rdesc>
+
+   <keyword name="RT">
+      <kwdesc>The Record Type keyword</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>4</kwlen>
+      <kwdata>VW10</kwdata>
+   </keyword>
+
+   <keyword name="DR">
+      <kwdesc>Description</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>16</kwlen>
+      <kwdata>eBMC VW10</kwdata>
+   </keyword>
+
+   <keyword name="GD">
+      <kwdesc>Gard Data</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>64</kwlen>
+      <!--Update by firmware code.-->
+      <kwdata>00</kwdata>
+   </keyword>
+
+</record>
+

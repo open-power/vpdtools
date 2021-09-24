@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<!--myl:  2021-09-20:  Create.-->
+
+<record name="VCFG">
+  <rdesc>Configuration record:  This record provides FRU-specific data for firmware
+         to configure the FRU as required by the hardware design team.</rdesc>
+
+   <keyword name="RT">
+      <kwdesc>The Record Type keyword</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>4</kwlen>
+      <kwdata>VCFG</kwdata>
+   </keyword>
+
+   <keyword name="VZ">
+      <kwdesc>Record Version</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>2</kwlen>
+      <!--Increment the value when data in this record is changed.-->
+      <kwdata>01</kwdata>
+   </keyword>
+
+   <keyword name="Z0">
+      <kwdesc>First Base eMAC Address</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>6</kwlen>
+      <!--Mfg updates the data with base MAC address of the network adapter.-->
+      <kwdata>00</kwdata>
+   </keyword>
+
+   <keyword name="Z1">
+      <kwdesc>Second Base eMAC Address</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>6</kwlen>
+      <!--Mfg updates the data with base MAC address of the network adapter.-->
+      <kwdata>00</kwdata>
+   </keyword>
+
+</record>
+

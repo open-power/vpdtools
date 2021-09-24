@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<!-- Generic FRU VPD -->
+<!-- Requires 4 Kbytes eeprom.-->
+<!-- myl:  2021-09-21:  Create.-->
+
+<vpd>
+
+  <name>FILENAME</name>
+  <size>4kb</size>
+  <VD>01</VD>
+
+  <record name="VINI">
+    <rtvpdfile>p10_genericfru_vini_record.xml</rtvpdfile>
+  </record>
+
+  <record name="VMPU">
+    <rtvpdfile>p10_genericfru_vmpu_record.xml</rtvpdfile>
+  </record>
+
+</vpd>

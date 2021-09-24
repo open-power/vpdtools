@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<!--myl:  2021-09-21:  Create.-->
+
+<record name="DINF">
+   <rdesc>DINF: The device information record</rdesc>
+
+   <keyword name="RT">
+      <kwdesc>The Record Type keyword</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>4</kwlen>
+      <kwdata>DINF</kwdata>
+   </keyword>
+
+   <keyword name="RI">
+      <kwdesc>Power Resource ID</kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>4</kwlen>
+      <!-- Value to be provided by POWR firmware team -->
+      <kwdata>00000000</kwdata>
+   </keyword>
+
+   <keyword name="FL">
+      <kwdesc>FRU Label: A variable length ASCII character data to provides the label of the FRU.
+              If the label length is less than the  field length, the label will be left justified
+              in the field and padded with ASCII blanks in the unused bytes.</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>20</kwlen>
+      <!-- ASCII blank -->
+      <kwdata>                    </kwdata>
+   </keyword>
+
+</record>
+

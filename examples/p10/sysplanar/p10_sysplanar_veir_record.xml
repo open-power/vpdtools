@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!--myl:  2021-09-21:  Create.-->
+
+<record name="VEIR">
+   <rdesc>The Field EI repair data record</rdesc>
+
+   <keyword name="RT">
+      <kwdesc>The Record Type keyword</kwdesc>
+      <kwformat>ascii</kwformat>
+      <kwlen>4</kwlen>
+      <kwdata>VEIR</kwdata>
+   </keyword>
+
+   <keyword name="#I">
+      <kwdesc>Repair Data </kwdesc>
+      <kwformat>hex</kwformat>
+      <kwlen>270</kwlen>
+      <kwdata>455202062C00</kwdata>
+   </keyword>
+
+</record>
+

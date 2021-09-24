@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<!--Power subsystem FRU VPD Template.-->
+<!--Requires 16 Kbytes eeprom.-->
+<!--myl:  2021-09-21:  Create.-->
+
+<vpd>
+
+  <name>FILENAME</name>
+  <size>16kb</size>
+  <VD>01</VD>
+
+  <record name="VINI">
+    <rtvpdfile>p10_powerfru_vini_record.xml</rtvpdfile>
+  </record>
+
+  <record name="DINF">
+    <rtvpdfile>p10_powerfru_dinf_record.xml</rtvpdfile>
+  </record>
+
+  <record name="VPRI">
+    <rtvpdfile>p10_powerfru_vpri_record.xml</rtvpdfile>
+  </record>
+
+  <record name="VMPU">
+    <rtvpdfile>p10_powerfru_vmpu_record.xml</rtvpdfile>
+  </record>
+
+</vpd>
